@@ -15,18 +15,11 @@ import org.opencv.android.OpenCVLoader;
 
 public class MainActivity extends AppCompatActivity {
 
-    private static final String TAG = "MainActivity";
-
     // Used to load the 'native-lib' library on application startup.
     static {
         System.loadLibrary("native-lib");
         System.loadLibrary("opencv_java3");
-
-        if(OpenCVLoader.initDebug()){
-            Log.d(TAG, "OpenCV loaded");
-        } else {
-            Log.d(TAG, "OpenCV not loaded");
-        }
+        System.loadLibrary("jnilibsvm");
     }
 
     @Override

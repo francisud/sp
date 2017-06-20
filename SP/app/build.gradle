@@ -27,7 +27,7 @@ android {
             path "CMakeLists.txt"
         }
     }
-    sourceSets { main { jni.srcDirs = ['src/main/jni', 'src/main/jniLibs/'] } }
+    sourceSets { main { jni.srcDirs = ['src/main/jni', 'src/main/jniLibs/', 'src/main/jni/'] } }
 }
 
 dependencies {
@@ -40,4 +40,5 @@ dependencies {
     compile 'com.android.support:design:25.2.0'
     testCompile 'junit:junit:4.12'
     compile project(':openCVLibrary320')
+    compile files('libs/gradle-wrapper.jar')
 }
