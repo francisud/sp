@@ -8,4 +8,40 @@
     tools:context="com.example.fud.spnew.IdentifyActivity"
     tools:showIn="@layout/activity_identify">
 
+    <RelativeLayout
+        android:layout_width="368dp"
+        android:layout_height="495dp"
+        tools:layout_editor_absoluteY="8dp"
+        tools:layout_editor_absoluteX="8dp">
+
+        <Button
+            android:id="@+id/topButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="59dp"
+            android:onClick="createDialog"
+            android:text="@string/topButton"
+            android:layout_alignParentTop="true"
+            android:layout_alignStart="@+id/sideButton" />
+
+        <Button
+            android:id="@+id/sideButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:onClick="createDialog"
+            android:text="@string/sideButton"
+            android:layout_marginTop="54dp"
+            android:layout_below="@+id/topButton"
+            android:layout_centerHorizontal="true" />
+
+        <Button
+            android:id="@+id/bottomButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:onClick="createDialog"
+            android:text="@string/bottomButton"
+            android:layout_marginTop="72dp"
+            android:layout_below="@+id/sideButton"
+            android:layout_centerHorizontal="true" />
+    </RelativeLayout>
 </android.support.constraint.ConstraintLayout>
