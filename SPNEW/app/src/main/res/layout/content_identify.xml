@@ -14,34 +14,35 @@
         tools:layout_editor_absoluteY="8dp"
         tools:layout_editor_absoluteX="8dp">
 
-        <Button
-            android:id="@+id/topButton"
+        <ImageButton
+            android:id="@+id/imageButton2"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginTop="59dp"
-            android:onClick="createDialog"
-            android:text="@string/topButton"
             android:layout_alignParentTop="true"
-            android:layout_alignStart="@+id/sideButton" />
+            android:layout_centerHorizontal="true"
+            android:layout_marginTop="50dp"
+            android:onClick="createDialog"
+            app:srcCompat="@drawable/ic_menu_camera" />
 
-        <Button
-            android:id="@+id/sideButton"
+        <ImageButton
+            android:id="@+id/imageButton3"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:layout_alignStart="@+id/imageButton2"
+            android:layout_below="@+id/imageButton2"
+            android:layout_marginTop="84dp"
             android:onClick="createDialog"
-            android:text="@string/sideButton"
-            android:layout_marginTop="54dp"
-            android:layout_below="@+id/topButton"
-            android:layout_centerHorizontal="true" />
+            app:srcCompat="@drawable/ic_menu_camera" />
 
-        <Button
-            android:id="@+id/bottomButton"
+        <ImageButton
+            android:id="@+id/imageButton4"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:layout_alignStart="@+id/imageButton3"
+            android:layout_below="@+id/imageButton3"
+            android:layout_marginTop="69dp"
             android:onClick="createDialog"
-            android:text="@string/bottomButton"
-            android:layout_marginTop="72dp"
-            android:layout_below="@+id/sideButton"
-            android:layout_centerHorizontal="true" />
+            app:srcCompat="@drawable/ic_menu_camera" />
+
     </RelativeLayout>
 </android.support.constraint.ConstraintLayout>
