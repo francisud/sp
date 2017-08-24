@@ -3,7 +3,9 @@ package com.example.fud.spnew;
 import android.app.Dialog;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.database.Cursor;
 import android.graphics.BitmapFactory;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
 import android.provider.MediaStore;
@@ -29,8 +31,17 @@ import java.util.Date;
 
 public class IdentifyActivity extends AppCompatActivity {
 
+    //source of button click
     private String source;
-    private String selectedImagePath;
+
+    //for updating buttons in UI
+    private String mCurrentPhotoPath;
+
+    //for saving the paths
+    private String topPhotoPath;
+    private String sidePhotoPath;
+    private String bottomPhotoPath;
+
     private ImageButton top;
     private ImageButton side;
     private ImageButton bottom;
@@ -112,7 +123,6 @@ public class IdentifyActivity extends AppCompatActivity {
     }
 
 
-    String mCurrentPhotoPath;
     private File createImageFile() throws IOException {
         // Create an image file name
         String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss").format(new Date());
@@ -126,74 +136,102 @@ public class IdentifyActivity extends AppCompatActivity {
 
         // Save a file: path for use with ACTION_VIEW intents
         mCurrentPhotoPath = image.getAbsolutePath();
+
+        if(source.equals("top")){
+            topPhotoPath = image.getAbsolutePath();
+        }
+        if(source.equals("side")){
+            sidePhotoPath = image.getAbsolutePath();
+        }
+        if(source.equals("bottom")){
+            bottomPhotoPath = image.getAbsolutePath();
+        }
         return image;
     }
 
+    private void setPic() {
+        int targetW = -1;
+        int targetH = -1;
 
-
-
-
-
-
-
-    public void onActivityResult(int requestCode, int resultCode, Intent data) {
-
-
-        //camera
-        if (requestCode == 0 && resultCode == RESULT_OK) {
-//            Bitmap imageBitmap = null;
-//            try{
-//                imageBitmap = MediaStore.Images.Media.getBitmap(this.getContentResolver(), Uri.parse(mCurrentPhotoPath));
-//            }catch(IOException e){
-//                Toast.makeText(this, e.toString(), Toast.LENGTH_LONG).show();
-//            }
-
-            // Get the dimensions of the View
-            int targetW = top.getWidth();
-            int targetH = top.getHeight();
-
-            // Get the dimensions of the bitmap
-            BitmapFactory.Options bmOptions = new BitmapFactory.Options();
-            bmOptions.inJustDecodeBounds = true;
-            BitmapFactory.decodeFile(mCurrentPhotoPath, bmOptions);
-            int photoW = bmOptions.outWidth;
-            int photoH = bmOptions.outHeight;
-
-            // Determine how much to scale down the image
-            int scaleFactor = Math.min(photoW/targetW, photoH/targetH);
-
-            // Decode the image file into a Bitmap sized to fill the View
-            bmOptions.inJustDecodeBounds = false;
-            bmOptions.inSampleSize = scaleFactor;
-            bmOptions.inPurgeable = true;
-
-            Bitmap bitmap = BitmapFactory.decodeFile(mCurrentPhotoPath, bmOptions);
-            top.setImageBitmap(bitmap);
-
-
-//            if(source.equals("top"))
-//                top.setImageBitmap(imageBitmap);
-//            if(source.equals("side"))
-//                side.setImageBitmap(imageBitmap);
-//            if(source.equals("bottom"))
-//                bottom.setImageBitmap(imageBitmap);
+        // Get the dimensions of the View
+        if(source.equals("top")){
+            targetW = top.getWidth();
+            targetH = top.getHeight();
+        }
+        if(source.equals("side")){
+            targetW = side.getWidth();
+            targetH = side.getHeight();
+        }
+        if(source.equals("bottom")){
+            targetW = bottom.getWidth();
+            targetH = bottom.getHeight();
         }
 
+        // Get the dimensions of the bitmap
+        BitmapFactory.Options bmOptions = new BitmapFactory.Options();
+        bmOptions.inJustDecodeBounds = true;
+
+        BitmapFactory.decodeFile(mCurrentPhotoPath, bmOptions);
+        int photoW = bmOptions.outWidth;
+        int photoH = bmOptions.outHeight;
+
+        // Determine how much to scale down the image
+        int scaleFactor = Math.min(photoW/targetW, photoH/targetH);
+
+        // Decode the image file into a Bitmap sized to fill the View
+        bmOptions.inJustDecodeBounds = false;
+        bmOptions.inSampleSize = scaleFactor;
+
+        Bitmap bitmap = BitmapFactory.decodeFile(mCurrentPhotoPath, bmOptions);
+
+        if(source.equals("top"))
+            top.setImageBitmap(bitmap);
+        if(source.equals("side"))
+            side.setImageBitmap(bitmap);
+        if(source.equals("bottom"))
+            bottom.setImageBitmap(bitmap);
+    }
+
+
+    @Override
+    public void onActivityResult(int requestCode, int resultCode, Intent data) {
+        //camera
+        if (requestCode == 0 && resultCode == RESULT_OK) {
+            setPic();
+        }
 
         //file browser
         if (requestCode == 1 && resultCode == RESULT_OK) {
-            Uri selectedImageUri = data.getData();
-            selectedImagePath = selectedImageUri.getPath();
 
-            if(source.equals("top"))
-                top.setImageURI(selectedImageUri);
-            if(source.equals("side"))
-                side.setImageURI(selectedImageUri);
-            if(source.equals("bottom"))
-                bottom.setImageURI(selectedImageUri);
+            //http://hmkcode.com/android-display-selected-image-and-its-real-path/
+            //https://github.com/hmkcode/Android/blob/master/android-show-image-and-path/src/com/hmkcode/android/image/RealPathUtil.java
+            //for getting the real / absolute path
+
+            if (Build.VERSION.SDK_INT < 11)
+                mCurrentPhotoPath = RealPathUtil.getRealPathFromURI_BelowAPI11(this, data.getData());
+
+            // SDK >= 11 && SDK < 19
+            else if (Build.VERSION.SDK_INT < 19)
+                mCurrentPhotoPath = RealPathUtil.getRealPathFromURI_API11to18(this, data.getData());
+
+            // SDK > 19 (Android 4.4)
+            else
+                mCurrentPhotoPath = RealPathUtil.getRealPathFromURI_API19(this, data.getData());
+
+
+            if(source.equals("top")){
+                topPhotoPath = mCurrentPhotoPath;
+            }
+            if(source.equals("side")){
+                sidePhotoPath = mCurrentPhotoPath;
+            }
+            if(source.equals("bottom")){
+                bottomPhotoPath = mCurrentPhotoPath;
+            }
+
+            setPic();
         }
 
     }
-
 
 }
