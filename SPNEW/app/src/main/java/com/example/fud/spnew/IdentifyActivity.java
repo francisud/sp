@@ -45,6 +45,8 @@ public class IdentifyActivity extends AppCompatActivity {
     private Button spinner;
     private ArrayAdapter<CharSequence> adapter;
 
+    private Button processButton;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -71,6 +73,14 @@ public class IdentifyActivity extends AppCompatActivity {
         spinner = (Button) findViewById(R.id.button);
         adapter = ArrayAdapter.createFromResource(this,
                 R.array.substrate_array, android.R.layout.simple_spinner_item);
+
+        processButton = (Button)findViewById(R.id.processButton);
+        processButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                startActivity(new Intent(IdentifyActivity.this, ProcessActivity.class));
+            }
+        });
 
     }
 
