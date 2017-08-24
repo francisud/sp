@@ -14,6 +14,13 @@
         <item>Take A Picture</item>
         <item>Files</item>
     </string-array>
+
+    <string-array name="substrate_array">
+        <item>Soil</item>
+        <item>Wood</item>
+    </string-array>
+
+
     
     <string name="topButton">Top Button</string>
     <string name="sideButton">Side Button</string>

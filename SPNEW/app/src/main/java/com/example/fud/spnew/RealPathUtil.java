@@ -1,3 +1,17 @@
+/***
+ *
+ *
+ * SOURCE: //http://hmkcode.com/android-display-selected-image-and-its-real-path/
+           //https://github.com/hmkcode/Android/blob/master/android-show-image-and-path/src/com/hmkcode/android/image/RealPathUtil.java
+
+    AS OF WRITING THIS PROJECT AUG 24, 2017, CANT FIND ANY FUNCTION CALL IN THE ANDROID API FOR GETTING THE REAL PATH OF IMAGES TAKEN
+ *
+ *
+ *
+ ***/
+
+
+
 package com.example.fud.spnew;
 
 import android.annotation.SuppressLint;

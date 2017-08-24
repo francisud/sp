@@ -1,9 +1,7 @@
 package com.example.fud.spnew;
 
-import android.app.Dialog;
 import android.content.DialogInterface;
 import android.content.Intent;
-import android.database.Cursor;
 import android.graphics.BitmapFactory;
 import android.os.Build;
 import android.os.Bundle;
@@ -16,13 +14,11 @@ import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.view.View;
-import android.widget.Button;
 import android.net.Uri;
+import android.widget.ArrayAdapter;
+import android.widget.Button;
 import android.widget.ImageButton;
-import android.widget.ImageView;
 import android.graphics.Bitmap;
-import android.content.Context;
-import android.widget.Toast;
 
 import java.io.File;
 import java.io.IOException;
@@ -46,6 +42,9 @@ public class IdentifyActivity extends AppCompatActivity {
     private ImageButton side;
     private ImageButton bottom;
 
+    private Button spinner;
+    private ArrayAdapter<CharSequence> adapter;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -63,9 +62,16 @@ public class IdentifyActivity extends AppCompatActivity {
         });
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
 
+        //for changing the images of the buttons
         top = (ImageButton)findViewById(R.id.imageButton2);
         side = (ImageButton)findViewById(R.id.imageButton3);
         bottom = (ImageButton)findViewById(R.id.imageButton4);
+
+        //for picking substrate
+        spinner = (Button) findViewById(R.id.button);
+        adapter = ArrayAdapter.createFromResource(this,
+                R.array.substrate_array, android.R.layout.simple_spinner_item);
+
     }
 
     public void createDialog(View view) {
@@ -189,8 +195,7 @@ public class IdentifyActivity extends AppCompatActivity {
         if(source.equals("side"))
             side.setImageBitmap(bitmap);
         if(source.equals("bottom"))
-            bottom.setImageBitmap(bitmap);
-    }
+            bottom.setImageBitmap(bitmap);    }
 
 
     @Override
@@ -231,7 +236,16 @@ public class IdentifyActivity extends AppCompatActivity {
 
             setPic();
         }
+    }
 
+    public void selectSubstrate(View view){
+        new AlertDialog.Builder(this)
+            .setAdapter(adapter, new DialogInterface.OnClickListener() {
+                public void onClick(DialogInterface dialog, int which) {
+                    spinner.setText(adapter.getItem(which));
+                    dialog.dismiss();
+                }
+            }).create().show();
     }
 
 }
