@@ -37,6 +37,7 @@ public class IdentifyActivity extends AppCompatActivity {
     private String topPhotoPath;
     private String sidePhotoPath;
     private String bottomPhotoPath;
+    private String substrate;
 
     private ImageButton top;
     private ImageButton side;
@@ -78,7 +79,12 @@ public class IdentifyActivity extends AppCompatActivity {
         processButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                startActivity(new Intent(IdentifyActivity.this, ProcessActivity.class));
+                Intent intent = new Intent(IdentifyActivity.this, ProcessActivity.class);
+                intent.putExtra("topPhotoPath", topPhotoPath);
+                intent.putExtra("sidePhotoPath", sidePhotoPath);
+                intent.putExtra("bottomPhotoPath", bottomPhotoPath);
+                intent.putExtra("substrate", substrate);
+                startActivity(intent);
             }
         });
 
@@ -253,6 +259,7 @@ public class IdentifyActivity extends AppCompatActivity {
             .setAdapter(adapter, new DialogInterface.OnClickListener() {
                 public void onClick(DialogInterface dialog, int which) {
                     spinner.setText(adapter.getItem(which));
+                    substrate = adapter.getItem(which).toString();
                     dialog.dismiss();
                 }
             }).create().show();
