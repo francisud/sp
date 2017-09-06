@@ -211,7 +211,8 @@ public class IdentifyActivity extends AppCompatActivity {
         if(source.equals("side"))
             side.setImageBitmap(bitmap);
         if(source.equals("bottom"))
-            bottom.setImageBitmap(bitmap);    }
+            bottom.setImageBitmap(bitmap);
+    }
 
 
     @Override
