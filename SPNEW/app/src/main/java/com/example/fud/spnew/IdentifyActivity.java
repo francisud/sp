@@ -19,6 +19,7 @@ import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.ImageButton;
 import android.graphics.Bitmap;
+import android.widget.Toast;
 
 import java.io.File;
 import java.io.IOException;
@@ -172,6 +173,7 @@ public class IdentifyActivity extends AppCompatActivity {
     }
 
     private void setPic() {
+
         int targetW = -1;
         int targetH = -1;
 
@@ -205,7 +207,6 @@ public class IdentifyActivity extends AppCompatActivity {
         bmOptions.inSampleSize = scaleFactor;
 
         Bitmap bitmap = BitmapFactory.decodeFile(mCurrentPhotoPath, bmOptions);
-
         if(source.equals("top"))
             top.setImageBitmap(bitmap);
         if(source.equals("side"))
@@ -217,9 +218,11 @@ public class IdentifyActivity extends AppCompatActivity {
 
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
+
         //camera
         if (requestCode == 0 && resultCode == RESULT_OK) {
             setPic();
+            startCrop();
         }
 
         //file browser
@@ -240,7 +243,6 @@ public class IdentifyActivity extends AppCompatActivity {
             else
                 mCurrentPhotoPath = RealPathUtil.getRealPathFromURI_API19(this, data.getData());
 
-
             if(source.equals("top")){
                 topPhotoPath = mCurrentPhotoPath;
             }
@@ -252,8 +254,46 @@ public class IdentifyActivity extends AppCompatActivity {
             }
 
             setPic();
+            startCrop();
+        }
+
+        //get top mushroom coordinates
+        if (requestCode == 3 && resultCode == RESULT_OK) {
+            Toast.makeText(IdentifyActivity.this, "SUCCESS",
+                    Toast.LENGTH_LONG).show();
+        }
+
+        if (requestCode == 4 && resultCode == RESULT_OK) {
+            Toast.makeText(IdentifyActivity.this, "SUCCESS",
+                    Toast.LENGTH_LONG).show();
+        }
+
+        if (requestCode == 5 && resultCode == RESULT_OK) {
+            Toast.makeText(IdentifyActivity.this, "SUCCESS",
+                    Toast.LENGTH_LONG).show();
         }
     }
+
+
+    private void startCrop(){
+        Intent cropIntent = new Intent(IdentifyActivity.this, CropActivity.class);
+
+        if(source.equals("top")){
+            cropIntent.putExtra("photoPath", topPhotoPath);
+            startActivityForResult(cropIntent, 3);
+        }
+
+        if(source.equals("side")){
+            cropIntent.putExtra("photoPath", sidePhotoPath);
+            startActivityForResult(cropIntent, 4);
+        }
+
+        if(source.equals("bottom")){
+            cropIntent.putExtra("photoPath", bottomPhotoPath);
+            startActivityForResult(cropIntent, 5);
+        }
+    }
+
 
     public void selectSubstrate(View view){
         new AlertDialog.Builder(this)

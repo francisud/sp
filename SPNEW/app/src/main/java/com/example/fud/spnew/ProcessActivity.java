@@ -85,43 +85,11 @@ public class ProcessActivity extends AppCompatActivity {
         topPicture = Imgcodecs.imread(topPhotoPath);
         Imgproc.cvtColor(topPicture, topPicture, Imgproc.COLOR_BGR2RGB);
 
-        rgbTopPicture = enhanceImage(topPicture);
+
+
+        imageSegmentation(topPicture);
 
         setPic(topPicture, rgbTopPicture);
-    }
-
-
-//    private void loadImages(Bundle extras, Mat topPicture){
-//        //add checker if exists in extras
-//        String topPhotoPath = extras.getString("topPhotoPath");
-//
-//        topPicture = Imgcodecs.imread(topPhotoPath);
-//    }
-
-    private Mat enhanceImage(Mat photo){
-        Mat rgbPhoto;
-
-        rgbPhoto = histogramEqualization(photo);
-
-        return rgbPhoto;
-    }
-
-
-
-    private Mat histogramEqualization(Mat photo){
-        Mat value = new Mat(photo.rows(),photo.cols(), CvType.CV_8UC1);
-        Mat saturation = new Mat(photo.rows(),photo.cols(), CvType.CV_8UC1);
-
-        Mat HSV = new Mat();
-        Imgproc.cvtColor(photo, HSV, Imgproc.COLOR_RGB2HSV);
-
-        Imgproc.equalizeHist(value, value);
-        Imgproc.equalizeHist(saturation, saturation);
-
-        Mat enhancedImage = new Mat();
-        Imgproc.cvtColor(HSV,enhancedImage,Imgproc.COLOR_HSV2RGB);
-
-        return enhancedImage;
     }
 
     private void setPic(Mat topPicture, Mat rgbTopPicture) {
@@ -135,17 +103,9 @@ public class ProcessActivity extends AppCompatActivity {
         ImageView iv = (ImageView) findViewById(R.id.oldPhoto);
         iv.setImageBitmap(bm);
 
+    }
 
-        /****/
-
-        Mat tp2 = new Mat();
-        Imgproc.resize(rgbTopPicture, tp2, new Size(), 0.1, 0.1, Imgproc.INTER_AREA);
-
-        Bitmap bm2 = Bitmap.createBitmap(tp2.cols(), tp2.rows(), Bitmap.Config.ARGB_8888);
-        Utils.matToBitmap(tp2, bm2);
-
-        ImageView iv2 = (ImageView) findViewById(R.id.newPhoto);
-        iv2.setImageBitmap(bm2);
+    private void imageSegmentation(Mat topPicture){
 
     }
 

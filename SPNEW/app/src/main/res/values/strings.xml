@@ -25,4 +25,8 @@
     <string name="sideButton">Side Button</string>
     <string name="bottomButton">Bottom Button</string>
     <string name="title_activity_process">ProcessActivity</string>
+    <string name="title_activity_crop">CropActivity</string>
+    <string name="title_home">Home</string>
+    <string name="title_dashboard">Dashboard</string>
+    <string name="title_notifications">Notifications</string>
 </resources>
