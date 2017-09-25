@@ -55,9 +55,11 @@
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value="com.example.fud.spnew.IdentifyActivity" />
         </activity>
+
         <activity
             android:name=".CropActivity"
             android:label="@string/title_activity_crop"
+            android:theme="@style/AppTheme.NoActionBar">
             android:parentActivityName=".IdentifyActivity">
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"

@@ -12,6 +12,7 @@ import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.view.Display;
 import android.view.View;
+import android.view.Window;
 import android.widget.ImageView;
 
 public class CropActivity extends AppCompatActivity {
@@ -19,6 +20,9 @@ public class CropActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+        this.requestWindowFeature(Window.FEATURE_NO_TITLE);
+
         setContentView(R.layout.activity_crop);
 
         //get photopath
@@ -53,6 +57,8 @@ public class CropActivity extends AppCompatActivity {
         canvas.drawBitmap(scaledBitmap, 0, 0, null);
         canvas.drawRect(20,20,50,50, paint);
         iv.setImageBitmap(scaledBitmap);
+
+
     }
 
 
