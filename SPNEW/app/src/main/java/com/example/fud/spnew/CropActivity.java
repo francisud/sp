@@ -8,6 +8,8 @@ import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.Point;
+import android.graphics.Rect;
+import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
@@ -62,7 +64,6 @@ public class CropActivity extends AppCompatActivity {
     }
 
 
-    //BASED ON  - https://stackoverflow.com/a/13318469
     //to get the dimensions for the rectangle bounds
     @Override
     public void onWindowFocusChanged(boolean hasFocus) {
@@ -70,6 +71,7 @@ public class CropActivity extends AppCompatActivity {
         if (hasFocus) {
             ImageView iv = (ImageView) findViewById(R.id.imageView3);
 
+            //BASED ON  - https://stackoverflow.com/a/13318469
             final int actualHeight, actualWidth;
             final int imageViewHeight = iv.getHeight(), imageViewWidth = iv.getWidth();
             final int bitmapHeight = iv.getDrawable().getIntrinsicHeight(), bitmapWidth = iv.getDrawable().getIntrinsicWidth();
@@ -81,11 +83,23 @@ public class CropActivity extends AppCompatActivity {
                 actualWidth = imageViewWidth;
             }
 
-            Log.d("debug", "width: " + Integer.toString(actualWidth));
-            Log.d("debug", "height: " + Integer.toString(actualHeight));
+            Log.d("debug", "image width: " + Integer.toString(actualWidth));
+            Log.d("debug", "image height: " + Integer.toString(actualHeight));
 
             DrawView dv = (DrawView) findViewById(R.id.view);
             dv.getDimensions(actualWidth,actualHeight);
+
+            //get location of picture in the imageview
+            //BASDE ON  - https://stackoverflow.com/a/12373374
+            Rect bounds = iv.getDrawable().getBounds();
+            int x = (iv.getWidth() - actualWidth) / 2;
+            int y = (iv.getHeight() - actualHeight) / 2;
+
+            Log.d("debug", "imageview.getWidth: " + Integer.toString(iv.getWidth()));
+            Log.d("debug", "imageview.getHeight: " + Integer.toString(iv.getHeight()));
+
+            Log.d("debug", "starting x: " + Integer.toString(x));
+            Log.d("debug", "starting y: " + Integer.toString(y));
         }
     }
 
