@@ -1,27 +1,35 @@
 package com.example.fud.spnew;
 
 import android.content.Context;
+import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.Point;
+import android.graphics.Rect;
 import android.graphics.drawable.BitmapDrawable;
 import android.util.AttributeSet;
+import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
+import android.widget.ImageView;
+import android.widget.Toast;
 
 import java.util.ArrayList;
 
 /**
- * Created by FUD on 9/25/2017.
- */
+ *
+ * BASED ON - https://github.com/rathodchintan/ResizableRectangleOverlay
+ *
+ **/
 
 public class DrawView extends View {
 
+    int height;
+    int width;
     Point[] points = new Point[4];
-
     /**
      * point1 and point 3 are of same group and same as point 2 and point4
      */
@@ -49,6 +57,11 @@ public class DrawView extends View {
         paint = new Paint();
         setFocusable(true); // necessary for getting the touch events
         canvas = new Canvas();
+    }
+
+    public void getDimensions(int width, int height){
+        this.height = height;
+        this.width = width;
     }
 
     // the method that draws the balls
@@ -174,7 +187,6 @@ public class DrawView extends View {
                 break;
 
             case MotionEvent.ACTION_MOVE: // touch drag with the ball
-
 
                 if (balID > -1) {
                     // move the balls the same as the finger

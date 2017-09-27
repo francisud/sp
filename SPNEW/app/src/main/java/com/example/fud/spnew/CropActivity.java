@@ -10,10 +10,13 @@ import android.graphics.Paint;
 import android.graphics.Point;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
+import android.util.Log;
 import android.view.Display;
 import android.view.View;
+import android.view.ViewTreeObserver;
 import android.view.Window;
 import android.widget.ImageView;
+import android.widget.Toast;
 
 public class CropActivity extends AppCompatActivity {
 
@@ -33,7 +36,7 @@ public class CropActivity extends AppCompatActivity {
         //guide - http://www.informit.com/articles/article.aspx?p=2143148&seqNum=2
         Point size = new Point();
 
-        ImageView iv = (ImageView) findViewById(R.id.imageView3);
+        final ImageView iv = (ImageView) findViewById(R.id.imageView3);
         Display display = getWindowManager().getDefaultDisplay();
         display.getSize(size);
         int displayWidth = size.x;
@@ -48,7 +51,6 @@ public class CropActivity extends AppCompatActivity {
           }
         options.inJustDecodeBounds = false;
         Bitmap scaledBitmap =  BitmapFactory.decodeFile(photoPath, options);
-//        iv.setImageBitmap(scaledBitmap);
 
         Paint paint=new Paint();
         paint.setColor(Color.RED);
@@ -57,8 +59,34 @@ public class CropActivity extends AppCompatActivity {
         canvas.drawBitmap(scaledBitmap, 0, 0, null);
         canvas.drawRect(20,20,50,50, paint);
         iv.setImageBitmap(scaledBitmap);
+    }
 
 
+    //BASED ON  - https://stackoverflow.com/a/13318469
+    //to get the dimensions for the rectangle bounds
+    @Override
+    public void onWindowFocusChanged(boolean hasFocus) {
+        super.onWindowFocusChanged(hasFocus);
+        if (hasFocus) {
+            ImageView iv = (ImageView) findViewById(R.id.imageView3);
+
+            final int actualHeight, actualWidth;
+            final int imageViewHeight = iv.getHeight(), imageViewWidth = iv.getWidth();
+            final int bitmapHeight = iv.getDrawable().getIntrinsicHeight(), bitmapWidth = iv.getDrawable().getIntrinsicWidth();
+            if (imageViewHeight * bitmapWidth <= imageViewWidth * bitmapHeight) {
+                actualWidth = bitmapWidth * imageViewHeight / bitmapHeight;
+                actualHeight = imageViewHeight;
+            } else {
+                actualHeight = bitmapHeight * imageViewWidth / bitmapWidth;
+                actualWidth = imageViewWidth;
+            }
+
+            Log.d("debug", "width: " + Integer.toString(actualWidth));
+            Log.d("debug", "height: " + Integer.toString(actualHeight));
+
+            DrawView dv = (DrawView) findViewById(R.id.view);
+            dv.getDimensions(actualWidth,actualHeight);
+        }
     }
 
 
