@@ -8,36 +8,27 @@
     android:orientation="vertical"
     tools:context="com.example.fud.spnew.CropActivity">
 
-    <FrameLayout
-        android:layout_width="fill_parent"
-        android:layout_height="fill_parent">
-
-        <ImageView
-            android:id="@+id/imageView3"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:scaleType="fitCenter"
-            app:srcCompat="@mipmap/ic_launcher" />
-
-        <view
-            class="com.example.fud.spnew.DrawView"
-            id="@+id/view4"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:gravity="center" />
-
-    </FrameLayout>
+    <ImageView
+        android:id="@+id/imageView3"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_alignParentTop="true"
+        android:layout_above="@+id/button4"
+        app:srcCompat="@mipmap/ic_launcher" />
+    
+    <view
+        class="com.example.fud.spnew.DrawView"
+        android:id="@+id/view"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_above="@+id/button4" />
 
     <Button
         android:id="@+id/button4"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
         android:onClick="toReturn"
-        android:text="DONE"
-        android:layout_alignParentTop="true"
-        android:layout_alignParentStart="true" />
-
-    
-
+        android:text="@string/done" />
 
 </RelativeLayout>
