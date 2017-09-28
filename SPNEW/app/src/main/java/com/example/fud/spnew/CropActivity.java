@@ -54,12 +54,6 @@ public class CropActivity extends AppCompatActivity {
         options.inJustDecodeBounds = false;
         Bitmap scaledBitmap =  BitmapFactory.decodeFile(photoPath, options);
 
-        Paint paint=new Paint();
-        paint.setColor(Color.RED);
-
-        Canvas canvas = new Canvas(scaledBitmap);
-        canvas.drawBitmap(scaledBitmap, 0, 0, null);
-        canvas.drawRect(20,20,50,50, paint);
         iv.setImageBitmap(scaledBitmap);
     }
 
@@ -86,12 +80,8 @@ public class CropActivity extends AppCompatActivity {
             Log.d("debug", "image width: " + Integer.toString(actualWidth));
             Log.d("debug", "image height: " + Integer.toString(actualHeight));
 
-            DrawView dv = (DrawView) findViewById(R.id.view);
-            dv.getDimensions(actualWidth,actualHeight);
-
             //get location of picture in the imageview
-            //BASDE ON  - https://stackoverflow.com/a/12373374
-            Rect bounds = iv.getDrawable().getBounds();
+            //BASED ON  - https://stackoverflow.com/a/12373374
             int x = (iv.getWidth() - actualWidth) / 2;
             int y = (iv.getHeight() - actualHeight) / 2;
 
@@ -100,6 +90,9 @@ public class CropActivity extends AppCompatActivity {
 
             Log.d("debug", "starting x: " + Integer.toString(x));
             Log.d("debug", "starting y: " + Integer.toString(y));
+
+            DrawView dv = (DrawView) findViewById(R.id.view);
+            dv.getDimensions(actualWidth,actualHeight,x,y);
         }
     }
 

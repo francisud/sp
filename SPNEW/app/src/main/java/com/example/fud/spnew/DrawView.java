@@ -27,8 +27,8 @@ import java.util.ArrayList;
 
 public class DrawView extends View {
 
-    int height;
-    int width;
+    int imageHeight, imageWidth, startingX, startingY;
+
     Point[] points = new Point[4];
     /**
      * point1 and point 3 are of same group and same as point 2 and point4
@@ -59,9 +59,11 @@ public class DrawView extends View {
         canvas = new Canvas();
     }
 
-    public void getDimensions(int width, int height){
-        this.height = height;
-        this.width = width;
+    public void getDimensions(int imageWidth, int imageHeight, int startingX, int startingY){
+        this.imageWidth  = imageWidth;
+        this.imageHeight = imageHeight;
+        this.startingX   = startingX;
+        this.startingY   = startingY;
     }
 
     // the method that draws the balls
@@ -190,8 +192,34 @@ public class DrawView extends View {
 
                 if (balID > -1) {
                     // move the balls the same as the finger
-                    colorballs.get(balID).setX(X);
-                    colorballs.get(balID).setY(Y);
+
+                    if(X >= startingX + imageWidth){
+                        colorballs.get(balID).setX(startingX + imageWidth);
+                        colorballs.get(balID).setY(Y);
+                    }
+
+                    else if(X <= startingX){
+                        colorballs.get(balID).setX(startingX);
+                        colorballs.get(balID).setY(Y);
+                    }
+
+                    else if(Y >= startingY + imageHeight){
+                        colorballs.get(balID).setX(X);
+                        colorballs.get(balID).setY(startingY + imageHeight);
+                    }
+
+                    else if(Y <= startingY){
+                        colorballs.get(balID).setX(X);
+                        colorballs.get(balID).setY(startingY);
+                    }
+
+                    else{
+                        colorballs.get(balID).setX(X);
+                        colorballs.get(balID).setY(Y);
+                    }
+
+                    Log.d("debug", "X: " + Integer.toString(X));
+                    Log.d("debug", "Y: " + Integer.toString(Y));
 
                     paint.setColor(Color.CYAN);
                     if (groupId == 1) {
