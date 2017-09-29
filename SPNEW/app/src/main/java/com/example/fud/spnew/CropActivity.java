@@ -6,6 +6,7 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
 import android.graphics.Color;
+import android.graphics.Matrix;
 import android.graphics.Paint;
 import android.graphics.Point;
 import android.graphics.Rect;
@@ -65,25 +66,29 @@ public class CropActivity extends AppCompatActivity {
         if (hasFocus) {
             ImageView iv = (ImageView) findViewById(R.id.imageView3);
 
-            //BASED ON  - https://stackoverflow.com/a/13318469
-            final int actualHeight, actualWidth;
-            final int imageViewHeight = iv.getHeight(), imageViewWidth = iv.getWidth();
-            final int bitmapHeight = iv.getDrawable().getIntrinsicHeight(), bitmapWidth = iv.getDrawable().getIntrinsicWidth();
-            if (imageViewHeight * bitmapWidth <= imageViewWidth * bitmapHeight) {
-                actualWidth = bitmapWidth * imageViewHeight / bitmapHeight;
-                actualHeight = imageViewHeight;
-            } else {
-                actualHeight = bitmapHeight * imageViewWidth / bitmapWidth;
-                actualWidth = imageViewWidth;
-            }
+            //BASED ON - https://stackoverflow.com/a/26930938
+            float[] f = new float[9];
+            iv.getImageMatrix().getValues(f);
+
+            // Extract the scale values using the constants (if aspect ratio maintained, scaleX == scaleY)
+            final float scaleX = f[Matrix.MSCALE_X];
+            final float scaleY = f[Matrix.MSCALE_Y];
+
+            final Drawable d = iv.getDrawable();
+            final int origW = d.getIntrinsicWidth();
+            final int origH = d.getIntrinsicHeight();
+
+            final int actualWidth = Math.round(origW * scaleX);
+            final int actualHeight = Math.round(origH * scaleY);
+
+            int imgViewW = iv.getWidth();
+            int imgViewH = iv.getHeight();
+
+            int x = (imgViewW - actualWidth)/2;
+            int y = (imgViewH - actualHeight)/2;
 
             Log.d("debug", "image width: " + Integer.toString(actualWidth));
             Log.d("debug", "image height: " + Integer.toString(actualHeight));
-
-            //get location of picture in the imageview
-            //BASED ON  - https://stackoverflow.com/a/12373374
-            int x = (iv.getWidth() - actualWidth) / 2;
-            int y = (iv.getHeight() - actualHeight) / 2;
 
             Log.d("debug", "imageview.getWidth: " + Integer.toString(iv.getWidth()));
             Log.d("debug", "imageview.getHeight: " + Integer.toString(iv.getHeight()));
