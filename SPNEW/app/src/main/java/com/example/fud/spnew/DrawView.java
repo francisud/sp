@@ -92,30 +92,33 @@ public class DrawView extends View {
         paint.setColor(Color.parseColor("#AADB1255"));
         paint.setStrokeWidth(2);
         canvas.drawRect(
-                left + colorballs.get(0).getWidthOfBall() / 2,
-                top + colorballs.get(0).getWidthOfBall() / 2,
-                right + colorballs.get(2).getWidthOfBall() / 2,
-                bottom + colorballs.get(2).getWidthOfBall() / 2, paint);
+                left,
+                top,
+                right,
+                bottom, paint);
         //fill the rectangle
         paint.setStyle(Paint.Style.FILL);
         paint.setColor(Color.parseColor("#55DB1255"));
         paint.setStrokeWidth(0);
         canvas.drawRect(
-                left + colorballs.get(0).getWidthOfBall() / 2,
-                top + colorballs.get(0).getWidthOfBall() / 2,
-                right + colorballs.get(2).getWidthOfBall() / 2,
-                bottom + colorballs.get(2).getWidthOfBall() / 2, paint);
+                left,
+                top,
+                right,
+                bottom, paint);
 
-        //draw the corners
-        BitmapDrawable bitmap = new BitmapDrawable();
+        /*
+        int centerX = ball.getX() + ball.getWidthOfBall();
+        int centerY = ball.getY() + ball.getHeightOfBall();
+         */
+
         // draw the balls on the canvas
         paint.setColor(Color.BLUE);
         paint.setTextSize(18);
         paint.setStrokeWidth(0);
         for (int i =0; i < colorballs.size(); i ++) {
             ColorBall ball = colorballs.get(i);
-            canvas.drawBitmap(ball.getBitmap(), ball.getX(), ball.getY(), paint);
 
+            canvas.drawBitmap(ball.getBitmap(), ball.getX() - ball.getWidthOfBall()/2, ball.getY() - ball.getHeightOfBall()/2, paint);
             canvas.drawText("" + (i+1), ball.getX(), ball.getY(), paint);
         }
     }
@@ -163,8 +166,8 @@ public class DrawView extends View {
                         ColorBall ball = colorballs.get(i);
                         // check if inside the bounds of the ball (circle)
                         // get the center for the ball
-                        int centerX = ball.getX() + ball.getWidthOfBall();
-                        int centerY = ball.getY() + ball.getHeightOfBall();
+                        int centerX = ball.getX() + ball.getWidthOfBall()/2;
+                        int centerY = ball.getY() + ball.getHeightOfBall()/2;
                         paint.setColor(Color.CYAN);
                         // calculate the radius from the touch to the center of the
                         // ball
@@ -218,8 +221,6 @@ public class DrawView extends View {
                         colorballs.get(balID).setY(Y);
                     }
 
-                    Log.d("debug", "X: " + Integer.toString(X));
-                    Log.d("debug", "Y: " + Integer.toString(Y));
 
                     paint.setColor(Color.CYAN);
                     if (groupId == 1) {
