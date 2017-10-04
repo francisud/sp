@@ -8,6 +8,7 @@ import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.Point;
 import android.util.AttributeSet;
+import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
 
@@ -56,7 +57,7 @@ public class DrawView extends View {
     public ArrayList getCoordinates(){
         ArrayList<Point> coordinates = new ArrayList<Point>();
 
-        int left, top, right, bottom;
+        float left, top, right, bottom;
         left = points[0].x;
         top = points[0].y;
         right = points[0].x;
@@ -68,21 +69,33 @@ public class DrawView extends View {
             bottom = bottom < points[i].y ? points[i].y:bottom;
         }
 
-        int xPercent, yPercent, xCoord, yCoord;
+        float xPercent, yPercent, xCoord, yCoord;
 
         //top left
         xPercent = left / imageWidth;
         yPercent = top / imageHeight;
         xCoord = xPercent * origWidth;
         yCoord = yPercent * origHeight;
-        coordinates.add(new Point(xCoord, yCoord));
+        coordinates.add(new Point(Math.round(xCoord), Math.round(yCoord)));
+
+        Log.d("debug", "left = " + left);
+        Log.d("debug", "top = " + top);
+        Log.d("debug", "imageWidth = " + imageWidth);
+        Log.d("debug", "imageHeight = " + imageHeight);
+        Log.d("debug", "xPercent = " + xPercent);
+        Log.d("debug", "yPercent = " + yPercent);
+        Log.d("debug", "xCoord = " + xCoord);
+        Log.d("debug", "yCoord = " + yCoord);
 
         //bottom right
         xPercent = right / imageWidth;
         yPercent = bottom / imageHeight;
         xCoord = xPercent * origWidth;
         yCoord = yPercent * origHeight;
-        coordinates.add(new Point(xCoord, yCoord));
+        coordinates.add(new Point(Math.round(xCoord), Math.round(yCoord)));
+
+//        Log.d("debug", "xCoord = " + xCoord);
+//        Log.d("debug", "yCoord = " + yCoord);
 
         return coordinates;
     }

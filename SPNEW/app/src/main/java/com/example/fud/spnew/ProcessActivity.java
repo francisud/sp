@@ -6,6 +6,7 @@ import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
+import android.util.Log;
 import android.view.View;
 import android.widget.ImageView;
 
@@ -84,36 +85,36 @@ public class ProcessActivity extends AppCompatActivity {
 //        topPicture = Imgcodecs.imread(topPhotoPath);
 //        Imgproc.cvtColor(topPicture, topPicture, Imgproc.COLOR_BGR2RGB);
 
-        ArrayList<Point> topCoords = (ArrayList<Point>) getIntent().getSerializableExtra("topCoords");
+        ArrayList<android.graphics.Point> topCoords = (ArrayList<android.graphics.Point>) getIntent().getSerializableExtra("topCoords");
 
         topPicture = imageSegmentation(topPhotoPath, topCoords);
         setPic(topPicture, rgbTopPicture);
     }
 
     private void setPic(Mat topPicture, Mat rgbTopPicture) {
-        Mat tp = new Mat();
-
-        Imgproc.resize(topPicture, tp, new Size(), 0.1, 0.1, Imgproc.INTER_AREA);
-
-        Bitmap bm = Bitmap.createBitmap(tp.cols(), tp.rows(),Bitmap.Config.ARGB_8888);
-        Utils.matToBitmap(tp, bm);
+        Bitmap bm = Bitmap.createBitmap(topPicture.cols(), topPicture.rows(), Bitmap.Config.ARGB_8888);
+        Utils.matToBitmap(topPicture, bm);
 
         ImageView iv = (ImageView) findViewById(R.id.oldPhoto);
         iv.setImageBitmap(bm);
-
     }
 
-    private Mat imageSegmentation(String photoPath, ArrayList<Point> coords){
+    private Mat imageSegmentation(String photoPath, ArrayList<android.graphics.Point> coords){
 
-//        double x1, y1, x2, y2;
-//        x1 = coords.get(0).x;
-//        y1 = coords.get(0).y;
-//
-//        x2 = coords.get(1).x;
-//        y2 = coords.get(1).y;
+        double x1, y1, x2, y2;
+        x1 = coords.get(0).x;
+        y1 = coords.get(0).y;
 
-        org.opencv.core.Point p1 = new org.opencv.core.Point(100, 100);
-        org.opencv.core.Point p2 = new org.opencv.core.Point(100, 100);
+        x2 = coords.get(1).x;
+        y2 = coords.get(1).y;
+
+        Log.d("debug", "x1 = " + x1);
+        Log.d("debug", "y1 = " + y1);
+        Log.d("debug", "x2 = " + x2);
+        Log.d("debug", "y2 = " + y2);
+
+        org.opencv.core.Point p1 = new org.opencv.core.Point(x1, y1);
+        org.opencv.core.Point p2 = new org.opencv.core.Point(x2, y2);
 
         Mat picture = Imgcodecs.imread(photoPath);
         Rect rectangle = new Rect(p1, p2);
@@ -123,9 +124,11 @@ public class ProcessActivity extends AppCompatActivity {
         Mat bgdModel = new Mat();
 
         //picture converted to 3 channels
-        Mat pictureC3 = new Mat();
-        Imgproc.cvtColor(picture, pictureC3, Imgproc.COLOR_RGBA2RGB);
-        Imgproc.grabCut(pictureC3, mask, rectangle, bgdModel, fgdModel, 1, Imgproc.GC_INIT_WITH_RECT);
+//        Mat pictureC3 = new Mat();
+//        Imgproc.cvtColor(picture, pictureC3, Imgproc.COLOR_RGBA2RGB);
+//        Imgproc.grabCut(pictureC3, mask, rectangle, bgdModel, fgdModel, 1, Imgproc.GC_INIT_WITH_RECT);
+
+        Imgproc.grabCut(picture, mask, rectangle, bgdModel, fgdModel, 1, Imgproc.GC_INIT_WITH_RECT);
 
         return fgdModel;
     }
