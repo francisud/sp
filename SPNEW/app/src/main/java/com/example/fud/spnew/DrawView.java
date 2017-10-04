@@ -1,33 +1,27 @@
 package com.example.fud.spnew;
 
 import android.content.Context;
-import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.Point;
-import android.graphics.Rect;
-import android.graphics.drawable.BitmapDrawable;
 import android.util.AttributeSet;
-import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
-import android.widget.ImageView;
-import android.widget.Toast;
 
 import java.util.ArrayList;
 
 /**
- *
- * BASED ON - https://github.com/rathodchintan/ResizableRectangleOverlay
- *
+ * BASED ON:
+ * https://github.com/rathodchintan/ResizableRectangleOverlay
+ * https://stackoverflow.com/a/17807469
  **/
 
 public class DrawView extends View {
 
-    int imageHeight, imageWidth, startingX, startingY;
+    int imageWidth, imageHeight, startingX, startingY, origWidth, origHeight;
 
     Point[] points = new Point[4];
     /**
@@ -59,11 +53,28 @@ public class DrawView extends View {
         canvas = new Canvas();
     }
 
-    public void getDimensions(int imageWidth, int imageHeight, int startingX, int startingY){
+    public ArrayList getCoordinates(){
+        ArrayList<Point> coordinates = new ArrayList<Point>();
+
+        for(ColorBall cb : colorballs){
+            int xPercent = cb.getX() / imageWidth;
+            int yPercent = cb.getY() / imageHeight;
+
+            int xCoord = xPercent * origWidth;
+            int yCoord = yPercent * origHeight;
+
+            coordinates.add(new Point(xCoord, yCoord));
+        }
+        return coordinates;
+    }
+
+    public void getDimensions(int imageWidth, int imageHeight, int startingX, int startingY, int origWidth, int origHeight){
         this.imageWidth  = imageWidth;
         this.imageHeight = imageHeight;
         this.startingX   = startingX;
         this.startingY   = startingY;
+        this.origWidth   = origWidth;
+        this.origHeight  = origHeight;
     }
 
     // the method that draws the balls
@@ -105,11 +116,6 @@ public class DrawView extends View {
                 top,
                 right,
                 bottom, paint);
-
-        /*
-        int centerX = ball.getX() + ball.getWidthOfBall();
-        int centerY = ball.getY() + ball.getHeightOfBall();
-         */
 
         // draw the balls on the canvas
         paint.setColor(Color.BLUE);
@@ -155,8 +161,10 @@ public class DrawView extends View {
                     balID = 2;
                     groupId = 1;
                     // declare each ball with the ColorBall class
+                    int count = 0;
                     for (Point pt : points) {
-                        colorballs.add(new ColorBall(getContext(), R.drawable.ball, pt));
+                        colorballs.add(new ColorBall(getContext(), R.drawable.ball, pt, count));
+                        count++;
                     }
                 } else {
                     //resize rectangle
@@ -248,7 +256,6 @@ public class DrawView extends View {
         // redraw the canvas
         invalidate();
         return true;
-
     }
 
 
@@ -258,10 +265,9 @@ public class DrawView extends View {
         Context mContext;
         Point point;
         int id;
-        static int count = 0;
 
-        public ColorBall(Context context, int resourceId, Point point) {
-            this.id = count++;
+        public ColorBall(Context context, int resourceId, Point point, int count) {
+            this.id = count;
             bitmap = BitmapFactory.decodeResource(context.getResources(),
                     resourceId);
             mContext = context;
