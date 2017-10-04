@@ -3,6 +3,7 @@ package com.example.fud.spnew;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.BitmapFactory;
+import android.graphics.Point;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
@@ -24,6 +25,7 @@ import android.widget.Toast;
 import java.io.File;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Date;
 
 public class IdentifyActivity extends AppCompatActivity {
@@ -47,7 +49,9 @@ public class IdentifyActivity extends AppCompatActivity {
     private Button spinner;
     private ArrayAdapter<CharSequence> adapter;
 
-    private Button processButton;
+    private ArrayList<Point> topCoords = new ArrayList<Point>();
+    private ArrayList<Point> sideCoords = new ArrayList<Point>();
+    private ArrayList<Point> bottomCoords = new ArrayList<Point>();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -75,19 +79,6 @@ public class IdentifyActivity extends AppCompatActivity {
         spinner = (Button) findViewById(R.id.button);
         adapter = ArrayAdapter.createFromResource(this,
                 R.array.substrate_array, android.R.layout.simple_spinner_item);
-
-        processButton = (Button)findViewById(R.id.processButton);
-        processButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                Intent intent = new Intent(IdentifyActivity.this, ProcessActivity.class);
-                intent.putExtra("topPhotoPath", topPhotoPath);
-                intent.putExtra("sidePhotoPath", sidePhotoPath);
-                intent.putExtra("bottomPhotoPath", bottomPhotoPath);
-                intent.putExtra("substrate", substrate);
-                startActivity(intent);
-            }
-        });
 
     }
 
@@ -259,18 +250,18 @@ public class IdentifyActivity extends AppCompatActivity {
 
         //get top mushroom coordinates
         if (requestCode == 3 && resultCode == RESULT_OK) {
-            Toast.makeText(IdentifyActivity.this, "SUCCESS",
-                    Toast.LENGTH_LONG).show();
+            Toast.makeText(IdentifyActivity.this, "SUCCESS", Toast.LENGTH_LONG).show();
+            topCoords = (ArrayList<Point>) data.getSerializableExtra("coordinates");
         }
 
         if (requestCode == 4 && resultCode == RESULT_OK) {
-            Toast.makeText(IdentifyActivity.this, "SUCCESS",
-                    Toast.LENGTH_LONG).show();
+            Toast.makeText(IdentifyActivity.this, "SUCCESS", Toast.LENGTH_LONG).show();
+            sideCoords = (ArrayList<Point>) data.getSerializableExtra("coordinates");
         }
 
         if (requestCode == 5 && resultCode == RESULT_OK) {
-            Toast.makeText(IdentifyActivity.this, "SUCCESS",
-                    Toast.LENGTH_LONG).show();
+            Toast.makeText(IdentifyActivity.this, "SUCCESS", Toast.LENGTH_LONG).show();
+            bottomCoords = (ArrayList<Point>) data.getSerializableExtra("coordinates");
         }
     }
 
@@ -304,6 +295,22 @@ public class IdentifyActivity extends AppCompatActivity {
                     dialog.dismiss();
                 }
             }).create().show();
+    }
+
+    public void startProcessActivity(View view){
+        Intent intent = new Intent(IdentifyActivity.this, ProcessActivity.class);
+
+        intent.putExtra("topPhotoPath", topPhotoPath);
+        intent.putExtra("sidePhotoPath", sidePhotoPath);
+        intent.putExtra("bottomPhotoPath", bottomPhotoPath);
+
+        intent.putExtra("topCoords", topCoords);
+        intent.putExtra("sideCoords", sideCoords);
+        intent.putExtra("bottomCoords", bottomCoords);
+
+        intent.putExtra("substrate", substrate);
+
+        startActivity(intent);
     }
 
 }

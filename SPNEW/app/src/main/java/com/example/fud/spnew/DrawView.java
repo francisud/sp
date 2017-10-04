@@ -56,15 +56,34 @@ public class DrawView extends View {
     public ArrayList getCoordinates(){
         ArrayList<Point> coordinates = new ArrayList<Point>();
 
-        for(ColorBall cb : colorballs){
-            int xPercent = cb.getX() / imageWidth;
-            int yPercent = cb.getY() / imageHeight;
-
-            int xCoord = xPercent * origWidth;
-            int yCoord = yPercent * origHeight;
-
-            coordinates.add(new Point(xCoord, yCoord));
+        int left, top, right, bottom;
+        left = points[0].x;
+        top = points[0].y;
+        right = points[0].x;
+        bottom = points[0].y;
+        for (int i = 1; i < points.length; i++) {
+            left = left > points[i].x ? points[i].x:left;
+            top = top > points[i].y ? points[i].y:top;
+            right = right < points[i].x ? points[i].x:right;
+            bottom = bottom < points[i].y ? points[i].y:bottom;
         }
+
+        int xPercent, yPercent, xCoord, yCoord;
+
+        //top left
+        xPercent = left / imageWidth;
+        yPercent = top / imageHeight;
+        xCoord = xPercent * origWidth;
+        yCoord = yPercent * origHeight;
+        coordinates.add(new Point(xCoord, yCoord));
+
+        //bottom right
+        xPercent = right / imageWidth;
+        yPercent = bottom / imageHeight;
+        xCoord = xPercent * origWidth;
+        yCoord = yPercent * origHeight;
+        coordinates.add(new Point(xCoord, yCoord));
+
         return coordinates;
     }
 

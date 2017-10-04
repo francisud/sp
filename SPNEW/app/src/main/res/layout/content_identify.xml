@@ -61,6 +61,7 @@
             android:layout_below="@+id/button"
             android:layout_centerHorizontal="true"
             android:layout_marginTop="27dp"
+            android:onClick="startProcessActivity"
             android:text="Process" />
 
     </RelativeLayout>
