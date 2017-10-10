@@ -147,7 +147,7 @@ public class ProcessActivity extends AppCompatActivity {
 
         Log.d("debug", "working");
 
-        return dst;
+        return foreground;
     }
 
 
