@@ -14,6 +14,7 @@ import org.opencv.android.BaseLoaderCallback;
 import org.opencv.android.LoaderCallbackInterface;
 import org.opencv.android.OpenCVLoader;
 import org.opencv.android.Utils;
+import org.opencv.core.Core;
 import org.opencv.core.CvType;
 import org.opencv.core.Mat;
 import org.opencv.core.Rect;
@@ -23,7 +24,13 @@ import org.opencv.core.Point;
 import org.opencv.imgcodecs.Imgcodecs;
 import org.opencv.imgproc.Imgproc;
 
+
 import java.util.ArrayList;
+
+import static org.opencv.core.Core.CMP_EQ;
+import static org.opencv.core.CvType.CV_8UC3;
+import static org.opencv.imgproc.Imgproc.GC_FGD;
+import static org.opencv.imgproc.Imgproc.GC_PR_FGD;
 
 public class ProcessActivity extends AppCompatActivity {
 
@@ -77,8 +84,6 @@ public class ProcessActivity extends AppCompatActivity {
 
         Mat topPicture = null;
 
-        Mat rgbTopPicture = null;
-
         //loadImages(extras, topPicture, sidePicture, bottomPicture);
 
         String topPhotoPath = extras.getString("topPhotoPath");
@@ -88,10 +93,10 @@ public class ProcessActivity extends AppCompatActivity {
         ArrayList<android.graphics.Point> topCoords = (ArrayList<android.graphics.Point>) getIntent().getSerializableExtra("topCoords");
 
         topPicture = imageSegmentation(topPhotoPath, topCoords);
-        setPic(topPicture, rgbTopPicture);
+        //setPic(topPicture);
     }
 
-    private void setPic(Mat topPicture, Mat rgbTopPicture) {
+    private void setPic(Mat topPicture) {
         Bitmap bm = Bitmap.createBitmap(topPicture.cols(), topPicture.rows(), Bitmap.Config.ARGB_8888);
         Utils.matToBitmap(topPicture, bm);
 
@@ -119,18 +124,25 @@ public class ProcessActivity extends AppCompatActivity {
         Mat picture = Imgcodecs.imread(photoPath);
         Rect rectangle = new Rect(p1, p2);
 
-        Mat mask = new Mat();
+        Mat result = new Mat();
         Mat fgdModel = new Mat();
         Mat bgdModel = new Mat();
 
-        //picture converted to 3 channels
-//        Mat pictureC3 = new Mat();
-//        Imgproc.cvtColor(picture, pictureC3, Imgproc.COLOR_RGBA2RGB);
-//        Imgproc.grabCut(pictureC3, mask, rectangle, bgdModel, fgdModel, 1, Imgproc.GC_INIT_WITH_RECT);
 
-        Imgproc.grabCut(picture, mask, rectangle, bgdModel, fgdModel, 1, Imgproc.GC_INIT_WITH_RECT);
+        //based on - http://answers.opencv.org/question/24463/how-to-remove-black-background-from-grabcut-output-image-in-opencv-android/
 
-        return fgdModel;
+        // GrabCut segmentation
+        Imgproc.grabCut(picture, result, rectangle, bgdModel, fgdModel, 1, Imgproc.GC_INIT_WITH_RECT);
+
+        Mat source = new Mat(1, 1, CvType.CV_8U, new Scalar(3.0));
+
+        // Get the pixels marked as likely foreground
+        Core.compare(result, source, result, CMP_EQ);
+        // Generate output image
+        Mat foreground = new Mat(picture.size(),CV_8UC3,new Scalar(255,255,255));
+        picture.copyTo(foreground,result); // bg pixels not copied
+
+        return picture;
     }
 
 

@@ -71,6 +71,12 @@ public class DrawView extends View {
 
         float xPercent, yPercent, xCoord, yCoord;
 
+        left = left - startingX;
+        top = top - startingY;
+
+        right = right - startingX;
+        bottom = bottom - startingY;
+
         //top left
         xPercent = left / imageWidth;
         yPercent = top / imageHeight;
@@ -78,24 +84,12 @@ public class DrawView extends View {
         yCoord = yPercent * origHeight;
         coordinates.add(new Point(Math.round(xCoord), Math.round(yCoord)));
 
-        Log.d("debug", "left = " + left);
-        Log.d("debug", "top = " + top);
-        Log.d("debug", "imageWidth = " + imageWidth);
-        Log.d("debug", "imageHeight = " + imageHeight);
-        Log.d("debug", "xPercent = " + xPercent);
-        Log.d("debug", "yPercent = " + yPercent);
-        Log.d("debug", "xCoord = " + xCoord);
-        Log.d("debug", "yCoord = " + yCoord);
-
         //bottom right
         xPercent = right / imageWidth;
         yPercent = bottom / imageHeight;
         xCoord = xPercent * origWidth;
         yCoord = yPercent * origHeight;
         coordinates.add(new Point(Math.round(xCoord), Math.round(yCoord)));
-
-//        Log.d("debug", "xCoord = " + xCoord);
-//        Log.d("debug", "yCoord = " + yCoord);
 
         return coordinates;
     }
