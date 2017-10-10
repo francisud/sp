@@ -118,31 +118,36 @@ public class ProcessActivity extends AppCompatActivity {
         Log.d("debug", "x2 = " + x2);
         Log.d("debug", "y2 = " + y2);
 
-        org.opencv.core.Point p1 = new org.opencv.core.Point(x1, y1);
-        org.opencv.core.Point p2 = new org.opencv.core.Point(x2, y2);
+        org.opencv.core.Point tl = new org.opencv.core.Point(x1, y1);
+        org.opencv.core.Point br = new org.opencv.core.Point(x2, y2);
 
-        Mat picture = Imgcodecs.imread(photoPath);
-        Rect rectangle = new Rect(p1, p2);
+        //based on - https://github.com/schenkerx/GrabCutDemo/blob/master/app/src/main/java/cvworkout2/graphcutdemo/MainActivity.java
 
-        Mat result = new Mat();
-        Mat fgdModel = new Mat();
-        Mat bgdModel = new Mat();
+        Mat img = Imgcodecs.imread(photoPath);
+        Mat firstMask = new Mat();
+        Mat bgModel = new Mat();
+        Mat fgModel = new Mat();
+        Mat source = new Mat(1, 1, CvType.CV_8U, new Scalar(Imgproc.GC_PR_FGD));
+        Mat dst = new Mat();
+        Rect rect = new Rect(tl, br);
 
+        Imgproc.grabCut(img, firstMask, rect, bgModel, fgModel,
+                5, Imgproc.GC_INIT_WITH_RECT);
 
-        //based on - http://answers.opencv.org/question/24463/how-to-remove-black-background-from-grabcut-output-image-in-opencv-android/
+        Core.compare(firstMask, source, firstMask, Core.CMP_EQ);
 
-        // GrabCut segmentation
-        Imgproc.grabCut(picture, result, rectangle, bgdModel, fgdModel, 1, Imgproc.GC_INIT_WITH_RECT);
+        Mat foreground = new Mat(img.size(), CvType.CV_8UC3,
+                new Scalar(255, 255, 255));
+        img.copyTo(foreground, firstMask);
 
-        Mat source = new Mat(1, 1, CvType.CV_8U, new Scalar(3.0));
+        firstMask.release();
+        source.release();
+        bgModel.release();
+        fgModel.release();
 
-        // Get the pixels marked as likely foreground
-        Core.compare(result, source, result, CMP_EQ);
-        // Generate output image
-        Mat foreground = new Mat(picture.size(),CV_8UC3,new Scalar(255,255,255));
-        picture.copyTo(foreground,result); // bg pixels not copied
+        Log.d("debug", "working");
 
-        return picture;
+        return dst;
     }
 
 
