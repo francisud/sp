@@ -26,6 +26,8 @@ import org.opencv.imgproc.Imgproc;
 
 
 import java.util.ArrayList;
+import java.util.List;
+import java.util.Vector;
 
 import static org.opencv.core.Core.CMP_EQ;
 import static org.opencv.core.CvType.CV_8UC3;
@@ -83,6 +85,7 @@ public class ProcessActivity extends AppCompatActivity {
         Bundle extras = getIntent().getExtras();
 
         Mat topPicture = null;
+        Mat topPictureHistogram = null;
 
         //loadImages(extras, topPicture, sidePicture, bottomPicture);
 
@@ -93,6 +96,8 @@ public class ProcessActivity extends AppCompatActivity {
         ArrayList<android.graphics.Point> topCoords = (ArrayList<android.graphics.Point>) getIntent().getSerializableExtra("topCoords");
 
         topPicture = imageSegmentation(topPhotoPath, topCoords);
+        topPictureHistogram = getHistogram(topPicture);
+
         //setPic(topPicture);
     }
 
@@ -112,11 +117,6 @@ public class ProcessActivity extends AppCompatActivity {
 
         x2 = coords.get(1).x;
         y2 = coords.get(1).y;
-
-        Log.d("debug", "x1 = " + x1);
-        Log.d("debug", "y1 = " + y1);
-        Log.d("debug", "x2 = " + x2);
-        Log.d("debug", "y2 = " + y2);
 
         org.opencv.core.Point tl = new org.opencv.core.Point(x1, y1);
         org.opencv.core.Point br = new org.opencv.core.Point(x2, y2);
@@ -145,9 +145,25 @@ public class ProcessActivity extends AppCompatActivity {
         bgModel.release();
         fgModel.release();
 
-        Log.d("debug", "working");
-
         return foreground;
+    }
+
+    //https://github.com/vinjn/opencv-2-cookbook-src/blob/master/Chapter%2004/colorhistogram.h
+    //LAB color space is used
+    private Mat getHistogram(Mat image){
+        Mat hist = new Mat();
+
+        // Convert to Lab color space
+        Mat lab = new Mat();
+        Imgproc.cvtColor(image, lab, Imgproc.COLOR_BGR2Lab);
+
+        List<Mat> imageList = new ArrayList<Mat>();
+        imageList.add(lab);
+
+//        get histogram
+        Imgproc.calcHist(imageList, new org.opencv.core.MatOfInt(2), new Mat(), hist, new org.opencv.core.MatOfInt(256), new org.opencv.core.MatOfFloat(-128,127));
+
+        return hist;
     }
 
 
