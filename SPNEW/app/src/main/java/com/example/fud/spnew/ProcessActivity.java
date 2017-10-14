@@ -17,22 +17,18 @@ import org.opencv.android.Utils;
 import org.opencv.core.Core;
 import org.opencv.core.CvType;
 import org.opencv.core.Mat;
+import org.opencv.core.MatOfPoint;
 import org.opencv.core.Rect;
 import org.opencv.core.Scalar;
-import org.opencv.core.Size;
-import org.opencv.core.Point;
 import org.opencv.imgcodecs.Imgcodecs;
 import org.opencv.imgproc.Imgproc;
+import org.opencv.imgproc.Moments;
 
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Vector;
 
-import static org.opencv.core.Core.CMP_EQ;
-import static org.opencv.core.CvType.CV_8UC3;
-import static org.opencv.imgproc.Imgproc.GC_FGD;
-import static org.opencv.imgproc.Imgproc.GC_PR_FGD;
+
 
 public class ProcessActivity extends AppCompatActivity {
 
@@ -86,17 +82,16 @@ public class ProcessActivity extends AppCompatActivity {
 
         Mat topPicture = null;
         Mat topPictureHistogram = null;
-
-        //loadImages(extras, topPicture, sidePicture, bottomPicture);
+        Mat topPictureHuMoments = null;
 
         String topPhotoPath = extras.getString("topPhotoPath");
-//        topPicture = Imgcodecs.imread(topPhotoPath);
-//        Imgproc.cvtColor(topPicture, topPicture, Imgproc.COLOR_BGR2RGB);
 
         ArrayList<android.graphics.Point> topCoords = (ArrayList<android.graphics.Point>) getIntent().getSerializableExtra("topCoords");
 
         topPicture = imageSegmentation(topPhotoPath, topCoords);
         topPictureHistogram = getHistogram(topPicture);
+        topPictureHuMoments = getHuMoments(topPicture);
+        Log.d("debug", "after hu moments");
 
         //setPic(topPicture);
     }
@@ -132,7 +127,7 @@ public class ProcessActivity extends AppCompatActivity {
         Rect rect = new Rect(tl, br);
 
         Imgproc.grabCut(img, firstMask, rect, bgModel, fgModel,
-                5, Imgproc.GC_INIT_WITH_RECT);
+                1, Imgproc.GC_INIT_WITH_RECT);
 
         Core.compare(firstMask, source, firstMask, Core.CMP_EQ);
 
@@ -164,6 +159,39 @@ public class ProcessActivity extends AppCompatActivity {
         Imgproc.calcHist(imageList, new org.opencv.core.MatOfInt(2), new Mat(), hist, new org.opencv.core.MatOfInt(256), new org.opencv.core.MatOfFloat(-128,127));
 
         return hist;
+    }
+
+    private Mat getHuMoments(Mat image){
+        Mat grayScale = new Mat();
+        Imgproc.cvtColor(image, grayScale, Imgproc.COLOR_BGR2GRAY);
+
+        Mat threshold_output = new Mat();
+        List<MatOfPoint> contours = new ArrayList<MatOfPoint>();
+
+
+        ///to get the outline of the object
+        Imgproc.threshold(grayScale, threshold_output, 254, 255, Imgproc.THRESH_BINARY_INV);
+        ///find contours
+        Imgproc.findContours(threshold_output, contours, new Mat(), Imgproc.RETR_EXTERNAL, Imgproc.CHAIN_APPROX_SIMPLE);
+
+        double largest_area = 0;
+        int index = 0;
+
+        for( int i = 0; i< contours.size(); i++ ){
+            double compare = Imgproc.contourArea( contours.get(i) );
+            if( compare > largest_area ){
+                largest_area = compare;
+                index = i;
+            }
+        }
+
+        Moments momentsHolder;
+        momentsHolder = Imgproc.moments(contours.get(0), false);
+
+        Mat hu = new Mat();
+        Imgproc.HuMoments(momentsHolder, hu);
+
+        return hu;
     }
 
 

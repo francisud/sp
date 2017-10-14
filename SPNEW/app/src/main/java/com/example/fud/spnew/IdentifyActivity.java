@@ -250,17 +250,14 @@ public class IdentifyActivity extends AppCompatActivity {
 
         //get top mushroom coordinates
         if (requestCode == 3 && resultCode == RESULT_OK) {
-            Toast.makeText(IdentifyActivity.this, "SUCCESS", Toast.LENGTH_LONG).show();
             topCoords = (ArrayList<Point>) data.getSerializableExtra("coordinates");
         }
 
         if (requestCode == 4 && resultCode == RESULT_OK) {
-            Toast.makeText(IdentifyActivity.this, "SUCCESS", Toast.LENGTH_LONG).show();
             sideCoords = (ArrayList<Point>) data.getSerializableExtra("coordinates");
         }
 
         if (requestCode == 5 && resultCode == RESULT_OK) {
-            Toast.makeText(IdentifyActivity.this, "SUCCESS", Toast.LENGTH_LONG).show();
             bottomCoords = (ArrayList<Point>) data.getSerializableExtra("coordinates");
         }
     }
