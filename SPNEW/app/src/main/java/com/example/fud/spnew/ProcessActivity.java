@@ -83,6 +83,7 @@ public class ProcessActivity extends AppCompatActivity {
         Mat topPicture = null;
         Mat topPictureHistogram = null;
         Mat topPictureHuMoments = null;
+        Mat topPictureTexture = null;
 
         String topPhotoPath = extras.getString("topPhotoPath");
 
@@ -91,7 +92,8 @@ public class ProcessActivity extends AppCompatActivity {
         topPicture = imageSegmentation(topPhotoPath, topCoords);
         topPictureHistogram = getHistogram(topPicture);
         topPictureHuMoments = getHuMoments(topPicture);
-        Log.d("debug", "after hu moments");
+        topPictureTexture = getGaborWavelets(topPicture);
+        Log.d("debug", "after gaborwavelets");
 
         //setPic(topPicture);
     }
@@ -194,6 +196,36 @@ public class ProcessActivity extends AppCompatActivity {
         return hu;
     }
 
+    private Mat getGaborWavelets(Mat image){
+        Mat grayScale = new Mat();
+        Imgproc.cvtColor(image, grayScale, Imgproc.COLOR_BGR2GRAY);
 
+        double ksize = 9;
+        double sigma = 5, lambda = 4, gamma = 0.04, psi = Math.PI/4;
+        List<Mat> destArray  = new ArrayList<Mat>();
+        int theta[] = new int[8];
+
+        //angles
+        theta[0] = 0;
+        theta[1] = 23;
+        theta[2] = 45;
+        theta[3] = 68;
+        theta[4] = 90;
+        theta[5] = 113;
+        theta[6] = 135;
+        theta[7] = 158;
+
+        for (int j = 0; j<8; j++){
+            Mat kernel;
+            Mat dest = new Mat();
+            kernel = Imgproc.getGaborKernel(new org.opencv.core.Size(ksize,ksize), sigma, theta[j], lambda, gamma, psi, CvType.CV_32F);
+            Imgproc.filter2D(grayScale, dest, CvType.CV_32F, kernel);
+
+            destArray.add(dest);
+        }
+
+        //fix return values later
+        return grayScale;
+    }
 
 }
