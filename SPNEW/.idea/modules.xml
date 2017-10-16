@@ -3,6 +3,7 @@
   <component name="ProjectModuleManager">
     <modules>
       <module fileurl="file://$PROJECT_DIR$/SPNEW.iml" filepath="$PROJECT_DIR$/SPNEW.iml" />
+      <module fileurl="file://$PROJECT_DIR$/androidlibsvm-release/androidlibsvm-release.iml" filepath="$PROJECT_DIR$/androidlibsvm-release/androidlibsvm-release.iml" />
       <module fileurl="file://$PROJECT_DIR$/app/app.iml" filepath="$PROJECT_DIR$/app/app.iml" />
       <module fileurl="file://$PROJECT_DIR$/openCVLibrary330/openCVLibrary330.iml" filepath="$PROJECT_DIR$/openCVLibrary330/openCVLibrary330.iml" />
     </modules>

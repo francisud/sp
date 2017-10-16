@@ -24,10 +24,10 @@ import org.opencv.imgcodecs.Imgcodecs;
 import org.opencv.imgproc.Imgproc;
 import org.opencv.imgproc.Moments;
 
-
 import java.util.ArrayList;
 import java.util.List;
 
+import umich.cse.yctung.androidlibsvm.LibSVM;
 
 
 public class ProcessActivity extends AppCompatActivity {
@@ -93,7 +93,8 @@ public class ProcessActivity extends AppCompatActivity {
         topPictureHistogram = getHistogram(topPicture);
         topPictureHuMoments = getHuMoments(topPicture);
         topPictureTexture = getGaborWavelets(topPicture);
-        Log.d("debug", "after gaborwavelets");
+        classify();
+        Log.d("debug", "lib svm");
 
         //setPic(topPicture);
     }
@@ -226,6 +227,11 @@ public class ProcessActivity extends AppCompatActivity {
 
         //fix return values later
         return grayScale;
+    }
+
+    private void classify(){
+        LibSVM svm = new LibSVM();
+
     }
 
 }
