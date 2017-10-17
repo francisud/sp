@@ -17,6 +17,7 @@ import org.opencv.android.Utils;
 import org.opencv.core.Core;
 import org.opencv.core.CvType;
 import org.opencv.core.Mat;
+import org.opencv.core.MatOfFloat;
 import org.opencv.core.MatOfPoint;
 import org.opencv.core.Rect;
 import org.opencv.core.Scalar;
@@ -146,22 +147,27 @@ public class ProcessActivity extends AppCompatActivity {
         return foreground;
     }
 
-    //https://github.com/vinjn/opencv-2-cookbook-src/blob/master/Chapter%2004/colorhistogram.h
+    //https://docs.opencv.org/2.4/doc/tutorials/imgproc/histograms/histogram_calculation/histogram_calculation.html
     //LAB color space is used
     private Mat getHistogram(Mat image){
+        Mat lab = new Mat();
+        Mat grayScale = new Mat();
+        Mat mask = new Mat();
         Mat hist = new Mat();
 
-        // Convert to Lab color space
-        Mat lab = new Mat();
+        //compute mask
+        Imgproc.cvtColor(image,grayScale,Imgproc.COLOR_BGR2GRAY);
+        Imgproc.threshold(grayScale,mask,254,255,Imgproc.THRESH_BINARY_INV);
+
+        ///change color space image
         Imgproc.cvtColor(image, lab, Imgproc.COLOR_BGR2Lab);
 
         List<Mat> imageList = new ArrayList<Mat>();
         imageList.add(lab);
 
-//        get histogram
-        Imgproc.calcHist(imageList, new org.opencv.core.MatOfInt(2), new Mat(), hist, new org.opencv.core.MatOfInt(256), new org.opencv.core.MatOfFloat(-128,127));
+        Imgproc.calcHist(imageList, new org.opencv.core.MatOfInt(2), mask, hist, new org.opencv.core.MatOfInt(256), new org.opencv.core.MatOfFloat(-127,127));
 
-        return hist;
+        return new Mat();
     }
 
     private Mat getHuMoments(Mat image){
@@ -189,7 +195,7 @@ public class ProcessActivity extends AppCompatActivity {
         }
 
         Moments momentsHolder;
-        momentsHolder = Imgproc.moments(contours.get(0), false);
+        momentsHolder = Imgproc.moments(contours.get(index), true);
 
         Mat hu = new Mat();
         Imgproc.HuMoments(momentsHolder, hu);
