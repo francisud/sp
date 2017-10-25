@@ -60,8 +60,8 @@ int main ( int argc, char** argv ){
     Mat img = src.clone();    
     Mat foreground = getForeground(img);
 		Mat hist = getLabHistogram(foreground);
-		Mat hu = getHuMoments(foreground);
-		Mat gw = getGaborWavelets(foreground);
+		//Mat hu = getHuMoments(foreground);
+		//Mat gw = getGaborWavelets(foreground);
 
 		cout<<" Image is processed. Open 'features.txt' to get numerical features."<<endl<<endl;
 
@@ -147,11 +147,15 @@ void onMouse( int event, int x, int y, int f, void* ){
 
 
 Mat getForeground(Mat &img){
-		// define bounding rectangle    
+		//bounding rectangle
     Point tl = P1;
-    Point br = P2;    
-    
+    Point br = P2;
     Rect rectangle(tl,br);
+    
+    //for smaller size matrix
+		double width = P2.x - P1.x;
+		double height = P2.y - P1.y;  
+    Size fgSize = Size(width,height);   
 
     Mat firstMask = Mat();
     Mat bgModel = Mat();
@@ -159,22 +163,24 @@ Mat getForeground(Mat &img){
     Mat source = Mat(1, 1, CV_8U, Scalar(GC_PR_FGD));
     Mat dst = Mat();
     Rect rect = Rect(tl, br);
-
-    grabCut(img, firstMask, rect, bgModel, fgModel,1, GC_INIT_WITH_RECT);
-
-    compare(firstMask, source, firstMask, CMP_EQ);
-
+    
     Mat foreground = Mat(img.size(), CV_8UC3,Scalar(255, 255, 255));
-    img.copyTo(foreground, firstMask);
+    Mat finalForeground = Mat(fgSize, CV_8UC3,Scalar(255, 255, 255));
 
-		// draw rectangle on original img
-    cv::rectangle(img, rectangle, cv::Scalar(255,255,255),1);
-    //imshow("img",img);
+		//segment and get foreground
+    grabCut(img, firstMask, rect, bgModel, fgModel,1, GC_INIT_WITH_RECT);
+    compare(firstMask, source, firstMask, CMP_EQ);
+    img.copyTo(foreground, firstMask);    
+
+		//copy to smaller matrix for less memory and faster computation
+		Rect foregroundPosition(P1.x, P1.y, width, height);
+    Mat dataHolder = foreground(foregroundPosition).clone();
+    dataHolder.copyTo(finalForeground);
 
     // display result
-    //imshow("Segmented Image",foreground);
-    
-    return foreground;
+    imshow("Segmented Image",finalForeground);
+        
+    return finalForeground;
 }
 
 

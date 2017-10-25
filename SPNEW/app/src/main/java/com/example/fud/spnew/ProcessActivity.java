@@ -95,7 +95,7 @@ public class ProcessActivity extends AppCompatActivity {
         topPicture = imageSegmentation(topPhotoPath, topCoords);
         topPictureHistogram = getHistogram(topPicture);
         topPictureHuMoments = getHuMoments(topPicture);
-        topPictureTexture = getGaborWavelets(topPicture);
+        //topPictureTexture = getGaborWavelets(topPicture);
         classify();
         Log.d("debug", "lib svm");
 
@@ -111,8 +111,7 @@ public class ProcessActivity extends AppCompatActivity {
     }
 
     private Mat imageSegmentation(String photoPath, ArrayList<android.graphics.Point> coords){
-
-        double x1, y1, x2, y2;
+        int x1, y1, x2, y2;
         x1 = coords.get(0).x;
         y1 = coords.get(0).y;
 
@@ -121,6 +120,10 @@ public class ProcessActivity extends AppCompatActivity {
 
         org.opencv.core.Point tl = new org.opencv.core.Point(x1, y1);
         org.opencv.core.Point br = new org.opencv.core.Point(x2, y2);
+
+        int width = x2 - x1;
+        int height = y2 - y1;
+        org.opencv.core.Size fgSize = new org.opencv.core.Size(width,height);
 
         //based on - https://github.com/schenkerx/GrabCutDemo/blob/master/app/src/main/java/cvworkout2/graphcutdemo/MainActivity.java
 
@@ -132,21 +135,25 @@ public class ProcessActivity extends AppCompatActivity {
         Mat dst = new Mat();
         Rect rect = new Rect(tl, br);
 
-        Imgproc.grabCut(img, firstMask, rect, bgModel, fgModel,
-                1, Imgproc.GC_INIT_WITH_RECT);
+        Mat foreground = new Mat(img.size(), CvType.CV_8UC3,new Scalar(255, 255, 255));
+        Mat finalForeground = new Mat(fgSize, CvType.CV_8UC3,new Scalar(255, 255, 255));
 
+        //segment image
+        Imgproc.grabCut(img, firstMask, rect, bgModel, fgModel,1, Imgproc.GC_INIT_WITH_RECT);
         Core.compare(firstMask, source, firstMask, Core.CMP_EQ);
-
-        Mat foreground = new Mat(img.size(), CvType.CV_8UC3,
-                new Scalar(255, 255, 255));
         img.copyTo(foreground, firstMask);
+
+        //copy to smaller matrix
+        Rect foregroundPosition = new Rect(x1, y1, width, height);
+        Mat dataHolder = foreground.submat(foregroundPosition).clone();
+        dataHolder.copyTo(finalForeground);
 
         firstMask.release();
         source.release();
         bgModel.release();
         fgModel.release();
 
-        return foreground;
+        return finalForeground;
     }
 
     //https://docs.opencv.org/2.4/doc/tutorials/imgproc/histograms/histogram_calculation/histogram_calculation.html
