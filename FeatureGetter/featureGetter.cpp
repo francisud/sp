@@ -41,8 +41,8 @@ Mat getHuMoments(Mat &image);
 Mat getGaborWavelets(Mat &image);
 
 int main ( int argc, char** argv ){
-        cout<<"  Click and drag for Selection"<<endl<<endl;
-    cout<<"  Press 'Space Bar' to process the image"<<endl<<endl;
+    cout<<" Click and drag for Selection"<<endl<<endl;
+    cout<<" Press 'Space Bar' to process the image"<<endl<<endl;
     src=imread(argv[1],1);
 
     namedWindow(winName,WINDOW_NORMAL);
@@ -53,17 +53,14 @@ int main ( int argc, char** argv ){
         char c = waitKey();     
         if(c == 32) break;      
     }
-    
-      cout<<P1<<endl<<endl;
-        cout<<P2<<endl<<endl;
 
     Mat img = src.clone();    
     Mat foreground = getForeground(img);
     Mat hist = getBgrHistogram(foreground);
-        //Mat hu = getHuMoments(foreground);
-        //Mat gw = getGaborWavelets(foreground);
+    Mat hu = getHuMoments(foreground);
+    //Mat gw = getGaborWavelets(foreground);
 
-        cout<<" Image is processed. Open 'features.txt' to get numerical features."<<endl<<endl;
+    cout<<" Image is processed. Open 'features.txt' to get numerical features."<<endl<<endl;
 
     waitKey();
     return 0;
@@ -147,40 +144,40 @@ void onMouse( int event, int x, int y, int f, void* ){
 
 
 Mat getForeground(Mat &img){
-        //bounding rectangle
-    Point tl = P1;
-    Point br = P2;
-    Rect rectangle(tl,br);
-    
-    //for smaller size matrix
-        double width = P2.x - P1.x;
-        double height = P2.y - P1.y;  
-    Size fgSize = Size(width,height);   
+  //bounding rectangle
+  Point tl = P1;
+  Point br = P2;
+  Rect rectangle(tl,br);
+  
+  //for smaller size matrix
+  double width = P2.x - P1.x;
+  double height = P2.y - P1.y;  
+  Size fgSize = Size(width,height);   
 
-    Mat firstMask = Mat();
-    Mat bgModel = Mat();
-    Mat fgModel = Mat();
-    Mat source = Mat(1, 1, CV_8U, Scalar(GC_PR_FGD));
-    Mat dst = Mat();
-    Rect rect = Rect(tl, br);
-    
-    Mat foreground = Mat(img.size(), CV_8UC3,Scalar(255, 255, 255));
-    Mat finalForeground = Mat(fgSize, CV_8UC3,Scalar(255, 255, 255));
+  Mat firstMask = Mat();
+  Mat bgModel = Mat();
+  Mat fgModel = Mat();
+  Mat source = Mat(1, 1, CV_8U, Scalar(GC_PR_FGD));
+  Mat dst = Mat();
+  Rect rect = Rect(tl, br);
+  
+  Mat foreground = Mat(img.size(), CV_8UC3,Scalar(255, 255, 255));
+  Mat finalForeground = Mat(fgSize, CV_8UC3,Scalar(255, 255, 255));
 
-        //segment and get foreground
-    grabCut(img, firstMask, rect, bgModel, fgModel,1, GC_INIT_WITH_RECT);
-    compare(firstMask, source, firstMask, CMP_EQ);
-    img.copyTo(foreground, firstMask);    
+  //segment and get foreground
+  grabCut(img, firstMask, rect, bgModel, fgModel,1, GC_INIT_WITH_RECT);
+  compare(firstMask, source, firstMask, CMP_EQ);
+  img.copyTo(foreground, firstMask);    
 
-        //copy to smaller matrix for less memory and faster computation
-        Rect foregroundPosition(P1.x, P1.y, width, height);
-    Mat dataHolder = foreground(foregroundPosition).clone();
-    dataHolder.copyTo(finalForeground);
+  //copy to smaller matrix for less memory and faster computation
+  Rect foregroundPosition(P1.x, P1.y, width, height);
+  Mat dataHolder = foreground(foregroundPosition).clone();
+  dataHolder.copyTo(finalForeground);
 
-    // display result
-    imshow("Segmented Image",finalForeground);
-        
-    return finalForeground;
+  // display result
+  imshow("Segmented Image",finalForeground);
+      
+  return finalForeground;
 }
 
 
@@ -247,46 +244,45 @@ Mat getBgrHistogram(Mat &image) {
 
 
 Mat getHuMoments(Mat &image){
-    Mat grayScale = Mat();
-    cvtColor(image, grayScale, COLOR_BGR2GRAY);       
-    
-    Mat threshold_output;
-    vector<vector<Point> > contours;
-    vector<Vec4i> hierarchy;
+  Mat grayScale = Mat();
+  cvtColor(image, grayScale, COLOR_BGR2GRAY);     
+  
+  Mat threshold_output;
+  vector<vector<Point> > contours;
+  vector<Vec4i> hierarchy;
 
-    ///to get the outline of the object
-    threshold(grayScale, threshold_output, 254, 255, THRESH_BINARY_INV);
-    ///find contours
-    findContours(threshold_output, contours, hierarchy, CV_RETR_EXTERNAL, CV_CHAIN_APPROX_SIMPLE, Point(0, 0));                
-            
-    int largest_area = 0;
-    int index = 0;
-            
-    RNG rng(12345);
-    Mat drawing = Mat::zeros( threshold_output.size(), CV_8UC3 );
-    for( int i = 0; i< contours.size(); i++ ){
-        double compare = contourArea( contours[i] );             
-        if( compare > largest_area ){
-            largest_area = compare;
-            index = i;
-        }            
-    }                
-            
-    Scalar color = Scalar( rng.uniform(0, 255), rng.uniform(0,255), rng.uniform(0,255) );
-    drawContours( drawing, contours, index, color, 2, 8, hierarchy, 0, Point() );
+  //to get the outline of the object
+  threshold(grayScale, threshold_output, 254, 255, THRESH_BINARY_INV);
+      
+  //find contours
+  findContours(threshold_output, contours, hierarchy, CV_RETR_EXTERNAL, CV_CHAIN_APPROX_SIMPLE, Point(0, 0));                
+          
+  //find larget contour
+  int largest_area = 0;
+  int index = 0;            
+  for( int i = 0; i< contours.size(); i++ ){
+      double compare = contourArea( contours[i] );             
+      if( compare > largest_area ){
+          largest_area = compare;
+          index = i;
+      }            
+  }                
 
-    /// Show in a window
-    //imshow( "Contours", drawing );
+  Moments mom = Moments();
+  mom = moments(contours[index], false);
 
-    Moments mom = Moments();
-    mom = moments(contours[index], true);
-
-    Mat hu = Mat();
-    HuMoments(mom, hu);
-    
-    //cout << hu << endl;
-    
-    return hu;
+  Mat hu = Mat();
+  HuMoments(mom, hu);
+  
+  /*
+  Mat drawing = Mat::zeros( threshold_output.size(), CV_8UC3 );
+  RNG rng(12345);        
+  Scalar color = Scalar( rng.uniform(0, 255), rng.uniform(0,255), rng.uniform(0,255) );
+  drawContours( drawing, contours, index, color, 2, 8, hierarchy, 0, Point() );
+  imshow( "Contours", drawing );
+  */
+  
+  return hu;
 }
 
 Mat getGaborWavelets(Mat &image){

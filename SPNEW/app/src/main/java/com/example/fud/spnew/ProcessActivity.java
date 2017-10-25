@@ -182,7 +182,6 @@ public class ProcessActivity extends AppCompatActivity {
         Mat threshold_output = new Mat();
         List<MatOfPoint> contours = new ArrayList<MatOfPoint>();
 
-
         ///to get the outline of the object
         Imgproc.threshold(grayScale, threshold_output, 254, 255, Imgproc.THRESH_BINARY_INV);
         ///find contours
@@ -200,7 +199,7 @@ public class ProcessActivity extends AppCompatActivity {
         }
 
         Moments momentsHolder;
-        momentsHolder = Imgproc.moments(contours.get(index), true);
+        momentsHolder = Imgproc.moments(contours.get(index), false);
 
         Mat hu = new Mat();
         Imgproc.HuMoments(momentsHolder, hu);
