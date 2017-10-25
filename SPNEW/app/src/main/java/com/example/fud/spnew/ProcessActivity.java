@@ -99,7 +99,7 @@ public class ProcessActivity extends AppCompatActivity {
         classify();
         Log.d("debug", "lib svm");
 
-        //setPic(topPicture);
+        setPic(topPicture);
     }
 
     private void setPic(Mat topPicture) {
@@ -159,7 +159,6 @@ public class ProcessActivity extends AppCompatActivity {
     //https://docs.opencv.org/2.4/doc/tutorials/imgproc/histograms/histogram_calculation/histogram_calculation.html
     //LAB color space is used
     private Mat getHistogram(Mat image){
-        Mat lab = new Mat();
         Mat grayScale = new Mat();
         Mat mask = new Mat();
         Mat hist = new Mat();
@@ -168,13 +167,10 @@ public class ProcessActivity extends AppCompatActivity {
         Imgproc.cvtColor(image,grayScale,Imgproc.COLOR_BGR2GRAY);
         Imgproc.threshold(grayScale,mask,254,255,Imgproc.THRESH_BINARY_INV);
 
-        ///change color space image
-        Imgproc.cvtColor(image, lab, Imgproc.COLOR_BGR2Lab);
-
         List<Mat> imageList = new ArrayList<Mat>();
-        imageList.add(lab);
+        imageList.add(image);
 
-        Imgproc.calcHist(imageList, new org.opencv.core.MatOfInt(2), mask, hist, new org.opencv.core.MatOfInt(256), new org.opencv.core.MatOfFloat(-127,127));
+        Imgproc.calcHist(imageList, new org.opencv.core.MatOfInt(2), mask, hist, new org.opencv.core.MatOfInt(256), new org.opencv.core.MatOfFloat(0, 256));
 
         return new Mat();
     }
