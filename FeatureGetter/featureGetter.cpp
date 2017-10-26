@@ -58,7 +58,7 @@ int main ( int argc, char** argv ){
     Mat foreground = getForeground(img);
     Mat hist = getBgrHistogram(foreground);
     Mat hu = getHuMoments(foreground);
-    //Mat gw = getGaborWavelets(foreground);
+    Mat gw = getGaborWavelets(foreground);
 
     cout<<" Image is processed. Open 'features.txt' to get numerical features."<<endl<<endl;
 
@@ -211,7 +211,7 @@ Mat getBgrHistogram(Mat &image) {
   calcHist( &bgr_planes[1], 1, 0, alpha, g_hist, 1, &histSize, &histRange, uniform, accumulate );
   calcHist( &bgr_planes[2], 1, 0, alpha, r_hist, 1, &histSize, &histRange, uniform, accumulate );
 
-	/*
+    /*
   // Draw the histograms for B, G and R
   int hist_w = 512; int hist_h = 400;
   int bin_w = cvRound( (double) hist_w/histSize );
@@ -238,7 +238,7 @@ Mat getBgrHistogram(Mat &image) {
 
   /// Display
   imshow("calcHist Demo", histImage );
-	*/
+    */
   return Mat();
 }
 
@@ -290,68 +290,46 @@ Mat getGaborWavelets(Mat &image){
   Mat imageFloat = Mat();
   cvtColor(image, imageGray, COLOR_BGR2GRAY);
   
-  int ksize = 7;
-  double sigma = 5, gamma = 0.04, psi = CV_PI/4;
-  vector<Mat> destArray;
-  
+  int ksize = 5;
+  double sigma = 1;  
   int theta[4];
   theta[0] = 0;
   theta[1] = 45;
   theta[2] = 90;
-  theta[3] = 135;
-  
-  double lambda[3];
-  lambda[0] = 2;
-    lambda[1] = 4;
-    lambda[2] = 8;
-
+  theta[3] = 135;  
+	double gamma = 0.5;
+  double lambda = 4;
+	  
   //convert to floating for getting features
   imageGray.convertTo(imageFloat, CV_32F, 1.0/256.0);
   
   Mat kernelReal, kernelImag;
-  Mat dest;
+  Mat dest; 
+  vector<Mat> destArray;
   
-    for (int i = 0; i<4; i++){
-        for (int j = 0; j<3; j++){            
-            kernelReal = getGaborKernel(Size(ksize,ksize), sigma, theta[i], lambda[j], gamma, 0, CV_32F); 
-            kernelImag = getGaborKernel(Size(ksize,ksize), sigma, theta[i], lambda[j], gamma, M_PI/2, CV_32F);
-            
-            filter2D(imageFloat, dest, -1, kernelReal);
-            destArray.push_back(dest);
-            
-            filter2D(imageFloat, dest, -1, kernelImag);  
-            destArray.push_back(dest);
-        }
-    }
-
-  //imshow("real",destArray[2]);
-  //imshow("imag",destArray[3]);
-
-    //summing up the squared value of each matrix value from a response matrix
-    //get energy
+  for (int i = 0; i<4; i++){
+    kernelReal = getGaborKernel(Size(ksize,ksize), sigma, theta[i], lambda, gamma, 0, CV_32F); 
+    kernelImag = getGaborKernel(Size(ksize,ksize), sigma, theta[i], lambda, gamma, M_PI/2, CV_32F);
     
-    double energy1a=0, energy1b=0, energy1c=0, energy1d=0;
-    double energy2a=0, energy2b=0, energy2c=0, energy2d=0;
-    double energy3a=0, energy3b=0, energy3c=0, energy3d=0;
+    filter2D(imageFloat, dest, -1, kernelReal);
+    destArray.push_back(dest);
     
-    for(int i = 0; i < image.rows-1; i++){
-        for(int j = 0; j < image.cols-1; j++){
-            energy1a += (destArray[0].at<double>(i,j) * destArray[0].at<double>(i,j)) + (destArray[1].at<double>(i,j) * destArray[1].at<double>(i,j));
-            energy1b += (destArray[2].at<double>(i,j) * destArray[2].at<double>(i,j)) + (destArray[3].at<double>(i,j) * destArray[3].at<double>(i,j));
-            energy1c += (destArray[4].at<double>(i,j) * destArray[4].at<double>(i,j)) + (destArray[5].at<double>(i,j) * destArray[5].at<double>(i,j));
-            energy1d += (destArray[6].at<double>(i,j) * destArray[6].at<double>(i,j)) + (destArray[7].at<double>(i,j) * destArray[7].at<double>(i,j));
-            
-            energy2a += (destArray[8].at<double>(i,j) * destArray[8].at<double>(i,j)) + (destArray[9].at<double>(i,j) * destArray[9].at<double>(i,j));
-            energy2b += (destArray[10].at<double>(i,j) * destArray[10].at<double>(i,j)) + (destArray[11].at<double>(i,j) * destArray[11].at<double>(i,j));
-            energy2c += (destArray[12].at<double>(i,j) * destArray[12].at<double>(i,j)) + (destArray[13].at<double>(i,j) * destArray[13].at<double>(i,j));
-            energy2d += (destArray[14].at<double>(i,j) * destArray[14].at<double>(i,j)) + (destArray[15].at<double>(i,j) * destArray[15].at<double>(i,j));
-            
-            energy3a += (destArray[16].at<double>(i,j) * destArray[16].at<double>(i,j)) + (destArray[17].at<double>(i,j) * destArray[17].at<double>(i,j));
-            energy3b += (destArray[18].at<double>(i,j) * destArray[18].at<double>(i,j)) + (destArray[19].at<double>(i,j) * destArray[19].at<double>(i,j));
-            energy3c += (destArray[20].at<double>(i,j) * destArray[20].at<double>(i,j)) + (destArray[21].at<double>(i,j) * destArray[21].at<double>(i,j));
-            energy3d += (destArray[22].at<double>(i,j) * destArray[22].at<double>(i,j)) + (destArray[23].at<double>(i,j) * destArray[23].at<double>(i,j));
-        }
-    } 
+    filter2D(imageFloat, dest, -1, kernelImag);  
+    destArray.push_back(dest);
+  }
+
+  //summing up the squared value of each matrix value from a response matrix
+  //get energy    
+  double energy1a=0, energy1b=0, energy1c=0, energy1d=0;
+  
+  for(int i = 0; i < image.rows-1; i++){
+      for(int j = 0; j < image.cols-1; j++){
+          energy1a += (destArray[0].at<double>(i,j) * destArray[0].at<double>(i,j)) + (destArray[1].at<double>(i,j) * destArray[1].at<double>(i,j));
+          energy1b += (destArray[2].at<double>(i,j) * destArray[2].at<double>(i,j)) + (destArray[3].at<double>(i,j) * destArray[3].at<double>(i,j));
+          energy1c += (destArray[4].at<double>(i,j) * destArray[4].at<double>(i,j)) + (destArray[5].at<double>(i,j) * destArray[5].at<double>(i,j));
+          energy1d += (destArray[6].at<double>(i,j) * destArray[6].at<double>(i,j)) + (destArray[7].at<double>(i,j) * destArray[7].at<double>(i,j));
+      }
+  } 
   
   return imageGray;
 }

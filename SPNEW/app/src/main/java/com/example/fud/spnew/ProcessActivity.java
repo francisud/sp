@@ -93,11 +93,14 @@ public class ProcessActivity extends AppCompatActivity {
         ArrayList<android.graphics.Point> topCoords = (ArrayList<android.graphics.Point>) getIntent().getSerializableExtra("topCoords");
 
         topPicture = imageSegmentation(topPhotoPath, topCoords);
+        Log.d("debug", "after grabcut");
         topPictureHistogram = getHistogram(topPicture);
+        Log.d("debug", "after histogram");
         topPictureHuMoments = getHuMoments(topPicture);
-        //topPictureTexture = getGaborWavelets(topPicture);
+        Log.d("debug", "after humoments");
+        topPictureTexture = getGaborWavelets(topPicture);
+        Log.d("debug", "after gabor");
         classify();
-        Log.d("debug", "lib svm");
 
         setPic(topPicture);
     }
@@ -210,50 +213,37 @@ public class ProcessActivity extends AppCompatActivity {
     private Mat getGaborWavelets(Mat image){
         Mat imageGray = new Mat();
         Mat imageFloat = new Mat();
+        Mat kernelReal = new Mat();
+        Mat kernelImag = new Mat();
+        Mat dest = new Mat();
         List<Mat> destArray  = new ArrayList<Mat>();
 
-        double ksize = 9;
-        double sigma = 5;
-        double gamma = 0.04;
-        double psi = Math.PI/4;
+        double ksize = 5;
+        double sigma = 1;
         int theta[] = new int[4];
-        double lambda[] = new double[3];
-
-        //angles
         theta[0] = 0;
         theta[1] = 45;
         theta[2] = 90;
         theta[3] = 135;
-
-        //scale
-        lambda[0] = 2;
-        lambda[1] = 4;
-        lambda[2] = 8;
+        double gamma = 0.5;
+        double lambda = 4;
 
         Imgproc.cvtColor(image, imageGray, Imgproc.COLOR_BGR2GRAY);
         imageGray.convertTo(imageFloat, CV_32F, 1.0/256.0);
 
-        Mat kernelReal = new Mat();
-        Mat kernelImag = new Mat();
-        Mat dest = new Mat();
-
         for (int i = 0; i<4; i++){
-            for (int j = 0; j<3; j++){
-                kernelReal = Imgproc.getGaborKernel(new org.opencv.core.Size(ksize,ksize), sigma, theta[i], lambda[j], gamma, 0, CV_32F);
-                kernelImag = Imgproc.getGaborKernel(new org.opencv.core.Size(ksize,ksize), sigma, theta[i], lambda[j], gamma, Math.PI/2, CV_32F);
+            kernelReal = Imgproc.getGaborKernel(new org.opencv.core.Size(ksize,ksize), sigma, theta[i], lambda, gamma, 0, CV_32F);
+            kernelImag = Imgproc.getGaborKernel(new org.opencv.core.Size(ksize,ksize), sigma, theta[i], lambda, gamma, Math.PI/2, CV_32F);
 
-                Imgproc.filter2D(imageFloat, dest, -1, kernelReal);
-                destArray.add(dest);
+            Imgproc.filter2D(imageFloat, dest, -1, kernelReal);
+            destArray.add(dest);
 
-                Imgproc.filter2D(imageFloat, dest, -1, kernelImag);
-                destArray.add(dest);
-            }
+            Imgproc.filter2D(imageFloat, dest, -1, kernelImag);
+            destArray.add(dest);
         }
 
         //still need fix value
         double energy1a=0, energy1b=0, energy1c=0, energy1d=0;
-        double energy2a=0, energy2b=0, energy2c=0, energy2d=0;
-        double energy3a=0, energy3b=0, energy3c=0, energy3d=0;
 
         for(int i = 0; i < image.rows()-1; i++){
             for(int j = 0; j < image.cols()-1; j++){
@@ -261,16 +251,6 @@ public class ProcessActivity extends AppCompatActivity {
                 energy1b += (destArray.get(2).get(i,j)[0] * destArray.get(2).get(i,j)[0]) + (destArray.get(3).get(i,j)[0] * destArray.get(3).get(i,j)[0]);
                 energy1c += (destArray.get(4).get(i,j)[0] * destArray.get(4).get(i,j)[0]) + (destArray.get(5).get(i,j)[0] * destArray.get(5).get(i,j)[0]);
                 energy1d += (destArray.get(6).get(i,j)[0] * destArray.get(6).get(i,j)[0]) + (destArray.get(7).get(i,j)[0] * destArray.get(7).get(i,j)[0]);
-
-                energy2a += (destArray.get(8).get(i,j)[0] * destArray.get(8).get(i,j)[0]) + (destArray.get(9).get(i,j)[0] * destArray.get(9).get(i,j)[0]);
-                energy2b += (destArray.get(10).get(i,j)[0] * destArray.get(10).get(i,j)[0]) + (destArray.get(11).get(i,j)[0] * destArray.get(11).get(i,j)[0]);
-                energy2c += (destArray.get(12).get(i,j)[0] * destArray.get(12).get(i,j)[0]) + (destArray.get(13).get(i,j)[0] * destArray.get(13).get(i,j)[0]);
-                energy2d += (destArray.get(14).get(i,j)[0] * destArray.get(14).get(i,j)[0]) + (destArray.get(15).get(i,j)[0] * destArray.get(15).get(i,j)[0]);
-
-                energy3a += (destArray.get(16).get(i,j)[0] * destArray.get(16).get(i,j)[0]) + (destArray.get(17).get(i,j)[0] * destArray.get(17).get(i,j)[0]);
-                energy3b += (destArray.get(18).get(i,j)[0] * destArray.get(18).get(i,j)[0]) + (destArray.get(19).get(i,j)[0] * destArray.get(19).get(i,j)[0]);
-                energy3c += (destArray.get(20).get(i,j)[0] * destArray.get(20).get(i,j)[0]) + (destArray.get(21).get(i,j)[0] * destArray.get(21).get(i,j)[0]);
-                energy3d += (destArray.get(22).get(i,j)[0] * destArray.get(22).get(i,j)[0]) + (destArray.get(23).get(i,j)[0] * destArray.get(23).get(i,j)[0]);
             }
         }
 
