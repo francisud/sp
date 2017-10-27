@@ -202,14 +202,12 @@ Mat getBgrHistogram(Mat &image) {
   float range[] = { 0, 256 } ;
   const float* histRange = { range };
 
-  bool uniform = true; bool accumulate = false;
-
   Mat b_hist, g_hist, r_hist;
 
   /// Compute the histograms:
-  calcHist( &bgr_planes[0], 1, 0, alpha, b_hist, 1, &histSize, &histRange, uniform, accumulate );
-  calcHist( &bgr_planes[1], 1, 0, alpha, g_hist, 1, &histSize, &histRange, uniform, accumulate );
-  calcHist( &bgr_planes[2], 1, 0, alpha, r_hist, 1, &histSize, &histRange, uniform, accumulate );
+  calcHist( &bgr_planes[0], 1, 0, alpha, b_hist, 1, &histSize, &histRange);
+  calcHist( &bgr_planes[1], 1, 0, alpha, g_hist, 1, &histSize, &histRange);
+  calcHist( &bgr_planes[2], 1, 0, alpha, r_hist, 1, &histSize, &histRange);
 
     /*
   // Draw the histograms for B, G and R
@@ -244,15 +242,11 @@ Mat getBgrHistogram(Mat &image) {
   g_hist.reshape(1,1);
   r_hist.reshape(1,1);
   
-  cout<<b_hist.at<float>(100,0)<<endl;
-  cout<<g_hist.at<float>(100,0)<<endl;
-  cout<<r_hist.at<float>(100,0)<<endl;
-  
   Mat feature;  
   feature.push_back(b_hist);
   feature.push_back(g_hist);
   feature.push_back(r_hist);
-    
+      
   return feature;
 }
 
@@ -311,9 +305,9 @@ Mat getGaborWavelets(Mat &image){
   theta[1] = 45;
   theta[2] = 90;
   theta[3] = 135;  
-	double gamma = 0.5;
+  double gamma = 0.5;
   double lambda = 4;
-	  
+    
   //convert to floating for getting features
   imageGray.convertTo(imageFloat, CV_32F, 1.0/256.0);
   
@@ -326,25 +320,30 @@ Mat getGaborWavelets(Mat &image){
     kernelImag = getGaborKernel(Size(ksize,ksize), sigma, theta[i], lambda, gamma, M_PI/2, CV_32F);
     
     filter2D(imageFloat, dest, -1, kernelReal);
-    destArray.push_back(dest);
+    destArray.push_back(dest.clone());    
     
     filter2D(imageFloat, dest, -1, kernelImag);  
-    destArray.push_back(dest);
+    destArray.push_back(dest.clone());
   }
 
   //summing up the squared value of each matrix value from a response matrix
   //get energy    
-  double energy1a=0, energy1b=0, energy1c=0, energy1d=0;
+  double energy0=0, energy1=0, energy2=0, energy3=0;
   
   for(int i = 0; i < image.rows-1; i++){
       for(int j = 0; j < image.cols-1; j++){
-          energy1a += (destArray[0].at<double>(i,j) * destArray[0].at<double>(i,j)) + (destArray[1].at<double>(i,j) * destArray[1].at<double>(i,j));
-          energy1b += (destArray[2].at<double>(i,j) * destArray[2].at<double>(i,j)) + (destArray[3].at<double>(i,j) * destArray[3].at<double>(i,j));
-          energy1c += (destArray[4].at<double>(i,j) * destArray[4].at<double>(i,j)) + (destArray[5].at<double>(i,j) * destArray[5].at<double>(i,j));
-          energy1d += (destArray[6].at<double>(i,j) * destArray[6].at<double>(i,j)) + (destArray[7].at<double>(i,j) * destArray[7].at<double>(i,j));
+          energy0 += (destArray[0].at<double>(i,j) * destArray[0].at<double>(i,j)) + (destArray[1].at<double>(i,j) * destArray[1].at<double>(i,j));
+          energy1 += (destArray[2].at<double>(i,j) * destArray[2].at<double>(i,j)) + (destArray[3].at<double>(i,j) * destArray[3].at<double>(i,j));
+          energy2 += (destArray[4].at<double>(i,j) * destArray[4].at<double>(i,j)) + (destArray[5].at<double>(i,j) * destArray[5].at<double>(i,j));
+          energy3 += (destArray[6].at<double>(i,j) * destArray[6].at<double>(i,j)) + (destArray[7].at<double>(i,j) * destArray[7].at<double>(i,j));
       }
-  } 
+  }  
   
-  return imageGray;
+  Mat feature;  
+  feature.push_back(energy0);
+  feature.push_back(energy1);
+  feature.push_back(energy2);
+  feature.push_back(energy3);
+     
+  return feature;
 }
-

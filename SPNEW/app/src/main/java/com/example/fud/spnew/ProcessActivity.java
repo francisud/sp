@@ -258,23 +258,30 @@ public class ProcessActivity extends AppCompatActivity {
             kernelImag = Imgproc.getGaborKernel(new org.opencv.core.Size(ksize,ksize), sigma, theta[i], lambda, gamma, Math.PI/2, CV_32F);
 
             Imgproc.filter2D(imageFloat, dest, -1, kernelReal);
-            destArray.add(dest);
+            destArray.add(dest.clone());
 
             Imgproc.filter2D(imageFloat, dest, -1, kernelImag);
-            destArray.add(dest);
+            destArray.add(dest.clone());
         }
 
         //still need fix value
-        double energy1a=0, energy1b=0, energy1c=0, energy1d=0;
+        double energy0=0, energy1=0, energy2=0, energy3=0;
 
         for(int i = 0; i < image.rows()-1; i++){
             for(int j = 0; j < image.cols()-1; j++){
-                energy1a += (destArray.get(0).get(i,j)[0] * destArray.get(0).get(i,j)[0]) + (destArray.get(1).get(i,j)[0] * destArray.get(1).get(i,j)[0]);
-                energy1b += (destArray.get(2).get(i,j)[0] * destArray.get(2).get(i,j)[0]) + (destArray.get(3).get(i,j)[0] * destArray.get(3).get(i,j)[0]);
-                energy1c += (destArray.get(4).get(i,j)[0] * destArray.get(4).get(i,j)[0]) + (destArray.get(5).get(i,j)[0] * destArray.get(5).get(i,j)[0]);
-                energy1d += (destArray.get(6).get(i,j)[0] * destArray.get(6).get(i,j)[0]) + (destArray.get(7).get(i,j)[0] * destArray.get(7).get(i,j)[0]);
+                energy0 += (destArray.get(0).get(i,j)[0] * destArray.get(0).get(i,j)[0]) + (destArray.get(1).get(i,j)[0] * destArray.get(1).get(i,j)[0]);
+                energy1 += (destArray.get(2).get(i,j)[0] * destArray.get(2).get(i,j)[0]) + (destArray.get(3).get(i,j)[0] * destArray.get(3).get(i,j)[0]);
+                energy2 += (destArray.get(4).get(i,j)[0] * destArray.get(4).get(i,j)[0]) + (destArray.get(5).get(i,j)[0] * destArray.get(5).get(i,j)[0]);
+                energy3 += (destArray.get(6).get(i,j)[0] * destArray.get(6).get(i,j)[0]) + (destArray.get(7).get(i,j)[0] * destArray.get(7).get(i,j)[0]);
             }
         }
+
+        Log.d("debug", Double.toString(destArray.get(0).get(100,100)[0]));
+
+        Log.d("debug", Double.toString(energy0));
+        Log.d("debug", Double.toString(energy1));
+        Log.d("debug", Double.toString(energy2));
+        Log.d("debug", Double.toString(energy3));
 
         //fix return values later
         return imageGray;
