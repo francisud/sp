@@ -18,6 +18,7 @@ import org.opencv.core.Core;
 import org.opencv.core.CvType;
 import org.opencv.core.Mat;
 import org.opencv.core.MatOfFloat;
+import org.opencv.core.MatOfInt;
 import org.opencv.core.MatOfPoint;
 import org.opencv.core.Rect;
 import org.opencv.core.Scalar;
@@ -26,10 +27,12 @@ import org.opencv.imgproc.Imgproc;
 import org.opencv.imgproc.Moments;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import umich.cse.yctung.androidlibsvm.LibSVM;
 
+import static org.opencv.core.Core.split;
 import static org.opencv.core.CvType.CV_32F;
 
 
@@ -164,16 +167,35 @@ public class ProcessActivity extends AppCompatActivity {
     private Mat getHistogram(Mat image){
         Mat grayScale = new Mat();
         Mat mask = new Mat();
-        Mat hist = new Mat();
+        Mat b_hist = new Mat(), g_hist = new Mat(), r_hist = new Mat();
 
         //compute mask
         Imgproc.cvtColor(image,grayScale,Imgproc.COLOR_BGR2GRAY);
         Imgproc.threshold(grayScale,mask,254,255,Imgproc.THRESH_BINARY_INV);
 
-        List<Mat> imageList = new ArrayList<Mat>();
-        imageList.add(image);
+        List<Mat> bgr_planes  = new ArrayList<Mat>();
+        split(image, bgr_planes);
 
-        Imgproc.calcHist(imageList, new org.opencv.core.MatOfInt(2), mask, hist, new org.opencv.core.MatOfInt(256), new org.opencv.core.MatOfFloat(0, 256));
+        MatOfInt channels = new MatOfInt(0);
+        MatOfInt histSize = new MatOfInt(256);
+        MatOfFloat ranges = new MatOfFloat(0f, 256f);
+
+        List<Mat> planesList = new ArrayList<Mat>();
+
+        planesList.add(bgr_planes.get(0));
+        Imgproc.calcHist(planesList, channels, mask, b_hist, histSize, ranges, false);
+        planesList.remove(0);
+
+        planesList.add(bgr_planes.get(1));
+        Imgproc.calcHist(planesList, channels, mask, g_hist, histSize, ranges, false);
+        planesList.remove(0);
+
+        planesList.add(bgr_planes.get(2));
+        Imgproc.calcHist(planesList, channels, mask, r_hist, histSize, ranges, false);
+
+        Log.d("debug", Double.toString(b_hist.get(100,0)[0]));
+        Log.d("debug", Double.toString(g_hist.get(100,0)[0]));
+        Log.d("debug", Double.toString(r_hist.get(100,0)[0]));
 
         return new Mat();
     }

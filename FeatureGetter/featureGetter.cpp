@@ -238,8 +238,22 @@ Mat getBgrHistogram(Mat &image) {
 
   /// Display
   imshow("calcHist Demo", histImage );
-    */
-  return Mat();
+    */  
+  
+  b_hist.reshape(1,1);
+  g_hist.reshape(1,1);
+  r_hist.reshape(1,1);
+  
+  cout<<b_hist.at<float>(100,0)<<endl;
+  cout<<g_hist.at<float>(100,0)<<endl;
+  cout<<r_hist.at<float>(100,0)<<endl;
+  
+  Mat feature;  
+  feature.push_back(b_hist);
+  feature.push_back(g_hist);
+  feature.push_back(r_hist);
+    
+  return feature;
 }
 
 
@@ -281,7 +295,7 @@ Mat getHuMoments(Mat &image){
   drawContours( drawing, contours, index, color, 2, 8, hierarchy, 0, Point() );
   imshow( "Contours", drawing );
   */
-  
+    
   return hu;
 }
 
