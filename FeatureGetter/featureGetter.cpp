@@ -7,7 +7,7 @@ functions related:
 
 https://docs.opencv.org/2.4/doc/tutorials/imgproc/histograms/histogram_calculation/histogram_calculation.html - getting the LAB histogram
 functions related:
-    Mat getBgrHistogram(Mat &image);
+    Mat getHistogram(Mat &image);
 
 */
 
@@ -35,8 +35,8 @@ char imgName[15];
 void checkBoundary();
 void showImage();
 void onMouse( int event, int x, int y, int f, void* );
-Mat getForeground(Mat &image);
-Mat getBgrHistogram(Mat &image);
+Mat imageSegmentation(Mat &image);
+Mat getHistogram(Mat &image);
 Mat getHuMoments(Mat &image);
 Mat getGaborWavelets(Mat &image);
 
@@ -55,8 +55,8 @@ int main ( int argc, char** argv ){
     }
 
     Mat img = src.clone();    
-    Mat foreground = getForeground(img);
-    Mat hist = getBgrHistogram(foreground);
+    Mat foreground = imageSegmentation(img);
+    Mat hist = getHistogram(foreground);
     Mat hu = getHuMoments(foreground);
     Mat gw = getGaborWavelets(foreground);
 
@@ -143,7 +143,7 @@ void onMouse( int event, int x, int y, int f, void* ){
 }
 
 
-Mat getForeground(Mat &img){
+Mat imageSegmentation(Mat &img){
   //bounding rectangle
   Point tl = P1;
   Point br = P2;
@@ -181,19 +181,17 @@ Mat getForeground(Mat &img){
 }
 
 
-Mat getBgrHistogram(Mat &image) {
-  Mat src, dst;  
-  Mat tmp,alpha;
-
-  src = image.clone();
+Mat getHistogram(Mat &image) {
+  Mat grayScale;
+  Mat mask;
 
   //compute mask
-  cvtColor(image,tmp,CV_BGR2GRAY);
-  threshold(tmp,alpha,254,255,THRESH_BINARY_INV);    
+  cvtColor(image,grayScale,CV_BGR2GRAY);
+  threshold(grayScale,mask,254,255,THRESH_BINARY_INV);    
 
   /// Separate the image in 3 places ( B, G and R )
   vector<Mat> bgr_planes;
-  split( src, bgr_planes );
+  split( image, bgr_planes );
 
   /// Establish the number of bins
   int histSize = 256;
@@ -205,9 +203,9 @@ Mat getBgrHistogram(Mat &image) {
   Mat b_hist, g_hist, r_hist;
 
   /// Compute the histograms:
-  calcHist( &bgr_planes[0], 1, 0, alpha, b_hist, 1, &histSize, &histRange);
-  calcHist( &bgr_planes[1], 1, 0, alpha, g_hist, 1, &histSize, &histRange);
-  calcHist( &bgr_planes[2], 1, 0, alpha, r_hist, 1, &histSize, &histRange);
+  calcHist( &bgr_planes[0], 1, 0, mask, b_hist, 1, &histSize, &histRange);
+  calcHist( &bgr_planes[1], 1, 0, mask, g_hist, 1, &histSize, &histRange);
+  calcHist( &bgr_planes[2], 1, 0, mask, r_hist, 1, &histSize, &histRange);
 
     /*
   // Draw the histograms for B, G and R
@@ -296,7 +294,10 @@ Mat getHuMoments(Mat &image){
 Mat getGaborWavelets(Mat &image){
   Mat imageGray = Mat();
   Mat imageFloat = Mat();
-  cvtColor(image, imageGray, COLOR_BGR2GRAY);
+  Mat kernelReal = Mat();
+  Mat kernelImag = Mat();
+  Mat dest = Mat();
+  vector<Mat> destArray;
   
   int ksize = 5;
   double sigma = 1;  
@@ -307,43 +308,47 @@ Mat getGaborWavelets(Mat &image){
   theta[3] = 135;  
   double gamma = 0.5;
   double lambda = 4;
-    
-  //convert to floating for getting features
-  imageGray.convertTo(imageFloat, CV_32F, 1.0/256.0);
   
-  Mat kernelReal, kernelImag;
-  Mat dest; 
-  vector<Mat> destArray;
+  cvtColor(image, imageGray, COLOR_BGR2GRAY);
+  imageGray.convertTo(imageFloat, CV_32F);
   
   for (int i = 0; i<4; i++){
     kernelReal = getGaborKernel(Size(ksize,ksize), sigma, theta[i], lambda, gamma, 0, CV_32F); 
-    kernelImag = getGaborKernel(Size(ksize,ksize), sigma, theta[i], lambda, gamma, M_PI/2, CV_32F);
+    kernelImag = getGaborKernel(Size(ksize,ksize), sigma, theta[i], lambda, gamma, 3.14159265359/2, CV_32F);
     
-    filter2D(imageFloat, dest, -1, kernelReal);
+    filter2D(imageFloat, dest, CV_32F, kernelReal);
     destArray.push_back(dest.clone());    
     
-    filter2D(imageFloat, dest, -1, kernelImag);  
+    filter2D(imageFloat, dest, CV_32F, kernelImag);  
     destArray.push_back(dest.clone());
   }
-
-  //summing up the squared value of each matrix value from a response matrix
-  //get energy    
-  double energy0=0, energy1=0, energy2=0, energy3=0;
   
-  for(int i = 0; i < image.rows-1; i++){
-      for(int j = 0; j < image.cols-1; j++){
-          energy0 += (destArray[0].at<double>(i,j) * destArray[0].at<double>(i,j)) + (destArray[1].at<double>(i,j) * destArray[1].at<double>(i,j));
-          energy1 += (destArray[2].at<double>(i,j) * destArray[2].at<double>(i,j)) + (destArray[3].at<double>(i,j) * destArray[3].at<double>(i,j));
-          energy2 += (destArray[4].at<double>(i,j) * destArray[4].at<double>(i,j)) + (destArray[5].at<double>(i,j) * destArray[5].at<double>(i,j));
-          energy3 += (destArray[6].at<double>(i,j) * destArray[6].at<double>(i,j)) + (destArray[7].at<double>(i,j) * destArray[7].at<double>(i,j));
+  Mat feature;
+  float magnitude = 0;
+  float squareRoot = 0;
+  
+  for(int i = 0; i < image.rows; i++){
+      for(int j = 0; j < image.cols; j++){
+          magnitude = (destArray[0].at<float>(i,j) * destArray[0].at<float>(i,j)) + (destArray[1].at<float>(i,j) * destArray[1].at<float>(i,j));
+          squareRoot = sqrt (magnitude);
+          feature.push_back(squareRoot);
+          
+          magnitude = (destArray[2].at<float>(i,j) * destArray[2].at<float>(i,j)) + (destArray[3].at<float>(i,j) * destArray[3].at<float>(i,j));
+          squareRoot = sqrt (magnitude);
+          feature.push_back(squareRoot);
+          
+          magnitude = (destArray[4].at<float>(i,j) * destArray[4].at<float>(i,j)) + (destArray[5].at<float>(i,j) * destArray[5].at<float>(i,j));
+          squareRoot = sqrt (magnitude);
+          feature.push_back(squareRoot);
+          
+          magnitude = (destArray[6].at<float>(i,j) * destArray[6].at<float>(i,j)) + (destArray[7].at<float>(i,j) * destArray[7].at<float>(i,j));
+          squareRoot = sqrt (magnitude);
+          feature.push_back(squareRoot);
       }
-  }  
+  }
   
-  Mat feature;  
-  feature.push_back(energy0);
-  feature.push_back(energy1);
-  feature.push_back(energy2);
-  feature.push_back(energy3);
-     
+  cout<<magnitude<<endl;
+  cout<<squareRoot<<endl;
+           
   return feature;
 }

@@ -32,8 +32,10 @@ import java.util.List;
 
 import umich.cse.yctung.androidlibsvm.LibSVM;
 
+import static java.lang.Math.sqrt;
 import static org.opencv.core.Core.split;
 import static org.opencv.core.CvType.CV_32F;
+import static org.opencv.core.CvType.CV_32FC1;
 
 
 public class ProcessActivity extends AppCompatActivity {
@@ -89,7 +91,7 @@ public class ProcessActivity extends AppCompatActivity {
         Mat topPicture = null;
         Mat topPictureHistogram = null;
         Mat topPictureHuMoments = null;
-        Mat topPictureTexture = null;
+        ArrayList<Double> topPictureTexture = null;
 
         String topPhotoPath = extras.getString("topPhotoPath");
 
@@ -193,10 +195,6 @@ public class ProcessActivity extends AppCompatActivity {
         planesList.add(bgr_planes.get(2));
         Imgproc.calcHist(planesList, channels, mask, r_hist, histSize, ranges, false);
 
-        Log.d("debug", Double.toString(b_hist.get(100,0)[0]));
-        Log.d("debug", Double.toString(g_hist.get(100,0)[0]));
-        Log.d("debug", Double.toString(r_hist.get(100,0)[0]));
-
         return new Mat();
     }
 
@@ -232,13 +230,13 @@ public class ProcessActivity extends AppCompatActivity {
         return hu;
     }
 
-    private Mat getGaborWavelets(Mat image){
+    private ArrayList<Double> getGaborWavelets(Mat image){
         Mat imageGray = new Mat();
         Mat imageFloat = new Mat();
         Mat kernelReal = new Mat();
         Mat kernelImag = new Mat();
         Mat dest = new Mat();
-        List<Mat> destArray  = new ArrayList<Mat>();
+        ArrayList<Mat> destArray  = new ArrayList<Mat>();
 
         double ksize = 5;
         double sigma = 1;
@@ -251,40 +249,47 @@ public class ProcessActivity extends AppCompatActivity {
         double lambda = 4;
 
         Imgproc.cvtColor(image, imageGray, Imgproc.COLOR_BGR2GRAY);
-        imageGray.convertTo(imageFloat, CV_32F, 1.0/256.0);
+        imageGray.convertTo(imageFloat, CV_32F);
 
         for (int i = 0; i<4; i++){
             kernelReal = Imgproc.getGaborKernel(new org.opencv.core.Size(ksize,ksize), sigma, theta[i], lambda, gamma, 0, CV_32F);
-            kernelImag = Imgproc.getGaborKernel(new org.opencv.core.Size(ksize,ksize), sigma, theta[i], lambda, gamma, Math.PI/2, CV_32F);
+            kernelImag = Imgproc.getGaborKernel(new org.opencv.core.Size(ksize,ksize), sigma, theta[i], lambda, gamma, 3.14159265359/2, CV_32F);
 
-            Imgproc.filter2D(imageFloat, dest, -1, kernelReal);
+            Imgproc.filter2D(imageFloat, dest, CV_32F, kernelReal);
             destArray.add(dest.clone());
 
-            Imgproc.filter2D(imageFloat, dest, -1, kernelImag);
+            Imgproc.filter2D(imageFloat, dest, CV_32F, kernelImag);
             destArray.add(dest.clone());
         }
 
-        //still need fix value
-        double energy0=0, energy1=0, energy2=0, energy3=0;
+        ArrayList<Double> feature = new ArrayList<Double>();
+        double magnitude = 0;
+        double squareRoot = 0;
 
-        for(int i = 0; i < image.rows()-1; i++){
-            for(int j = 0; j < image.cols()-1; j++){
-                energy0 += (destArray.get(0).get(i,j)[0] * destArray.get(0).get(i,j)[0]) + (destArray.get(1).get(i,j)[0] * destArray.get(1).get(i,j)[0]);
-                energy1 += (destArray.get(2).get(i,j)[0] * destArray.get(2).get(i,j)[0]) + (destArray.get(3).get(i,j)[0] * destArray.get(3).get(i,j)[0]);
-                energy2 += (destArray.get(4).get(i,j)[0] * destArray.get(4).get(i,j)[0]) + (destArray.get(5).get(i,j)[0] * destArray.get(5).get(i,j)[0]);
-                energy3 += (destArray.get(6).get(i,j)[0] * destArray.get(6).get(i,j)[0]) + (destArray.get(7).get(i,j)[0] * destArray.get(7).get(i,j)[0]);
+        for(int i = 0; i < image.rows(); i++){
+            for(int j = 0; j < image.cols(); j++){
+                magnitude = (destArray.get(0).get(i,j)[0] * destArray.get(0).get(i,j)[0]) + (destArray.get(1).get(i,j)[0] * destArray.get(1).get(i,j)[0]);
+                squareRoot = sqrt(magnitude);
+                feature.add(squareRoot);
+
+                magnitude = (destArray.get(2).get(i,j)[0] * destArray.get(2).get(i,j)[0]) + (destArray.get(3).get(i,j)[0] * destArray.get(3).get(i,j)[0]);
+                squareRoot = sqrt(magnitude);
+                feature.add(squareRoot);
+
+                magnitude = (destArray.get(4).get(i,j)[0] * destArray.get(4).get(i,j)[0]) + (destArray.get(5).get(i,j)[0] * destArray.get(5).get(i,j)[0]);
+                squareRoot = sqrt(magnitude);
+                feature.add(squareRoot);
+
+                magnitude = (destArray.get(6).get(i,j)[0] * destArray.get(6).get(i,j)[0]) + (destArray.get(7).get(i,j)[0] * destArray.get(7).get(i,j)[0]);
+                squareRoot = sqrt(magnitude);
+                feature.add(squareRoot);
             }
         }
 
-        Log.d("debug", Double.toString(destArray.get(0).get(100,100)[0]));
+        Log.d("debug",Double.toString(magnitude));
+        Log.d("debug",Double.toString(squareRoot));
 
-        Log.d("debug", Double.toString(energy0));
-        Log.d("debug", Double.toString(energy1));
-        Log.d("debug", Double.toString(energy2));
-        Log.d("debug", Double.toString(energy3));
-
-        //fix return values later
-        return imageGray;
+        return feature;
     }
 
     private void classify(){
