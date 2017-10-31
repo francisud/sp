@@ -263,31 +263,85 @@ public class ProcessActivity extends AppCompatActivity {
         }
 
         ArrayList<Double> feature = new ArrayList<Double>();
-        double magnitude = 0;
-        double squareRoot = 0;
+
+        //for getting the mean and variance
+        Mat magnitude1 = new Mat(image.rows(), image.cols(), CV_32F);
+        Mat magnitude2 = new Mat(image.rows(), image.cols(), CV_32F);
+        Mat magnitude3 = new Mat(image.rows(), image.cols(), CV_32F);
+        Mat magnitude4 = new Mat(image.rows(), image.cols(), CV_32F);
+
+        double mean1 = 0.0, mean2 = 0.0, mean3 = 0.0, mean4 = 0.0;
+        double variance1 = 0.0, variance2 = 0.0, variance3 = 0.0, variance4 = 0.0;
+        double holder1 = 0.0, holder2 = 0.0, holder3 = 0.0, holder4 = 0.0;
+        double data[];
+        double divisor = (image.rows() * image.cols());
+
+        Log.d("debug - magrow",Integer.toString(magnitude1.rows()));
+        Log.d("debug - magcol",Integer.toString(magnitude1.cols()));
+
+        Log.d("debug - imgrow",Integer.toString(image.rows()));
+        Log.d("debug - imgcol",Integer.toString(image.cols()));
 
         for(int i = 0; i < image.rows(); i++){
             for(int j = 0; j < image.cols(); j++){
-                magnitude = (destArray.get(0).get(i,j)[0] * destArray.get(0).get(i,j)[0]) + (destArray.get(1).get(i,j)[0] * destArray.get(1).get(i,j)[0]);
-                squareRoot = sqrt(magnitude);
-                feature.add(squareRoot);
+                holder1 = sqrt((destArray.get(0).get(i,j)[0] * destArray.get(0).get(i,j)[0]) + (destArray.get(1).get(i,j)[0] * destArray.get(1).get(i,j)[0]));
+                magnitude1.put(i,j,holder1);
+                mean1 += holder1;
 
-                magnitude = (destArray.get(2).get(i,j)[0] * destArray.get(2).get(i,j)[0]) + (destArray.get(3).get(i,j)[0] * destArray.get(3).get(i,j)[0]);
-                squareRoot = sqrt(magnitude);
-                feature.add(squareRoot);
+                holder2 = sqrt((destArray.get(2).get(i,j)[0] * destArray.get(2).get(i,j)[0]) + (destArray.get(3).get(i,j)[0] * destArray.get(3).get(i,j)[0]));
+                magnitude2.put(i,j,holder2);
+                mean2 += holder2;
 
-                magnitude = (destArray.get(4).get(i,j)[0] * destArray.get(4).get(i,j)[0]) + (destArray.get(5).get(i,j)[0] * destArray.get(5).get(i,j)[0]);
-                squareRoot = sqrt(magnitude);
-                feature.add(squareRoot);
+                holder3 = sqrt((destArray.get(4).get(i,j)[0] * destArray.get(4).get(i,j)[0]) + (destArray.get(5).get(i,j)[0] * destArray.get(5).get(i,j)[0]));
+                magnitude3.put(i,j,holder3);
+                mean3 += holder3;
 
-                magnitude = (destArray.get(6).get(i,j)[0] * destArray.get(6).get(i,j)[0]) + (destArray.get(7).get(i,j)[0] * destArray.get(7).get(i,j)[0]);
-                squareRoot = sqrt(magnitude);
-                feature.add(squareRoot);
+                holder4 = sqrt((destArray.get(6).get(i,j)[0] * destArray.get(6).get(i,j)[0]) + (destArray.get(7).get(i,j)[0] * destArray.get(7).get(i,j)[0]));
+                magnitude4.put(i,j,holder4);
+                mean4 += holder4;
             }
         }
 
-        Log.d("debug",Double.toString(magnitude));
-        Log.d("debug",Double.toString(squareRoot));
+        mean1 = mean1 / divisor;
+        mean2 = mean2 / divisor;
+        mean3 = mean3 / divisor;
+        mean4 = mean4 / divisor;
+
+        holder1 = 0.0;
+        holder2 = 0.0;
+        holder3 = 0.0;
+        holder4 = 0.0;
+
+        //variance
+        for(int i = 0; i < image.rows(); i++){
+            for(int j = 0; j < image.cols(); j++){
+                holder1 = (magnitude1.get(i,j)[0] - mean1) * (magnitude1.get(i,j)[0] - mean1);
+                variance1 += holder1;
+
+                holder2 = (magnitude2.get(i,j)[0] - mean2) * (magnitude2.get(i,j)[0] - mean2);
+                variance2 += holder2;
+
+                holder3 = (magnitude3.get(i,j)[0] - mean3) * (magnitude3.get(i,j)[0] - mean3);
+                variance3 += holder3;
+
+                holder4 = (magnitude4.get(i,j)[0] - mean4) * (magnitude4.get(i,j)[0] - mean4);
+                variance4 += holder4;
+            }
+        }
+
+        variance1 = variance1 / divisor;
+        variance2 = variance2 / divisor;
+        variance3 = variance3 / divisor;
+        variance4 = variance4 / divisor;
+
+        Log.d("debug",Double.toString(mean1));
+        Log.d("debug",Double.toString(mean2));
+        Log.d("debug",Double.toString(mean3));
+        Log.d("debug",Double.toString(mean4));
+        Log.d("debug",Double.toString(variance1));
+        Log.d("debug",Double.toString(variance2));
+        Log.d("debug",Double.toString(variance3));
+        Log.d("debug",Double.toString(variance4));
 
         return feature;
     }

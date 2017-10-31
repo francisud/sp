@@ -17,6 +17,7 @@ functions related:
 #include <stdio.h>
 #include <vector>
 #include <iostream>
+#include <fstream>
 #include <math.h>
 #define SIZE 3
 
@@ -59,16 +60,54 @@ int main ( int argc, char** argv ){
     Mat hist = getHistogram(foreground);
     Mat hu = getHuMoments(foreground);
     Mat gw = getGaborWavelets(foreground);
-
+		
+		ofstream features;
+		features.open ("features.txt");	
+		
+		int counter = 1;
+		
+		for(int i = 0; i < 256; i++){
+			features << counter << ":" << hist.at<float>(i,0) << " ";
+			counter++;
+		}
+		
+		for(int i = 256; i < 512; i++){
+			features << counter << ":" << hist.at<float>(i,0) << " ";
+			counter++;
+		}
+		
+		for(int i = 512; i < 768; i++){
+			features << counter << ":" << hist.at<float>(i,0) << " ";
+			counter++;
+		}		
+		
+		for(int i = 0; i < hu.rows; i++){
+			features << counter << ":" << hu.at<double>(i,0) << " ";
+			counter++;
+		}
+		
+		
+		//cout<<gw.rows<<endl;
+		//cout<<gw.cols<<endl;
+		
+		/*
+		for(int i = 0; i < gw; i++){
+			
+		}
+		*/
+			
+		
+		features.close();	
+		
+		
     cout<<" Image is processed. Open 'features.txt' to get numerical features."<<endl<<endl;
 
-    waitKey();
+    //waitKey();
     return 0;
 }
 
 
 void checkBoundary(){
-    //check croping rectangle exceed image boundary
     if(cropRect.width>img.cols-cropRect.x)
         cropRect.width=img.cols-cropRect.x;
 
@@ -173,9 +212,6 @@ Mat imageSegmentation(Mat &img){
   Rect foregroundPosition(P1.x, P1.y, width, height);
   Mat dataHolder = foreground(foregroundPosition).clone();
   dataHolder.copyTo(finalForeground);
-
-  // display result
-  imshow("Segmented Image",finalForeground);
       
   return finalForeground;
 }
@@ -189,52 +225,19 @@ Mat getHistogram(Mat &image) {
   cvtColor(image,grayScale,CV_BGR2GRAY);
   threshold(grayScale,mask,254,255,THRESH_BINARY_INV);    
 
-  /// Separate the image in 3 places ( B, G and R )
+	//split the channels
   vector<Mat> bgr_planes;
   split( image, bgr_planes );
 
-  /// Establish the number of bins
   int histSize = 256;
-
-  /// Set the ranges ( for B,G,R) )
-  float range[] = { 0, 256 } ;
-  const float* histRange = { range };
+  float range[] = {0,256} ;
+  const float* histRange = {range};
 
   Mat b_hist, g_hist, r_hist;
 
-  /// Compute the histograms:
   calcHist( &bgr_planes[0], 1, 0, mask, b_hist, 1, &histSize, &histRange);
   calcHist( &bgr_planes[1], 1, 0, mask, g_hist, 1, &histSize, &histRange);
   calcHist( &bgr_planes[2], 1, 0, mask, r_hist, 1, &histSize, &histRange);
-
-    /*
-  // Draw the histograms for B, G and R
-  int hist_w = 512; int hist_h = 400;
-  int bin_w = cvRound( (double) hist_w/histSize );
-
-  Mat histImage( hist_h, hist_w, CV_8UC3, Scalar( 0,0,0) );
-
-  /// Normalize the result to [ 0, histImage.rows ]
-  normalize(b_hist, b_hist, 0, histImage.rows, NORM_MINMAX, -1, Mat() );
-  normalize(g_hist, g_hist, 0, histImage.rows, NORM_MINMAX, -1, Mat() );
-  normalize(r_hist, r_hist, 0, histImage.rows, NORM_MINMAX, -1, Mat() );
-
-  /// Draw for each channel
-  for( int i = 1; i < histSize; i++ ){
-      line( histImage, Point( bin_w*(i-1), hist_h - cvRound(b_hist.at<float>(i-1)) ) ,
-                       Point( bin_w*(i), hist_h - cvRound(b_hist.at<float>(i)) ),
-                       Scalar( 255, 0, 0), 2, 8, 0  );
-      line( histImage, Point( bin_w*(i-1), hist_h - cvRound(g_hist.at<float>(i-1)) ) ,
-                       Point( bin_w*(i), hist_h - cvRound(g_hist.at<float>(i)) ),
-                       Scalar( 0, 255, 0), 2, 8, 0  );
-      line( histImage, Point( bin_w*(i-1), hist_h - cvRound(r_hist.at<float>(i-1)) ) ,
-                       Point( bin_w*(i), hist_h - cvRound(r_hist.at<float>(i)) ),
-                       Scalar( 0, 0, 255), 2, 8, 0  );
-  }
-
-  /// Display
-  imshow("calcHist Demo", histImage );
-    */  
   
   b_hist.reshape(1,1);
   g_hist.reshape(1,1);
@@ -279,15 +282,7 @@ Mat getHuMoments(Mat &image){
 
   Mat hu = Mat();
   HuMoments(mom, hu);
-  
-  /*
-  Mat drawing = Mat::zeros( threshold_output.size(), CV_8UC3 );
-  RNG rng(12345);        
-  Scalar color = Scalar( rng.uniform(0, 255), rng.uniform(0,255), rng.uniform(0,255) );
-  drawContours( drawing, contours, index, color, 2, 8, hierarchy, 0, Point() );
-  imshow( "Contours", drawing );
-  */
-    
+      
   return hu;
 }
 
@@ -309,9 +304,11 @@ Mat getGaborWavelets(Mat &image){
   double gamma = 0.5;
   double lambda = 4;
   
+  //convert to float matrix
   cvtColor(image, imageGray, COLOR_BGR2GRAY);
   imageGray.convertTo(imageFloat, CV_32F);
   
+  //get real and imaginary parts
   for (int i = 0; i<4; i++){
     kernelReal = getGaborKernel(Size(ksize,ksize), sigma, theta[i], lambda, gamma, 0, CV_32F); 
     kernelImag = getGaborKernel(Size(ksize,ksize), sigma, theta[i], lambda, gamma, 3.14159265359/2, CV_32F);
@@ -323,32 +320,78 @@ Mat getGaborWavelets(Mat &image){
     destArray.push_back(dest.clone());
   }
   
-  Mat feature;
-  float magnitude = 0;
-  float squareRoot = 0;
+  //for getting the mean and variance
+  Mat magnitude1 = Mat(image.rows, image.cols, CV_32F);
+  Mat magnitude2 = Mat(image.rows, image.cols, CV_32F);
+  Mat magnitude3 = Mat(image.rows, image.cols, CV_32F);
+  Mat magnitude4 = Mat(image.rows, image.cols, CV_32F);
   
+  double mean1 = 0.0, mean2 = 0.0, mean3 = 0.0, mean4 = 0.0;
+  double variance1 = 0.0, variance2 = 0.0, variance3 = 0.0, variance4 = 0.0;
+  double holder1, holder2, holder3, holder4;
+  double divisor = (image.rows * image.cols);
+  
+  //getting the magnitude, real and imaginary
+  //also computing mean
   for(int i = 0; i < image.rows; i++){
-      for(int j = 0; j < image.cols; j++){
-          magnitude = (destArray[0].at<float>(i,j) * destArray[0].at<float>(i,j)) + (destArray[1].at<float>(i,j) * destArray[1].at<float>(i,j));
-          squareRoot = sqrt (magnitude);
-          feature.push_back(squareRoot);
-          
-          magnitude = (destArray[2].at<float>(i,j) * destArray[2].at<float>(i,j)) + (destArray[3].at<float>(i,j) * destArray[3].at<float>(i,j));
-          squareRoot = sqrt (magnitude);
-          feature.push_back(squareRoot);
-          
-          magnitude = (destArray[4].at<float>(i,j) * destArray[4].at<float>(i,j)) + (destArray[5].at<float>(i,j) * destArray[5].at<float>(i,j));
-          squareRoot = sqrt (magnitude);
-          feature.push_back(squareRoot);
-          
-          magnitude = (destArray[6].at<float>(i,j) * destArray[6].at<float>(i,j)) + (destArray[7].at<float>(i,j) * destArray[7].at<float>(i,j));
-          squareRoot = sqrt (magnitude);
-          feature.push_back(squareRoot);
-      }
+    for(int j = 0; j < image.cols; j++){
+      holder1 = sqrt((destArray[0].at<float>(i,j) * destArray[0].at<float>(i,j)) + (destArray[1].at<float>(i,j) * destArray[1].at<float>(i,j)));          
+      magnitude1.at<float>(i,j) = holder1;
+      mean1 += holder1;
+      
+      holder2 = sqrt((destArray[2].at<float>(i,j) * destArray[2].at<float>(i,j)) + (destArray[3].at<float>(i,j) * destArray[3].at<float>(i,j)));
+			magnitude2.at<float>(i,j) = holder2;
+      mean2 += holder2;
+      
+      holder3 = sqrt((destArray[4].at<float>(i,j) * destArray[4].at<float>(i,j)) + (destArray[5].at<float>(i,j) * destArray[5].at<float>(i,j)));
+      magnitude3.at<float>(i,j) = holder3;
+      mean3 += holder3;
+      
+      holder4 = sqrt((destArray[6].at<float>(i,j) * destArray[6].at<float>(i,j)) + (destArray[7].at<float>(i,j) * destArray[7].at<float>(i,j)));      
+      magnitude4.at<float>(i,j) = holder4;
+      mean4 += holder4; 
+    }
+  }
+    
+  mean1 = mean1 / divisor;
+  mean2 = mean2 / divisor;
+  mean3 = mean3 / divisor;
+  mean4 = mean4 / divisor;
+  
+  holder1 = 0; holder2 = 0; holder3 = 0; holder4 = 0;
+   
+  //variance
+  for(int i = 0; i < image.rows; i++){
+   for(int j = 0; j < image.cols; j++){   
+   		holder1 = (magnitude1.at<float>(i,j) - mean1) * (magnitude1.at<float>(i,j) - mean1);
+   		variance1 += holder1;   
+   
+      holder2 = (magnitude2.at<float>(i,j) - mean2) * (magnitude2.at<float>(i,j) - mean2);
+   		variance2 += holder2;
+   		
+   		holder3 = (magnitude3.at<float>(i,j) - mean3) * (magnitude3.at<float>(i,j) - mean3);
+   		variance3 += holder3;
+   		
+   		holder4 = (magnitude4.at<float>(i,j) - mean4) * (magnitude4.at<float>(i,j) - mean4);
+   		variance4 += holder4;
+    }
   }
   
-  cout<<magnitude<<endl;
-  cout<<squareRoot<<endl;
-           
+  
+  variance1 = variance1 / divisor;
+  variance2 = variance2 / divisor;
+  variance3 = variance3 / divisor;
+  variance4 = variance4 / divisor;
+  
+  cout<<mean1<<endl;
+  cout<<mean2<<endl;
+  cout<<mean3<<endl;
+  cout<<mean4<<endl;
+  cout<<variance1<<endl;
+  cout<<variance2<<endl;
+  cout<<variance3<<endl;
+  cout<<variance4<<endl;
+  
+  Mat feature;
   return feature;
 }
