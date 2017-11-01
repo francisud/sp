@@ -24,7 +24,7 @@ functions related:
 using namespace cv;
 using namespace std;
 
-Mat src,img,ROI;
+Mat input,src,img,ROI;
 Rect cropRect(0,0,0,0);
 Point P1(0,0);
 Point P2(0,0);
@@ -44,8 +44,10 @@ Mat getGaborWavelets(Mat &image);
 int main ( int argc, char** argv ){
     cout<<" Click and drag for Selection"<<endl<<endl;
     cout<<" Press 'Space Bar' to process the image"<<endl<<endl;
-    src=imread(argv[1],1);
-
+    input=imread(argv[1],1);
+        
+		resize(input, src, Size(250, 250), 0, 0, INTER_CUBIC);
+		 
     namedWindow(winName,WINDOW_NORMAL);
     setMouseCallback(winName,onMouse,NULL );
     imshow(winName,src);
@@ -86,23 +88,18 @@ int main ( int argc, char** argv ){
 			counter++;
 		}
 		
+		for(int i = 0; i < gw.rows; i++){
+			features << counter << ":" << gw.at<double>(i,0) << " ";
+			counter++;
+		}			
 		
-		//cout<<gw.rows<<endl;
-		//cout<<gw.cols<<endl;
-		
-		/*
-		for(int i = 0; i < gw; i++){
-			
-		}
-		*/
-			
-		
-		features.close();	
-		
+		features.close();		
 		
     cout<<" Image is processed. Open 'features.txt' to get numerical features."<<endl<<endl;
 
-    //waitKey();
+		imshow("foreground", foreground);
+		waitKey(0);
+
     return 0;
 }
 
@@ -375,23 +372,22 @@ Mat getGaborWavelets(Mat &image){
    		holder4 = (magnitude4.at<float>(i,j) - mean4) * (magnitude4.at<float>(i,j) - mean4);
    		variance4 += holder4;
     }
-  }
-  
+  }  
   
   variance1 = variance1 / divisor;
   variance2 = variance2 / divisor;
   variance3 = variance3 / divisor;
   variance4 = variance4 / divisor;
   
-  cout<<mean1<<endl;
-  cout<<mean2<<endl;
-  cout<<mean3<<endl;
-  cout<<mean4<<endl;
-  cout<<variance1<<endl;
-  cout<<variance2<<endl;
-  cout<<variance3<<endl;
-  cout<<variance4<<endl;
-  
   Mat feature;
+  feature.push_back(mean1);
+  feature.push_back(mean2);
+  feature.push_back(mean3);
+  feature.push_back(mean4);
+  feature.push_back(variance1);
+  feature.push_back(variance2);
+  feature.push_back(variance3);
+  feature.push_back(variance4);
+  
   return feature;
 }
