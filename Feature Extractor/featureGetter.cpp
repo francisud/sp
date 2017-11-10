@@ -46,7 +46,7 @@ int main ( int argc, char** argv ){
     cout<<" Press 'Space Bar' to process the image"<<endl<<endl;
     input=imread(argv[1],1);
         
-		resize(input, src, Size(250, 250), 0, 0, INTER_CUBIC);
+	resize(input, src, Size(500, 500), 0, 0, INTER_CUBIC);
 		 
     namedWindow(winName,WINDOW_NORMAL);
     setMouseCallback(winName,onMouse,NULL );
@@ -67,6 +67,8 @@ int main ( int argc, char** argv ){
 		features.open ("features.txt");	
 		
 		int counter = 1;
+
+		features << "1 ";
 		
 		for(int i = 0; i < 256; i++){
 			features << counter << ":" << hist.at<float>(i,0) << " ";
@@ -97,8 +99,8 @@ int main ( int argc, char** argv ){
 		
     cout<<" Image is processed. Open 'features.txt' to get numerical features."<<endl<<endl;
 
-		imshow("foreground", foreground);
-		waitKey(0);
+	imshow("foreground", foreground);
+	waitKey(0);
 
     return 0;
 }
@@ -337,7 +339,7 @@ Mat getGaborWavelets(Mat &image){
       mean1 += holder1;
       
       holder2 = sqrt((destArray[2].at<float>(i,j) * destArray[2].at<float>(i,j)) + (destArray[3].at<float>(i,j) * destArray[3].at<float>(i,j)));
-			magnitude2.at<float>(i,j) = holder2;
+	  magnitude2.at<float>(i,j) = holder2;
       mean2 += holder2;
       
       holder3 = sqrt((destArray[4].at<float>(i,j) * destArray[4].at<float>(i,j)) + (destArray[5].at<float>(i,j) * destArray[5].at<float>(i,j)));

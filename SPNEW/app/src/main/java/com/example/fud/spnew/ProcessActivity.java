@@ -2,6 +2,7 @@ package com.example.fud.spnew;
 
 import android.graphics.Bitmap;
 import android.os.Bundle;
+import android.os.Environment;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
 import android.support.v7.app.AppCompatActivity;
@@ -26,8 +27,11 @@ import org.opencv.imgcodecs.Imgcodecs;
 import org.opencv.imgproc.Imgproc;
 import org.opencv.imgproc.Moments;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 import umich.cse.yctung.androidlibsvm.LibSVM;
@@ -35,7 +39,6 @@ import umich.cse.yctung.androidlibsvm.LibSVM;
 import static java.lang.Math.sqrt;
 import static org.opencv.core.Core.split;
 import static org.opencv.core.CvType.CV_32F;
-import static org.opencv.core.CvType.CV_32FC1;
 
 
 public class ProcessActivity extends AppCompatActivity {
@@ -47,7 +50,6 @@ public class ProcessActivity extends AppCompatActivity {
             switch (status) {
                 case LoaderCallbackInterface.SUCCESS:
                 {
-                    //Toast.makeText(ProcessActivity.this, "SUCCESS", Toast.LENGTH_SHORT).show();
                     start();
                 } break;
                 default:
@@ -105,8 +107,10 @@ public class ProcessActivity extends AppCompatActivity {
         Log.d("debug", "after humoments");
         topPictureTexture = getGaborWavelets(topPicture);
         Log.d("debug", "after gabor");
-        classify();
 
+        writeToFile(topPictureHistogram,topPictureHuMoments,topPictureTexture);
+
+        classify();
         setPic(topPicture);
     }
 
@@ -140,7 +144,6 @@ public class ProcessActivity extends AppCompatActivity {
         Mat bgModel = new Mat();
         Mat fgModel = new Mat();
         Mat source = new Mat(1, 1, CvType.CV_8U, new Scalar(Imgproc.GC_PR_FGD));
-        Mat dst = new Mat();
         Rect rect = new Rect(tl, br);
 
         Mat foreground = new Mat(img.size(), CvType.CV_8UC3,new Scalar(255, 255, 255));
@@ -156,10 +159,14 @@ public class ProcessActivity extends AppCompatActivity {
         Mat dataHolder = foreground.submat(foregroundPosition).clone();
         dataHolder.copyTo(finalForeground);
 
+        img.release();
         firstMask.release();
         source.release();
         bgModel.release();
         fgModel.release();
+        source.release();
+        foreground.release();
+        dataHolder.release();
 
         return finalForeground;
     }
@@ -175,14 +182,14 @@ public class ProcessActivity extends AppCompatActivity {
         Imgproc.cvtColor(image,grayScale,Imgproc.COLOR_BGR2GRAY);
         Imgproc.threshold(grayScale,mask,254,255,Imgproc.THRESH_BINARY_INV);
 
-        List<Mat> bgr_planes  = new ArrayList<Mat>();
+        List<Mat> bgr_planes  = new ArrayList<>();
         split(image, bgr_planes);
 
         MatOfInt channels = new MatOfInt(0);
         MatOfInt histSize = new MatOfInt(256);
         MatOfFloat ranges = new MatOfFloat(0f, 256f);
 
-        List<Mat> planesList = new ArrayList<Mat>();
+        List<Mat> planesList = new ArrayList<>();
 
         planesList.add(bgr_planes.get(0));
         Imgproc.calcHist(planesList, channels, mask, b_hist, histSize, ranges, false);
@@ -195,7 +202,16 @@ public class ProcessActivity extends AppCompatActivity {
         planesList.add(bgr_planes.get(2));
         Imgproc.calcHist(planesList, channels, mask, r_hist, histSize, ranges, false);
 
-        return new Mat();
+        b_hist.reshape(1,1);
+        g_hist.reshape(1,1);
+        r_hist.reshape(1,1);
+
+        Mat feature = new Mat();
+        feature.push_back(b_hist);
+        feature.push_back(g_hist);
+        feature.push_back(r_hist);
+
+        return feature;
     }
 
     private Mat getHuMoments(Mat image){
@@ -203,16 +219,17 @@ public class ProcessActivity extends AppCompatActivity {
         Imgproc.cvtColor(image, grayScale, Imgproc.COLOR_BGR2GRAY);
 
         Mat threshold_output = new Mat();
-        List<MatOfPoint> contours = new ArrayList<MatOfPoint>();
+        List<MatOfPoint> contours = new ArrayList<>();
 
         ///to get the outline of the object
         Imgproc.threshold(grayScale, threshold_output, 254, 255, Imgproc.THRESH_BINARY_INV);
+
         ///find contours
         Imgproc.findContours(threshold_output, contours, new Mat(), Imgproc.RETR_EXTERNAL, Imgproc.CHAIN_APPROX_SIMPLE);
 
+        //find largest contour
         double largest_area = 0;
         int index = 0;
-
         for( int i = 0; i< contours.size(); i++ ){
             double compare = Imgproc.contourArea( contours.get(i) );
             if( compare > largest_area ){
@@ -233,10 +250,10 @@ public class ProcessActivity extends AppCompatActivity {
     private ArrayList<Double> getGaborWavelets(Mat image){
         Mat imageGray = new Mat();
         Mat imageFloat = new Mat();
-        Mat kernelReal = new Mat();
-        Mat kernelImag = new Mat();
+        Mat kernelReal;
+        Mat kernelImag;
         Mat dest = new Mat();
-        ArrayList<Mat> destArray  = new ArrayList<Mat>();
+        ArrayList<Mat> destArray  = new ArrayList<>();
 
         double ksize = 5;
         double sigma = 1;
@@ -262,8 +279,6 @@ public class ProcessActivity extends AppCompatActivity {
             destArray.add(dest.clone());
         }
 
-        ArrayList<Double> feature = new ArrayList<Double>();
-
         //for getting the mean and variance
         Mat magnitude1 = new Mat(image.rows(), image.cols(), CV_32F);
         Mat magnitude2 = new Mat(image.rows(), image.cols(), CV_32F);
@@ -273,14 +288,7 @@ public class ProcessActivity extends AppCompatActivity {
         double mean1 = 0.0, mean2 = 0.0, mean3 = 0.0, mean4 = 0.0;
         double variance1 = 0.0, variance2 = 0.0, variance3 = 0.0, variance4 = 0.0;
         double holder1 = 0.0, holder2 = 0.0, holder3 = 0.0, holder4 = 0.0;
-        double data[];
         double divisor = (image.rows() * image.cols());
-
-        Log.d("debug - magrow",Integer.toString(magnitude1.rows()));
-        Log.d("debug - magcol",Integer.toString(magnitude1.cols()));
-
-        Log.d("debug - imgrow",Integer.toString(image.rows()));
-        Log.d("debug - imgcol",Integer.toString(image.cols()));
 
         for(int i = 0; i < image.rows(); i++){
             for(int j = 0; j < image.cols(); j++){
@@ -334,21 +342,94 @@ public class ProcessActivity extends AppCompatActivity {
         variance3 = variance3 / divisor;
         variance4 = variance4 / divisor;
 
-        Log.d("debug",Double.toString(mean1));
-        Log.d("debug",Double.toString(mean2));
-        Log.d("debug",Double.toString(mean3));
-        Log.d("debug",Double.toString(mean4));
-        Log.d("debug",Double.toString(variance1));
-        Log.d("debug",Double.toString(variance2));
-        Log.d("debug",Double.toString(variance3));
-        Log.d("debug",Double.toString(variance4));
+        ArrayList<Double> feature = new ArrayList<>();
+        feature.add(mean1);
+        feature.add(mean2);
+        feature.add(mean3);
+        feature.add(mean4);
+        feature.add(variance1);
+        feature.add(variance2);
+        feature.add(variance3);
+        feature.add(variance4);
 
         return feature;
     }
 
+    private void writeToFile(Mat topPictureHistogram, Mat topPictureHuMoments, ArrayList<Double> topPictureTexture){
+        File path = ProcessActivity.this.getFilesDir();
+        File file = new File(path, "features.txt");
+        FileOutputStream stream;
+
+        try {
+            stream = new FileOutputStream(file);
+
+            int counter = 1;
+            double holder;
+            stream.write("1 ".getBytes());
+
+            for(int i = 0; i < 768; i++){
+                holder = topPictureHistogram.get(i,0)[0];
+                stream.write(Integer.toString(counter).getBytes());
+                stream.write(":".getBytes());
+                stream.write(Double.toString(holder).getBytes());
+                stream.write(" ".getBytes());
+                counter++;
+            }
+
+            for(int i = 0; i < topPictureHuMoments.rows(); i++){
+                holder = topPictureHuMoments.get(i,0)[0];
+                stream.write(Integer.toString(counter).getBytes());
+                stream.write(":".getBytes());
+                stream.write(Double.toString(holder).getBytes());
+                stream.write(" ".getBytes());
+                counter++;
+            }
+
+            for(int i = 0; i < topPictureTexture.size(); i++){
+                holder = topPictureTexture.get(i);
+                stream.write(Integer.toString(counter).getBytes());
+                stream.write(":".getBytes());
+                stream.write(Double.toString(holder).getBytes());
+                stream.write(" ".getBytes());
+                counter++;
+            }
+
+            stream.write("\n".getBytes());
+
+            stream.close();
+
+            Log.d("debug", "after writing");
+        }
+
+        catch (IOException e){
+
+        }
+
+//        try{
+//            int length = (int) file.length();
+//            byte[] bytes = new byte[length];
+//
+//            FileInputStream in = new FileInputStream(file);
+//            try {
+//                in.read(bytes);
+//            } finally {
+//                in.close();
+//            }
+//
+//            String contents = new String(bytes);
+//            Log.d("debug", contents);
+//        }
+//        catch (IOException e){
+//
+//        }
+
+
+    }
+
     private void classify(){
         LibSVM svm = new LibSVM();
-
+        String systemPath = Environment.getExternalStorageDirectory().getAbsolutePath() + "/";
+        String appFolderPath = systemPath + "libsvm/";
     }
 
 }
