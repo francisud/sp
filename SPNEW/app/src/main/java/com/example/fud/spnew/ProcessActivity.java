@@ -1,12 +1,17 @@
 package com.example.fud.spnew;
 
+import android.content.ContentResolver;
+import android.content.Context;
+import android.content.res.AssetManager;
 import android.graphics.Bitmap;
+import android.net.Uri;
 import android.os.Bundle;
 import android.os.Environment;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
+import android.text.TextUtils;
 import android.util.Log;
 import android.view.View;
 import android.widget.ImageView;
@@ -31,6 +36,8 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
+import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -109,8 +116,9 @@ public class ProcessActivity extends AppCompatActivity {
         Log.d("debug", "after gabor");
 
         writeToFile(topPictureHistogram,topPictureHuMoments,topPictureTexture);
-
+        readyFiles();
         classify();
+
         setPic(topPicture);
     }
 
@@ -404,32 +412,126 @@ public class ProcessActivity extends AppCompatActivity {
         catch (IOException e){
 
         }
+    }
 
-//        try{
-//            int length = (int) file.length();
-//            byte[] bytes = new byte[length];
-//
-//            FileInputStream in = new FileInputStream(file);
-//            try {
-//                in.read(bytes);
-//            } finally {
-//                in.close();
-//            }
-//
-//            String contents = new String(bytes);
-//            Log.d("debug", contents);
-//        }
-//        catch (IOException e){
-//
-//        }
+    private void readyFiles(){
+        String directoryPath = getFilesDir().getAbsolutePath() + "/svm/";
+        File svm = new File(directoryPath);
 
+        if(!svm.exists()){
+            svm.mkdir();
+            copyFiles("svm-settings", directoryPath);
+            copyFiles("svm-models/top-models", directoryPath);
+            copyFiles("svm-models/underside-models", directoryPath);
+        }
+    }
 
+    private void copyFiles(String assetFolder, String directoryPath ){
+        AssetManager am = getAssets();
+
+        try{
+            String[] files = am.list(assetFolder);
+            File output = new File(directoryPath + "/" + assetFolder);
+            output.mkdirs();
+
+            for(int i = 0; i < files.length; i++){
+                try{
+                    InputStream in = am.open(assetFolder + "/" + files[i]);
+                    FileOutputStream out = new FileOutputStream(directoryPath + assetFolder + "/" + files[i]);
+
+//                    Log.d("debug-writing path", directoryPath + assetFolder + "/" + files[i]);
+
+                    byte buff[] = new byte[1024];
+                    int read = 0;
+
+                    while ((read = in.read(buff)) > 0) {
+                        out.write(buff, 0, read);
+                    }
+                    in.close();
+                    out.close();
+                }
+                catch (IOException e){
+//                    Log.d("debug-readyfiles", e.toString());
+//                    Log.e("readyfiles","error in loop", e);
+                }
+            }
+        }
+        catch (Exception e){
+//            Log.d("debug-asset manager", e.toString());
+//            Log.e("asset manager","error outside loop", e);
+        }
     }
 
     private void classify(){
         LibSVM svm = new LibSVM();
-        String systemPath = Environment.getExternalStorageDirectory().getAbsolutePath() + "/";
-        String appFolderPath = systemPath + "libsvm/";
+
+        //read features
+        File path = ProcessActivity.this.getFilesDir();
+        File file;
+        FileInputStream in;
+        String absolutePath = null;
+        file = new File(path, "features.txt");
+        absolutePath = file.getAbsolutePath();
+
+        //scale
+        String topScalingPath = getFilesDir().getAbsolutePath() + "/svm/svm-settings/top_settings.txt";
+        List<String> options = new ArrayList<>();
+        options.add("-r");
+        options.add(topScalingPath);
+        options.add(absolutePath);
+        String optionsString = TextUtils.join(" ", options);
+        svm.scale(optionsString, path + "/features.scaled");
+
+
+        //classify
+        File fileDirectory = new File(getFilesDir().getAbsolutePath()+"/svm/svm-models/top-models");
+        File[] files = fileDirectory.listFiles();
+        ArrayList<Double> percentage = new ArrayList<>();
+        String outputText;
+        String[] splitted;
+        int length = 0;
+        byte[] bytes = null;
+
+        for(int i = 0; i < files.length; i++){
+            svm.predict("-b 1 " + path + "/features.scaled " + files[i].getAbsolutePath() + " " + path + "/output");
+            try{
+                file = new File(path, "output");
+                in = new FileInputStream(file);
+
+                length = (int) file.length();
+                bytes = new byte[length];
+                try {
+                    in.read(bytes);
+                } finally {
+                    in.close();
+                }
+            }
+            catch (IOException e){}
+
+            try{
+                outputText = new String(bytes, "UTF-8");
+                splitted = outputText.trim().split("\\s+");
+
+                if(Integer.parseInt(splitted[1]) == 1)
+                    percentage.add(Double.parseDouble(splitted[4]));
+
+                else
+                    percentage.add(Double.parseDouble(splitted[5]));
+
+//                Log.d("debug-0",splitted[0]);
+//                Log.d("debug-1",splitted[1]);
+//                Log.d("debug-2",splitted[2]);
+//                Log.d("debug-3",splitted[3]);
+//                Log.d("debug-4",splitted[4]);
+//                Log.d("debug-5",splitted[5]);
+
+            }
+            catch (Exception e){}
+
+        }
+
+        for(int i = 0; i < percentage.size(); i++)
+            Log.d("debug - percentage", Double.toString(percentage.get(i)));
     }
 
 }
