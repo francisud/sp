@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+    <item android:id="@+id/my_mushrooms"
+        android:title="@string/my_mushrooms"
+        android:icon="@drawable/ball" />
+
+    <item android:id="@+id/identify"
+        android:title="@string/identify"
+        android:icon="@drawable/ball" />
+
+    <item android:id="@+id/how_to"
+        android:title="@string/how_to"
+        android:icon="@drawable/ball" />
+</menu>
