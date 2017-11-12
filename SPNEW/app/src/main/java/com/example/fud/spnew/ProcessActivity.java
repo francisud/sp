@@ -1,12 +1,8 @@
 package com.example.fud.spnew;
 
-import android.content.ContentResolver;
-import android.content.Context;
 import android.content.res.AssetManager;
 import android.graphics.Bitmap;
-import android.net.Uri;
 import android.os.Bundle;
-import android.os.Environment;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
 import android.support.v7.app.AppCompatActivity;
@@ -38,15 +34,14 @@ import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;
-
-import umich.cse.yctung.androidlibsvm.LibSVM;
 
 import static java.lang.Math.sqrt;
 import static org.opencv.core.Core.split;
 import static org.opencv.core.CvType.CV_32F;
+
+import umich.cse.yctung.androidlibsvm.LibSVM;
 
 
 public class ProcessActivity extends AppCompatActivity {
@@ -83,14 +78,6 @@ public class ProcessActivity extends AppCompatActivity {
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
-        FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
-        fab.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
-                        .setAction("Action", null).show();
-            }
-        });
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
     }
 
@@ -109,16 +96,13 @@ public class ProcessActivity extends AppCompatActivity {
         float[] scaling = (float[]) getIntent().getSerializableExtra("topScaling");
 
         topPicture = imageSegmentation(topPhotoPath, topCoords, scaling);
-        Log.d("debug", "after grabcut");
         topPictureHistogram = getHistogram(topPicture);
-        Log.d("debug", "after histogram");
         topPictureHuMoments = getHuMoments(topPicture);
-        Log.d("debug", "after humoments");
         topPictureTexture = getGaborWavelets(topPicture);
-        Log.d("debug", "after gabor");
-
         writeToFile(topPictureHistogram,topPictureHuMoments,topPictureTexture);
+
         readyFiles();
+
         classify();
 
         setPic(topPicture);
@@ -133,6 +117,7 @@ public class ProcessActivity extends AppCompatActivity {
     }
 
     private Mat imageSegmentation(String photoPath, ArrayList<android.graphics.Point> coords, float[] scaling){
+        //bounding rectangle
         int x1, y1, x2, y2;
         x1 = coords.get(0).x;
         y1 = coords.get(0).y;
@@ -143,14 +128,16 @@ public class ProcessActivity extends AppCompatActivity {
         org.opencv.core.Point tl = new org.opencv.core.Point(x1, y1);
         org.opencv.core.Point br = new org.opencv.core.Point(x2, y2);
 
+        //for smaller size matrix
         int width = x2 - x1;
         int height = y2 - y1;
         org.opencv.core.Size fgSize = new org.opencv.core.Size(width,height);
 
         //based on - https://github.com/schenkerx/GrabCutDemo/blob/master/app/src/main/java/cvworkout2/graphcutdemo/MainActivity.java
-
         Mat img = Imgcodecs.imread(photoPath);
-        Imgproc.resize(img, img, new Size(), scaling[0], scaling[1], Imgproc.INTER_CUBIC);
+//        Imgproc.resize(img, img, new Size(), scaling[0], scaling[1], Imgproc.INTER_CUBIC);
+        Imgproc.resize(img, img, new Size(500,500), 0, 0, Imgproc.INTER_CUBIC);
+
         Mat firstMask = new Mat();
         Mat bgModel = new Mat();
         Mat fgModel = new Mat();
@@ -160,12 +147,12 @@ public class ProcessActivity extends AppCompatActivity {
         Mat foreground = new Mat(img.size(), CvType.CV_8UC3,new Scalar(255, 255, 255));
         Mat finalForeground = new Mat(fgSize, CvType.CV_8UC3,new Scalar(255, 255, 255));
 
-        //segment image
+        //segment image and get foreground
         Imgproc.grabCut(img, firstMask, rect, bgModel, fgModel,1, Imgproc.GC_INIT_WITH_RECT);
         Core.compare(firstMask, source, firstMask, Core.CMP_EQ);
         img.copyTo(foreground, firstMask);
 
-        //copy to smaller matrix
+        //copy to smaller matrix for less memory and faster computation
         Rect foregroundPosition = new Rect(x1, y1, width, height);
         Mat dataHolder = foreground.submat(foregroundPosition).clone();
         dataHolder.copyTo(finalForeground);
@@ -193,15 +180,18 @@ public class ProcessActivity extends AppCompatActivity {
         Imgproc.cvtColor(image,grayScale,Imgproc.COLOR_BGR2GRAY);
         Imgproc.threshold(grayScale,mask,254,255,Imgproc.THRESH_BINARY_INV);
 
+        //split channels
         List<Mat> bgr_planes  = new ArrayList<>();
         split(image, bgr_planes);
 
+        //histogram settings
         MatOfInt channels = new MatOfInt(0);
         MatOfInt histSize = new MatOfInt(256);
         MatOfFloat ranges = new MatOfFloat(0f, 256f);
 
         List<Mat> planesList = new ArrayList<>();
 
+        //calculate histogram
         planesList.add(bgr_planes.get(0));
         Imgproc.calcHist(planesList, channels, mask, b_hist, histSize, ranges, false);
         planesList.remove(0);
@@ -213,6 +203,7 @@ public class ProcessActivity extends AppCompatActivity {
         planesList.add(bgr_planes.get(2));
         Imgproc.calcHist(planesList, channels, mask, r_hist, histSize, ranges, false);
 
+        //for storing/writing
         b_hist.reshape(1,1);
         g_hist.reshape(1,1);
         r_hist.reshape(1,1);
@@ -249,6 +240,7 @@ public class ProcessActivity extends AppCompatActivity {
             }
         }
 
+        //for getting shape descriptor
         Moments momentsHolder;
         momentsHolder = Imgproc.moments(contours.get(index), false);
 
@@ -279,6 +271,7 @@ public class ProcessActivity extends AppCompatActivity {
         Imgproc.cvtColor(image, imageGray, Imgproc.COLOR_BGR2GRAY);
         imageGray.convertTo(imageFloat, CV_32F);
 
+        //getting real and imaginary part
         for (int i = 0; i<4; i++){
             kernelReal = Imgproc.getGaborKernel(new org.opencv.core.Size(ksize,ksize), sigma, theta[i], lambda, gamma, 0, CV_32F);
             kernelImag = Imgproc.getGaborKernel(new org.opencv.core.Size(ksize,ksize), sigma, theta[i], lambda, gamma, 3.14159265359/2, CV_32F);
@@ -454,14 +447,10 @@ public class ProcessActivity extends AppCompatActivity {
                     out.close();
                 }
                 catch (IOException e){
-//                    Log.d("debug-readyfiles", e.toString());
-//                    Log.e("readyfiles","error in loop", e);
                 }
             }
         }
         catch (Exception e){
-//            Log.d("debug-asset manager", e.toString());
-//            Log.e("asset manager","error outside loop", e);
         }
     }
 

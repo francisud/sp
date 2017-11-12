@@ -8,23 +8,24 @@
     android:orientation="vertical"
     tools:context="com.example.fud.spnew.CropActivity">
 
+    <!--android:layout_alignParentTop="true"-->
+    <!--android:layout_above="@+id/button4"-->
+
     <ImageView
         android:id="@+id/imageView3"
+        android:scaleType="fitXY"
         android:layout_width="500px"
         android:layout_height="500px"
         android:layout_centerInParent="true"
-        android:layout_alignParentTop="true"
-        android:layout_above="@+id/button4"
         app:srcCompat="@mipmap/ic_launcher" />
 
     <view
         class="com.example.fud.spnew.DrawView"
         android:id="@+id/view"
+        android:scaleType="fitXY"
         android:layout_width="500px"
         android:layout_height="500px"
-        android:layout_centerInParent="true"
-        android:layout_alignParentTop="true"
-        android:layout_above="@+id/button4" />
+        android:layout_centerInParent="true" />
 
     <Button
         android:id="@+id/button4"
