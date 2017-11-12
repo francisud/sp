@@ -5,9 +5,47 @@
     tools:context="com.example.fud.spnew.HowToFragment">
 
     <!-- TODO: Update blank fragment layout -->
-    <TextView
+
+    <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:text="@string/hello_blank_fragment" />
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:orientation="vertical">
+
+        <TextView
+            android:layout_width="fill_parent"
+            android:layout_height="30dp"
+            android:gravity="center"
+            android:text="TextView with Background | gravity center" />
+
+        <View
+            android:layout_width="fill_parent"
+            android:layout_height="1dp"
+            android:background="#000" />
+
+        <TextView
+            android:layout_width="fill_parent"
+            android:layout_height="30dp"
+
+            android:gravity="center"
+            android:text="TextView with Background | gravity center" />
+
+        <View
+            android:layout_width="fill_parent"
+            android:layout_height="1dp"
+            android:background="#000" />
+
+        <TextView
+            android:layout_width="fill_parent"
+            android:layout_height="30dp"
+
+            android:gravity="center"
+            android:text="TextView with Background | gravity center" />
+
+
+
+    </LinearLayout>
+
+
 
 </FrameLayout>
