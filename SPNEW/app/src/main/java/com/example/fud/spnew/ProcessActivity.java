@@ -28,6 +28,7 @@ import org.opencv.core.MatOfInt;
 import org.opencv.core.MatOfPoint;
 import org.opencv.core.Rect;
 import org.opencv.core.Scalar;
+import org.opencv.core.Size;
 import org.opencv.imgcodecs.Imgcodecs;
 import org.opencv.imgproc.Imgproc;
 import org.opencv.imgproc.Moments;
@@ -105,8 +106,9 @@ public class ProcessActivity extends AppCompatActivity {
         String topPhotoPath = extras.getString("topPhotoPath");
 
         ArrayList<android.graphics.Point> topCoords = (ArrayList<android.graphics.Point>) getIntent().getSerializableExtra("topCoords");
+        float[] scaling = (float[]) getIntent().getSerializableExtra("topScaling");
 
-        topPicture = imageSegmentation(topPhotoPath, topCoords);
+        topPicture = imageSegmentation(topPhotoPath, topCoords, scaling);
         Log.d("debug", "after grabcut");
         topPictureHistogram = getHistogram(topPicture);
         Log.d("debug", "after histogram");
@@ -130,7 +132,7 @@ public class ProcessActivity extends AppCompatActivity {
         iv.setImageBitmap(bm);
     }
 
-    private Mat imageSegmentation(String photoPath, ArrayList<android.graphics.Point> coords){
+    private Mat imageSegmentation(String photoPath, ArrayList<android.graphics.Point> coords, float[] scaling){
         int x1, y1, x2, y2;
         x1 = coords.get(0).x;
         y1 = coords.get(0).y;
@@ -148,6 +150,7 @@ public class ProcessActivity extends AppCompatActivity {
         //based on - https://github.com/schenkerx/GrabCutDemo/blob/master/app/src/main/java/cvworkout2/graphcutdemo/MainActivity.java
 
         Mat img = Imgcodecs.imread(photoPath);
+        Imgproc.resize(img, img, new Size(), scaling[0], scaling[1], Imgproc.INTER_CUBIC);
         Mat firstMask = new Mat();
         Mat bgModel = new Mat();
         Mat fgModel = new Mat();

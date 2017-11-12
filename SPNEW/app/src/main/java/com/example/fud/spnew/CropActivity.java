@@ -105,7 +105,7 @@ public class CropActivity extends AppCompatActivity {
             int startingY = Math.round((imgViewH - actualHeight)/2);
 
             DrawView dv = (DrawView) findViewById(R.id.view);
-            dv.getDimensions(actualWidth,actualHeight,startingX,startingY,origWidth,origHeight);
+            dv.getDimensions(actualWidth,actualHeight,startingX,startingY,origWidth,origHeight, scaleX, scaleY);
         }
     }
 
@@ -113,9 +113,10 @@ public class CropActivity extends AppCompatActivity {
     public void toReturn(View view){
         DrawView dv = (DrawView) findViewById(R.id.view);
         ArrayList<Point> coordinates = dv.getCoordinates();
-
+        float[] scaling = dv.getScaling();
         Intent returnIntent = new Intent();
         returnIntent.putExtra("coordinates", coordinates);
+        returnIntent.putExtra("scaling", scaling);
         setResult(Activity.RESULT_OK,returnIntent);
         finish();
     }

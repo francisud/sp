@@ -23,6 +23,7 @@ import java.util.ArrayList;
 public class DrawView extends View {
 
     int imageWidth, imageHeight, startingX, startingY, origWidth, origHeight;
+    float scaleX, scaleY;
 
     Point[] points = new Point[4];
     /**
@@ -77,30 +78,40 @@ public class DrawView extends View {
         right = right - startingX;
         bottom = bottom - startingY;
 
-        //top left
-        xPercent = left / imageWidth;
-        yPercent = top / imageHeight;
-        xCoord = xPercent * origWidth;
-        yCoord = yPercent * origHeight;
-        coordinates.add(new Point(Math.round(xCoord), Math.round(yCoord)));
+//        //top left
+//        xPercent = left / imageWidth;
+//        yPercent = top / imageHeight;
+//        xCoord = xPercent * origWidth;
+//        yCoord = yPercent * origHeight;
+//        coordinates.add(new Point(Math.round(xCoord), Math.round(yCoord)));
+//
+//        //bottom right
+//        xPercent = right / imageWidth;
+//        yPercent = bottom / imageHeight;
+//        xCoord = xPercent * origWidth;
+//        yCoord = yPercent * origHeight;
+//        coordinates.add(new Point(Math.round(xCoord), Math.round(yCoord)));
 
-        //bottom right
-        xPercent = right / imageWidth;
-        yPercent = bottom / imageHeight;
-        xCoord = xPercent * origWidth;
-        yCoord = yPercent * origHeight;
-        coordinates.add(new Point(Math.round(xCoord), Math.round(yCoord)));
+        coordinates.add(new Point(Math.round(left), Math.round(top)));
+        coordinates.add(new Point(Math.round(right), Math.round(bottom)));
 
         return coordinates;
     }
 
-    public void getDimensions(int imageWidth, int imageHeight, int startingX, int startingY, int origWidth, int origHeight){
+    public float[] getScaling(){
+        float[] holder = {scaleX,scaleY};
+        return holder;
+    }
+
+    public void getDimensions(int imageWidth, int imageHeight, int startingX, int startingY, int origWidth, int origHeight, float scaleX, float scaleY){
         this.imageWidth  = imageWidth;
         this.imageHeight = imageHeight;
         this.startingX   = startingX;
         this.startingY   = startingY;
         this.origWidth   = origWidth;
         this.origHeight  = origHeight;
+        this.scaleX = scaleX;
+        this.scaleY = scaleY;
     }
 
     // the method that draws the balls

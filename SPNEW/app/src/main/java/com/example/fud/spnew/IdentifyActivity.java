@@ -53,6 +53,8 @@ public class IdentifyActivity extends AppCompatActivity {
     private ArrayList<Point> sideCoords = new ArrayList<Point>();
     private ArrayList<Point> bottomCoords = new ArrayList<Point>();
 
+    private float[] topScaling = null;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -251,6 +253,7 @@ public class IdentifyActivity extends AppCompatActivity {
         //get top mushroom coordinates
         if (requestCode == 3 && resultCode == RESULT_OK) {
             topCoords = (ArrayList<Point>) data.getSerializableExtra("coordinates");
+            topScaling = (float[]) data.getSerializableExtra("scaling");
         }
 
         if (requestCode == 4 && resultCode == RESULT_OK) {
@@ -304,6 +307,8 @@ public class IdentifyActivity extends AppCompatActivity {
         intent.putExtra("topCoords", topCoords);
         intent.putExtra("sideCoords", sideCoords);
         intent.putExtra("bottomCoords", bottomCoords);
+
+        intent.putExtra("topScaling", topScaling);
 
         intent.putExtra("substrate", substrate);
 
