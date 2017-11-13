@@ -1,68 +1,56 @@
 <?xml version="1.0" encoding="utf-8"?>
-<android.support.constraint.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
-    android:layout_width="match_parent"
-    android:layout_height="match_parent"
+    android:layout_width="fill_parent"
+    android:layout_height="fill_parent"
     app:layout_behavior="@string/appbar_scrolling_view_behavior"
     tools:context="com.example.fud.spnew.IdentifyActivity"
     tools:showIn="@layout/activity_identify">
 
-    <RelativeLayout
-        android:layout_width="368dp"
-        android:layout_height="495dp"
-        tools:layout_editor_absoluteY="8dp"
-        tools:layout_editor_absoluteX="8dp">
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:orientation="vertical">
 
         <ImageButton
             android:id="@+id/imageButton2"
+            app:srcCompat="@drawable/ic_menu_camera"
             android:layout_width="75dp"
             android:layout_height="75dp"
-            android:layout_marginTop="32dp"
-            android:onClick="createDialog"
-            app:srcCompat="@drawable/ic_menu_camera"
-            android:layout_alignParentTop="true"
-            android:layout_alignStart="@+id/imageButton3" />
-
-        <ImageButton
-            android:id="@+id/imageButton3"
-            android:layout_width="75dp"
-            android:layout_height="75dp"
-            android:layout_marginTop="22dp"
-            android:onClick="createDialog"
-            app:srcCompat="@drawable/ic_menu_camera"
-            android:layout_below="@+id/imageButton2"
-            android:layout_centerHorizontal="true" />
+            android:layout_marginBottom="35dp"
+            android:layout_gravity="center"
+            android:onClick="createDialog" />
 
         <ImageButton
             android:id="@+id/imageButton4"
+            app:srcCompat="@drawable/ic_menu_camera"
             android:layout_width="75dp"
             android:layout_height="75dp"
-            android:layout_marginTop="21dp"
-            android:onClick="createDialog"
-            app:srcCompat="@drawable/ic_menu_camera"
-            android:layout_below="@+id/imageButton3"
-            android:layout_alignStart="@+id/imageButton3" />
+            android:layout_marginBottom="35dp"
+            android:layout_gravity="center"
+            android:onClick="createDialog" />
 
         <Button
             android:id="@+id/button"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginTop="35dp"
+            android:layout_gravity="center"
             android:onClick="selectSubstrate"
             android:text="Pick Substrate"
-            android:layout_below="@+id/imageButton4"
-            android:layout_centerHorizontal="true" />
+             />
 
         <Button
             android:id="@+id/processButton"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_below="@+id/button"
-            android:layout_centerHorizontal="true"
-            android:layout_marginTop="27dp"
+            android:layout_marginTop="35dp"
+            android:layout_gravity="center"
             android:onClick="startProcessActivity"
             android:text="Process" />
 
-    </RelativeLayout>
-</android.support.constraint.ConstraintLayout>
+    </LinearLayout>
+
+</FrameLayout>

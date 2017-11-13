@@ -38,22 +38,21 @@ public class IdentifyActivity extends AppCompatActivity {
 
     //for saving the paths
     private String topPhotoPath;
-    private String sidePhotoPath;
     private String bottomPhotoPath;
-    private String substrate;
 
     private ImageButton top;
-    private ImageButton side;
     private ImageButton bottom;
 
-    private Button spinner;
-    private ArrayAdapter<CharSequence> adapter;
-
     private ArrayList<Point> topCoords = new ArrayList<Point>();
-    private ArrayList<Point> sideCoords = new ArrayList<Point>();
     private ArrayList<Point> bottomCoords = new ArrayList<Point>();
 
     private float[] topScaling = null;
+    private float[] bottomScaling = null;
+
+    private String substrate;
+
+    private Button spinner;
+    private ArrayAdapter<CharSequence> adapter;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -64,7 +63,6 @@ public class IdentifyActivity extends AppCompatActivity {
 
         //for changing the images of the buttons
         top = (ImageButton)findViewById(R.id.imageButton2);
-        side = (ImageButton)findViewById(R.id.imageButton3);
         bottom = (ImageButton)findViewById(R.id.imageButton4);
 
         //for picking substrate
@@ -79,9 +77,6 @@ public class IdentifyActivity extends AppCompatActivity {
         switch (view.getId()) {
             case R.id.imageButton2:
                 source = "top";
-                break;
-            case R.id.imageButton3:
-                source = "side";
                 break;
             case R.id.imageButton4:
                 source = "bottom";
@@ -146,9 +141,6 @@ public class IdentifyActivity extends AppCompatActivity {
         if(source.equals("top")){
             topPhotoPath = image.getAbsolutePath();
         }
-        if(source.equals("side")){
-            sidePhotoPath = image.getAbsolutePath();
-        }
         if(source.equals("bottom")){
             bottomPhotoPath = image.getAbsolutePath();
         }
@@ -164,10 +156,6 @@ public class IdentifyActivity extends AppCompatActivity {
         if(source.equals("top")){
             targetW = top.getWidth();
             targetH = top.getHeight();
-        }
-        if(source.equals("side")){
-            targetW = side.getWidth();
-            targetH = side.getHeight();
         }
         if(source.equals("bottom")){
             targetW = bottom.getWidth();
@@ -192,8 +180,6 @@ public class IdentifyActivity extends AppCompatActivity {
         Bitmap bitmap = BitmapFactory.decodeFile(mCurrentPhotoPath, bmOptions);
         if(source.equals("top"))
             top.setImageBitmap(bitmap);
-        if(source.equals("side"))
-            side.setImageBitmap(bitmap);
         if(source.equals("bottom"))
             bottom.setImageBitmap(bitmap);
     }
@@ -229,9 +215,6 @@ public class IdentifyActivity extends AppCompatActivity {
             if(source.equals("top")){
                 topPhotoPath = mCurrentPhotoPath;
             }
-            if(source.equals("side")){
-                sidePhotoPath = mCurrentPhotoPath;
-            }
             if(source.equals("bottom")){
                 bottomPhotoPath = mCurrentPhotoPath;
             }
@@ -245,13 +228,9 @@ public class IdentifyActivity extends AppCompatActivity {
             topCoords = (ArrayList<Point>) data.getSerializableExtra("coordinates");
             topScaling = (float[]) data.getSerializableExtra("scaling");
         }
-
-        if (requestCode == 4 && resultCode == RESULT_OK) {
-            sideCoords = (ArrayList<Point>) data.getSerializableExtra("coordinates");
-        }
-
         if (requestCode == 5 && resultCode == RESULT_OK) {
             bottomCoords = (ArrayList<Point>) data.getSerializableExtra("coordinates");
+            bottomScaling = (float[]) data.getSerializableExtra("scaling");
         }
     }
 
@@ -262,11 +241,6 @@ public class IdentifyActivity extends AppCompatActivity {
         if(source.equals("top")){
             cropIntent.putExtra("photoPath", topPhotoPath);
             startActivityForResult(cropIntent, 3);
-        }
-
-        if(source.equals("side")){
-            cropIntent.putExtra("photoPath", sidePhotoPath);
-            startActivityForResult(cropIntent, 4);
         }
 
         if(source.equals("bottom")){
@@ -291,14 +265,13 @@ public class IdentifyActivity extends AppCompatActivity {
         Intent intent = new Intent(IdentifyActivity.this, ProcessActivity.class);
 
         intent.putExtra("topPhotoPath", topPhotoPath);
-        intent.putExtra("sidePhotoPath", sidePhotoPath);
         intent.putExtra("bottomPhotoPath", bottomPhotoPath);
 
         intent.putExtra("topCoords", topCoords);
-        intent.putExtra("sideCoords", sideCoords);
         intent.putExtra("bottomCoords", bottomCoords);
 
         intent.putExtra("topScaling", topScaling);
+        intent.putExtra("bottomScaling",bottomScaling);
 
         intent.putExtra("substrate", substrate);
 
