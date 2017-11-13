@@ -11,7 +11,9 @@ import android.graphics.Paint;
 import android.graphics.Point;
 import android.graphics.Rect;
 import android.graphics.drawable.Drawable;
+import android.net.Uri;
 import android.os.Bundle;
+import android.provider.MediaStore;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.Display;
@@ -35,14 +37,18 @@ public class CropActivity extends AppCompatActivity {
 
         //get photopath
         Bundle extras = getIntent().getExtras();
-        String photoPath = extras.getString("photoPath");
+        Uri photoPath = Uri.parse(extras.getString("photoPath"));
 
         ImageView iv = (ImageView) findViewById(R.id.imageView3);
         Point size = new Point();
         Display display = getWindowManager().getDefaultDisplay();
         display.getSize(size);
 
-        iv.setImageBitmap(decodeSampledBitmapFromResource(photoPath, size.x, size.y));
+//        iv.setImageBitmap(decodeSampledBitmapFromResource(photoPath, size.x, size.y));
+
+        try{
+            iv.setImageBitmap(MediaStore.Images.Media.getBitmap(this.getContentResolver(), photoPath));
+        }catch(Exception e){}
 
     }
 

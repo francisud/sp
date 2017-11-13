@@ -14,6 +14,7 @@ import android.support.v4.content.FileProvider;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
+import android.util.Log;
 import android.view.View;
 import android.net.Uri;
 import android.widget.ArrayAdapter;
@@ -24,6 +25,7 @@ import android.widget.Toast;
 
 import java.io.File;
 import java.io.IOException;
+import java.net.URI;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
@@ -34,11 +36,11 @@ public class IdentifyActivity extends AppCompatActivity {
     private String source;
 
     //for updating buttons in UI
-    private String mCurrentPhotoPath;
+    private Uri mCurrentPhotoPath;
 
     //for saving the paths
-    private String topPhotoPath;
-    private String bottomPhotoPath;
+    private Uri topPhotoPath;
+    private Uri bottomPhotoPath;
 
     private ImageButton top;
     private ImageButton bottom;
@@ -110,11 +112,17 @@ public class IdentifyActivity extends AppCompatActivity {
                     }
                 }
 
+//                if(which == 1){
+//                    intent.setAction(Intent.ACTION_GET_CONTENT);
+//                    intent.putExtra(Intent.EXTRA_LOCAL_ONLY, true);
+//                    intent.setType("image/*");
+//                    startActivityForResult(Intent.createChooser(intent,"Select Picture"), 1);
+//                }
+
                 if(which == 1){
                     intent.setAction(Intent.ACTION_GET_CONTENT);
-                    intent.putExtra(Intent.EXTRA_LOCAL_ONLY, true);
                     intent.setType("image/*");
-                    startActivityForResult(Intent.createChooser(intent,"Select Picture"), 1);
+                    startActivityForResult(intent, 1);
                 }
             }
         });
@@ -136,19 +144,18 @@ public class IdentifyActivity extends AppCompatActivity {
         );
 
         // Save a file: path for use with ACTION_VIEW intents
-        mCurrentPhotoPath = image.getAbsolutePath();
+        mCurrentPhotoPath = Uri.fromFile(image);
 
         if(source.equals("top")){
-            topPhotoPath = image.getAbsolutePath();
+            topPhotoPath = Uri.fromFile(image);
         }
         if(source.equals("bottom")){
-            bottomPhotoPath = image.getAbsolutePath();
+            bottomPhotoPath = Uri.fromFile(image);
         }
         return image;
     }
 
     private void setPic() {
-
         int targetW = -1;
         int targetH = -1;
 
@@ -162,28 +169,30 @@ public class IdentifyActivity extends AppCompatActivity {
             targetH = bottom.getHeight();
         }
 
-        // Get the dimensions of the bitmap
-        BitmapFactory.Options bmOptions = new BitmapFactory.Options();
-        bmOptions.inJustDecodeBounds = true;
+//        // Get the dimensions of the bitmap
+//        BitmapFactory.Options bmOptions = new BitmapFactory.Options();
+//        bmOptions.inJustDecodeBounds = true;
+//
+//        int photoW = bmOptions.outWidth;
+//        int photoH = bmOptions.outHeight;
+//
+//        // Determine how much to scale down the image
+//        int scaleFactor = Math.min(photoW/targetW, photoH/targetH);
+//
+//        // Decode the image file into a Bitmap sized to fill the View
+//        bmOptions.inJustDecodeBounds = false;
+//        bmOptions.inSampleSize = scaleFactor;
 
-        BitmapFactory.decodeFile(mCurrentPhotoPath, bmOptions);
-        int photoW = bmOptions.outWidth;
-        int photoH = bmOptions.outHeight;
+        Bitmap bitmap = null;
+        try{
+            bitmap = MediaStore.Images.Media.getBitmap(this.getContentResolver(), mCurrentPhotoPath);
+        }catch (Exception e){Log.d("inside-try", e.toString());}
 
-        // Determine how much to scale down the image
-        int scaleFactor = Math.min(photoW/targetW, photoH/targetH);
-
-        // Decode the image file into a Bitmap sized to fill the View
-        bmOptions.inJustDecodeBounds = false;
-        bmOptions.inSampleSize = scaleFactor;
-
-        Bitmap bitmap = BitmapFactory.decodeFile(mCurrentPhotoPath, bmOptions);
         if(source.equals("top"))
             top.setImageBitmap(bitmap);
         if(source.equals("bottom"))
             bottom.setImageBitmap(bitmap);
     }
-
 
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
@@ -196,21 +205,7 @@ public class IdentifyActivity extends AppCompatActivity {
 
         //file browser
         if (requestCode == 1 && resultCode == RESULT_OK) {
-
-            //http://hmkcode.com/android-display-selected-image-and-its-real-path/
-            //https://github.com/hmkcode/Android/blob/master/android-show-image-and-path/src/com/hmkcode/android/image/RealPathUtil.java
-            //for getting the real / absolute path
-
-            if (Build.VERSION.SDK_INT < 11)
-                mCurrentPhotoPath = RealPathUtil.getRealPathFromURI_BelowAPI11(this, data.getData());
-
-            // SDK >= 11 && SDK < 19
-            else if (Build.VERSION.SDK_INT < 19)
-                mCurrentPhotoPath = RealPathUtil.getRealPathFromURI_API11to18(this, data.getData());
-
-            // SDK > 19 (Android 4.4)
-            else
-                mCurrentPhotoPath = RealPathUtil.getRealPathFromURI_API19(this, data.getData());
+            mCurrentPhotoPath = data.getData();
 
             if(source.equals("top")){
                 topPhotoPath = mCurrentPhotoPath;
@@ -239,12 +234,12 @@ public class IdentifyActivity extends AppCompatActivity {
         Intent cropIntent = new Intent(IdentifyActivity.this, CropActivity.class);
 
         if(source.equals("top")){
-            cropIntent.putExtra("photoPath", topPhotoPath);
+            cropIntent.putExtra("photoPath", topPhotoPath.toString());
             startActivityForResult(cropIntent, 3);
         }
 
         if(source.equals("bottom")){
-            cropIntent.putExtra("photoPath", bottomPhotoPath);
+            cropIntent.putExtra("photoPath", bottomPhotoPath.toString());
             startActivityForResult(cropIntent, 5);
         }
     }
