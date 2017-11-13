@@ -2,14 +2,10 @@ package com.example.fud.spnew;
 
 import android.content.DialogInterface;
 import android.content.Intent;
-import android.graphics.BitmapFactory;
 import android.graphics.Point;
-import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
 import android.provider.MediaStore;
-import android.support.design.widget.FloatingActionButton;
-import android.support.design.widget.Snackbar;
 import android.support.v4.content.FileProvider;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
@@ -21,11 +17,9 @@ import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.ImageButton;
 import android.graphics.Bitmap;
-import android.widget.Toast;
 
 import java.io.File;
 import java.io.IOException;
-import java.net.URI;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
@@ -39,19 +33,16 @@ public class IdentifyActivity extends AppCompatActivity {
     private Uri mCurrentPhotoPath;
 
     //for saving the paths
-    private Uri topPhotoPath;
-    private Uri bottomPhotoPath;
+    private Uri topPhotoPath = null;
+    private Uri bottomPhotoPath = null;
 
     private ImageButton top;
     private ImageButton bottom;
 
-    private ArrayList<Point> topCoords = new ArrayList<Point>();
-    private ArrayList<Point> bottomCoords = new ArrayList<Point>();
+    private ArrayList<Point> topCoords = new ArrayList<>();
+    private ArrayList<Point> bottomCoords = new ArrayList<>();
 
-    private float[] topScaling = null;
-    private float[] bottomScaling = null;
-
-    private String substrate;
+    private String substrate = null;
 
     private Button spinner;
     private ArrayAdapter<CharSequence> adapter;
@@ -91,6 +82,7 @@ public class IdentifyActivity extends AppCompatActivity {
             public void onClick(DialogInterface dialog, int which){
                 Intent intent = new Intent();
 
+                //take picture
                 if(which == 0){
                     intent.setAction(MediaStore.ACTION_IMAGE_CAPTURE);
                     if (intent.resolveActivity(getPackageManager()) != null) {
@@ -112,13 +104,7 @@ public class IdentifyActivity extends AppCompatActivity {
                     }
                 }
 
-//                if(which == 1){
-//                    intent.setAction(Intent.ACTION_GET_CONTENT);
-//                    intent.putExtra(Intent.EXTRA_LOCAL_ONLY, true);
-//                    intent.setType("image/*");
-//                    startActivityForResult(Intent.createChooser(intent,"Select Picture"), 1);
-//                }
-
+                //select from files
                 if(which == 1){
                     intent.setAction(Intent.ACTION_GET_CONTENT);
                     intent.setType("image/*");
@@ -221,11 +207,9 @@ public class IdentifyActivity extends AppCompatActivity {
         //get top mushroom coordinates
         if (requestCode == 3 && resultCode == RESULT_OK) {
             topCoords = (ArrayList<Point>) data.getSerializableExtra("coordinates");
-            topScaling = (float[]) data.getSerializableExtra("scaling");
         }
         if (requestCode == 5 && resultCode == RESULT_OK) {
             bottomCoords = (ArrayList<Point>) data.getSerializableExtra("coordinates");
-            bottomScaling = (float[]) data.getSerializableExtra("scaling");
         }
     }
 
@@ -259,17 +243,18 @@ public class IdentifyActivity extends AppCompatActivity {
     public void startProcessActivity(View view){
         Intent intent = new Intent(IdentifyActivity.this, ProcessActivity.class);
 
-        intent.putExtra("topPhotoPath", topPhotoPath);
-        intent.putExtra("bottomPhotoPath", bottomPhotoPath);
+        //put top photo data
+        if(topPhotoPath != null){
+            intent.putExtra("topPhotoPath", topPhotoPath.toString());
+            intent.putExtra("topCoords", topCoords);
+        }
 
-        intent.putExtra("topCoords", topCoords);
-        intent.putExtra("bottomCoords", bottomCoords);
-
-        intent.putExtra("topScaling", topScaling);
-        intent.putExtra("bottomScaling",bottomScaling);
+        if(bottomPhotoPath != null){
+            intent.putExtra("bottomPhotoPath", bottomPhotoPath.toString());
+            intent.putExtra("bottomCoords", bottomCoords);
+        }
 
         intent.putExtra("substrate", substrate);
-
         startActivity(intent);
     }
 

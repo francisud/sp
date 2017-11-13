@@ -2,14 +2,13 @@ package com.example.fud.spnew;
 
 import android.content.res.AssetManager;
 import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.net.Uri;
 import android.os.Bundle;
-import android.support.design.widget.FloatingActionButton;
-import android.support.design.widget.Snackbar;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.text.TextUtils;
 import android.util.Log;
-import android.view.View;
 import android.widget.ImageView;
 
 import org.opencv.android.BaseLoaderCallback;
@@ -25,12 +24,12 @@ import org.opencv.core.MatOfPoint;
 import org.opencv.core.Rect;
 import org.opencv.core.Scalar;
 import org.opencv.core.Size;
-import org.opencv.imgcodecs.Imgcodecs;
 import org.opencv.imgproc.Imgproc;
 import org.opencv.imgproc.Moments;
 
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -40,6 +39,7 @@ import java.util.List;
 import static java.lang.Math.sqrt;
 import static org.opencv.core.Core.split;
 import static org.opencv.core.CvType.CV_32F;
+import static org.opencv.core.CvType.CV_8UC3;
 
 import umich.cse.yctung.androidlibsvm.LibSVM;
 
@@ -90,12 +90,11 @@ public class ProcessActivity extends AppCompatActivity {
         Mat topPictureHuMoments = null;
         ArrayList<Double> topPictureTexture = null;
 
-        String topPhotoPath = extras.getString("topPhotoPath");
-
+        Uri topPhotoPath = Uri.parse(extras.getString("topPhotoPath"));
         ArrayList<android.graphics.Point> topCoords = (ArrayList<android.graphics.Point>) getIntent().getSerializableExtra("topCoords");
-        float[] scaling = (float[]) getIntent().getSerializableExtra("topScaling");
 
-        topPicture = imageSegmentation(topPhotoPath, topCoords, scaling);
+        topPicture = readPicture(topPhotoPath);
+        topPicture = imageSegmentation(topCoords, topPicture);
         topPictureHistogram = getHistogram(topPicture);
         topPictureHuMoments = getHuMoments(topPicture);
         topPictureTexture = getGaborWavelets(topPicture);
@@ -116,7 +115,27 @@ public class ProcessActivity extends AppCompatActivity {
         iv.setImageBitmap(bm);
     }
 
-    private Mat imageSegmentation(String photoPath, ArrayList<android.graphics.Point> coords, float[] scaling){
+    //based on https://stackoverflow.com/a/39085038
+    private Mat readPicture(Uri photoPath){
+        InputStream stream = null;
+        try {
+            stream = getContentResolver().openInputStream(photoPath);
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        }
+
+        BitmapFactory.Options bmpFactoryOptions = new BitmapFactory.Options();
+        bmpFactoryOptions.inPreferredConfig = Bitmap.Config.ARGB_8888;
+
+        Bitmap bmp = BitmapFactory.decodeStream(stream, null, bmpFactoryOptions);
+        Mat ImageMat = new Mat(bmp.getWidth(), bmp.getHeight(), CV_8UC3);
+        Utils.bitmapToMat(bmp, ImageMat);
+        Imgproc.cvtColor(ImageMat, ImageMat, Imgproc.COLOR_RGBA2BGR);
+
+        return ImageMat;
+    }
+
+    private Mat imageSegmentation(ArrayList<android.graphics.Point> coords, Mat img){
         //bounding rectangle
         int x1, y1, x2, y2;
         x1 = coords.get(0).x;
@@ -134,8 +153,7 @@ public class ProcessActivity extends AppCompatActivity {
         org.opencv.core.Size fgSize = new org.opencv.core.Size(width,height);
 
         //based on - https://github.com/schenkerx/GrabCutDemo/blob/master/app/src/main/java/cvworkout2/graphcutdemo/MainActivity.java
-        Mat img = Imgcodecs.imread(photoPath);
-//        Imgproc.resize(img, img, new Size(), scaling[0], scaling[1], Imgproc.INTER_CUBIC);
+        //Imgproc.resize(img, img, new Size(), scaling[0], scaling[1], Imgproc.INTER_CUBIC);
         Imgproc.resize(img, img, new Size(500,500), 0, 0, Imgproc.INTER_CUBIC);
 
         Mat firstMask = new Mat();
@@ -144,8 +162,8 @@ public class ProcessActivity extends AppCompatActivity {
         Mat source = new Mat(1, 1, CvType.CV_8U, new Scalar(Imgproc.GC_PR_FGD));
         Rect rect = new Rect(tl, br);
 
-        Mat foreground = new Mat(img.size(), CvType.CV_8UC3,new Scalar(255, 255, 255));
-        Mat finalForeground = new Mat(fgSize, CvType.CV_8UC3,new Scalar(255, 255, 255));
+        Mat foreground = new Mat(img.size(), CV_8UC3,new Scalar(255, 255, 255));
+        Mat finalForeground = new Mat(fgSize, CV_8UC3,new Scalar(255, 255, 255));
 
         //segment image and get foreground
         Imgproc.grabCut(img, firstMask, rect, bgModel, fgModel,1, Imgproc.GC_INIT_WITH_RECT);
@@ -169,8 +187,8 @@ public class ProcessActivity extends AppCompatActivity {
         return finalForeground;
     }
 
-    //https://docs.opencv.org/2.4/doc/tutorials/imgproc/histograms/histogram_calculation/histogram_calculation.html
-    //LAB color space is used
+    //based onhttps://docs.opencv.org/2.4/doc/tutorials/imgproc/histograms/histogram_calculation/histogram_calculation.html
+    //RGB color space is used
     private Mat getHistogram(Mat image){
         Mat grayScale = new Mat();
         Mat mask = new Mat();
