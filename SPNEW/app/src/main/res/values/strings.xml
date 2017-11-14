@@ -10,7 +10,8 @@
 
     <string name="pick_action">Picture Source:</string>
 
-    <string-array name="actions_array">
+    <string name="action">Picture Source</string>
+    <string-array name="action_array">
         <item>Take A Picture</item>
         <item>Files</item>
     </string-array>

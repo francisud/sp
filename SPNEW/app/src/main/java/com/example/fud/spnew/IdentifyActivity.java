@@ -1,14 +1,12 @@
 package com.example.fud.spnew;
 
 import android.support.v4.app.DialogFragment;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.Point;
 import android.os.Bundle;
 import android.os.Environment;
 import android.provider.MediaStore;
 import android.support.v4.content.FileProvider;
-import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
@@ -26,7 +24,7 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 
-public class IdentifyActivity extends AppCompatActivity implements SubstrateFragment.SubstrateFragmentListener {
+public class IdentifyActivity extends AppCompatActivity implements PictureSourceFragment.PictureSourceFragmentListener,SubstrateFragment.SubstrateFragmentListener {
     private ImageButton top;
     private ImageButton bottom;
 
@@ -39,10 +37,8 @@ public class IdentifyActivity extends AppCompatActivity implements SubstrateFrag
     //data
     private Uri topPhotoPath = null;
     private Uri bottomPhotoPath = null;
-
     private ArrayList<Point> topCoords = new ArrayList<>();
     private ArrayList<Point> bottomCoords = new ArrayList<>();
-
     private String substrate = null;
 
     @Override
@@ -57,7 +53,10 @@ public class IdentifyActivity extends AppCompatActivity implements SubstrateFrag
         bottom = (ImageButton)findViewById(R.id.imageButton4);
     }
 
-    public void createDialog(View view) {
+    //dialog for selecting source of photo
+    public void selectSource(View view){
+        PictureSourceFragment pickSource = new PictureSourceFragment();
+        pickSource.show(getSupportFragmentManager(), "PictureSourceFragment");
 
         switch (view.getId()) {
             case R.id.imageButton2:
@@ -67,49 +66,59 @@ public class IdentifyActivity extends AppCompatActivity implements SubstrateFrag
                 source = "bottom";
                 break;
         }
-
-        AlertDialog.Builder builder = new AlertDialog.Builder(IdentifyActivity.this);
-        builder.setTitle(R.string.pick_action);
-        builder.setItems(R.array.actions_array, new DialogInterface.OnClickListener(){
-            public void onClick(DialogInterface dialog, int which){
-                Intent intent = new Intent();
-
-                //take picture
-                if(which == 0){
-                    intent.setAction(MediaStore.ACTION_IMAGE_CAPTURE);
-                    if (intent.resolveActivity(getPackageManager()) != null) {
-                        // Create the File where the photo should go
-                        File photoFile = null;
-                        try {
-                            photoFile = createImageFile();
-                        } catch (IOException ex) {
-                            // Error occurred while creating the File
-                        }
-                        // Continue only if the File was successfully created
-                        if (photoFile != null) {
-                            Uri photoURI = FileProvider.getUriForFile(getApplication().getApplicationContext(),
-                                    "com.example.fud.spnew.fileprovider",
-                                    photoFile);
-                            intent.putExtra(MediaStore.EXTRA_OUTPUT, photoURI);
-                            startActivityForResult(intent, 0);
-                        }
-                    }
-                }
-
-                //select from files
-                if(which == 1){
-                    intent.setAction(Intent.ACTION_GET_CONTENT);
-                    intent.setType("image/*");
-                    startActivityForResult(intent, 1);
-                }
-            }
-        });
-
-        AlertDialog dialog = builder.create();
-        dialog.show();
     }
 
+    public void onSelectSource(DialogFragment dialog, int which){
+        dialog.dismiss();
 
+        Intent intent = new Intent();
+
+        //take picture
+        if(which == 0){
+            intent.setAction(MediaStore.ACTION_IMAGE_CAPTURE);
+            if (intent.resolveActivity(getPackageManager()) != null) {
+                File photoFile = null;
+                try {
+                    photoFile = createImageFile();
+                } catch (IOException ex) {}
+
+                if (photoFile != null) {
+                    Uri photoURI = FileProvider.getUriForFile(getApplication().getApplicationContext(),
+                            "com.example.fud.spnew.fileprovider",
+                            photoFile);
+                    intent.putExtra(MediaStore.EXTRA_OUTPUT, photoURI);
+                    startActivityForResult(intent, 0);
+                }
+            }
+        }
+
+        //select from files
+        if(which == 1){
+            intent.setAction(Intent.ACTION_GET_CONTENT);
+            intent.setType("image/*");
+            startActivityForResult(intent, 1);
+        }
+
+    }
+
+    //dialog for selecting substrate
+    public void selectSubstrate(View view){
+        DialogFragment pickSubstrate = new SubstrateFragment();
+        pickSubstrate.show(getSupportFragmentManager(), "SubstrateFragment");
+    }
+
+    public void onSelectSubstrate(DialogFragment dialog, int which){
+        dialog.dismiss();
+
+        ArrayAdapter<CharSequence> adapter = ArrayAdapter.createFromResource(this,
+                R.array.substrate_array, R.layout.substrate_listview);
+
+        substrate = adapter.getItem(which).toString();
+        Button substrateButton = (Button)findViewById(R.id.substrateButton);
+        substrateButton.setText(substrate);
+    }
+
+    //function for creating image file if source is camera
     private File createImageFile() throws IOException {
         // Create an image file name
         String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss").format(new Date());
@@ -172,6 +181,21 @@ public class IdentifyActivity extends AppCompatActivity implements SubstrateFrag
             bottom.setImageBitmap(bitmap);
     }
 
+    //for starting activity to get bounding box
+    private void startCrop(){
+        Intent cropIntent = new Intent(IdentifyActivity.this, CropActivity.class);
+
+        if(source.equals("top")){
+            cropIntent.putExtra("photoPath", topPhotoPath.toString());
+            startActivityForResult(cropIntent, 3);
+        }
+
+        if(source.equals("bottom")){
+            cropIntent.putExtra("photoPath", bottomPhotoPath.toString());
+            startActivityForResult(cropIntent, 5);
+        }
+    }
+
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
 
@@ -203,38 +227,6 @@ public class IdentifyActivity extends AppCompatActivity implements SubstrateFrag
         if (requestCode == 5 && resultCode == RESULT_OK) {
             bottomCoords = (ArrayList<Point>) data.getSerializableExtra("coordinates");
         }
-    }
-
-
-    private void startCrop(){
-        Intent cropIntent = new Intent(IdentifyActivity.this, CropActivity.class);
-
-        if(source.equals("top")){
-            cropIntent.putExtra("photoPath", topPhotoPath.toString());
-            startActivityForResult(cropIntent, 3);
-        }
-
-        if(source.equals("bottom")){
-            cropIntent.putExtra("photoPath", bottomPhotoPath.toString());
-            startActivityForResult(cropIntent, 5);
-        }
-    }
-
-
-    public void selectSubstrate(View view){
-        DialogFragment pickSubstrate = new SubstrateFragment();
-        pickSubstrate.show(getSupportFragmentManager(), "SubstrateFragment");
-    }
-
-    public void onSelect(DialogFragment dialog, int which){
-        dialog.dismiss();
-
-        ArrayAdapter<CharSequence> adapter = ArrayAdapter.createFromResource(this,
-                R.array.substrate_array, R.layout.substrate_listview);
-
-        substrate = adapter.getItem(which).toString();
-        Button substrateButton = (Button)findViewById(R.id.substrateButton);
-        substrateButton.setText(substrate);
     }
 
     public void startProcessActivity(View view){

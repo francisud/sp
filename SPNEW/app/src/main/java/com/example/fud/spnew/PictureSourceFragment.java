@@ -11,21 +11,20 @@ import android.widget.ArrayAdapter;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
-public class SubstrateFragment extends DialogFragment {
+public class PictureSourceFragment extends DialogFragment {
 
-    SubstrateFragmentListener mListener;
-
-    public interface SubstrateFragmentListener {
-        void onSelectSubstrate(DialogFragment dialog, int which);
+    PictureSourceFragmentListener mListener;
+    public interface PictureSourceFragmentListener {
+        void onSelectSource(DialogFragment dialog, int which);
     }
 
     @Override
     public void onAttach(Activity activity) {
         super.onAttach(activity);
         try {
-            mListener = (SubstrateFragmentListener) activity;
+            mListener = (PictureSourceFragmentListener) activity;
         } catch (ClassCastException e) {
-            throw new ClassCastException(activity.toString() + " must implement SubstrateFragmentListener");
+            throw new ClassCastException(activity.toString() + " must implement PictureSourceFragmentListener");
         }
     }
 
@@ -33,11 +32,11 @@ public class SubstrateFragment extends DialogFragment {
     public Dialog onCreateDialog(Bundle savedInstanceState) {
 
         ArrayAdapter<CharSequence> adapter = ArrayAdapter.createFromResource(getActivity().getApplicationContext(),
-                R.array.substrate_array, R.layout.substrate_listview);
+                R.array.action_array, R.layout.source_listview);
 
         // Build the dialog and set up the button click handlers
         AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
-        View view = getActivity().getLayoutInflater().inflate(R.layout.substrate_listview, null);
+        View view = getActivity().getLayoutInflater().inflate(R.layout.source_listview, null);
         LinearLayout layout = (LinearLayout)view.findViewById(R.id.layout);
 
         View v;
@@ -60,7 +59,7 @@ public class SubstrateFragment extends DialogFragment {
             tv.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    mListener.onSelectSubstrate(SubstrateFragment.this, id);
+                    mListener.onSelectSource(PictureSourceFragment.this, id);
                 }
             });
 
