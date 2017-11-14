@@ -14,6 +14,8 @@ import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.View;
 import android.net.Uri;
+import android.widget.ArrayAdapter;
+import android.widget.Button;
 import android.widget.ImageButton;
 import android.graphics.Bitmap;
 import android.widget.Toast;
@@ -225,9 +227,14 @@ public class IdentifyActivity extends AppCompatActivity implements SubstrateFrag
     }
 
     public void onSelect(DialogFragment dialog, int which){
-        Log.d("debug", "inside on select");
-        Log.d("debug-which", Integer.toString(which));
         dialog.dismiss();
+
+        ArrayAdapter<CharSequence> adapter = ArrayAdapter.createFromResource(this,
+                R.array.substrate_array, R.layout.substrate_listview);
+
+        substrate = adapter.getItem(which).toString();
+        Button substrateButton = (Button)findViewById(R.id.substrateButton);
+        substrateButton.setText(substrate);
     }
 
     public void startProcessActivity(View view){

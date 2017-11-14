@@ -15,9 +15,17 @@
         <item>Files</item>
     </string-array>
 
+    <string name="substrate">Substrate</string>
     <string-array name="substrate_array">
         <item>Soil</item>
-        <item>Wood</item>
+        <item>Dead Wood</item>
+        <item>Decaying Wood</item>
+        <item>Bark Of Tree</item>
+        <item>Twig</item>
+        <item>Tree Stump</item>
+        <item>Bamboo</item>
+        <item>Coconut Bark</item>
+        <item>Leaf Litter</item>
     </string-array>
 
     <string name="done">DONE</string>
