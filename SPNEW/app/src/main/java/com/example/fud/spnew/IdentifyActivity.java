@@ -1,5 +1,6 @@
 package com.example.fud.spnew;
 
+import android.support.v4.app.DialogFragment;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.Point;
@@ -13,10 +14,9 @@ import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.View;
 import android.net.Uri;
-import android.widget.ArrayAdapter;
-import android.widget.Button;
 import android.widget.ImageButton;
 import android.graphics.Bitmap;
+import android.widget.Toast;
 
 import java.io.File;
 import java.io.IOException;
@@ -24,7 +24,9 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 
-public class IdentifyActivity extends AppCompatActivity {
+public class IdentifyActivity extends AppCompatActivity implements SubstrateFragment.SubstrateFragmentListener {
+    private ImageButton top;
+    private ImageButton bottom;
 
     //source of button click
     private String source;
@@ -32,20 +34,14 @@ public class IdentifyActivity extends AppCompatActivity {
     //for updating buttons in UI
     private Uri mCurrentPhotoPath;
 
-    //for saving the paths
+    //data
     private Uri topPhotoPath = null;
     private Uri bottomPhotoPath = null;
-
-    private ImageButton top;
-    private ImageButton bottom;
 
     private ArrayList<Point> topCoords = new ArrayList<>();
     private ArrayList<Point> bottomCoords = new ArrayList<>();
 
     private String substrate = null;
-
-    private Button spinner;
-    private ArrayAdapter<CharSequence> adapter;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -57,12 +53,6 @@ public class IdentifyActivity extends AppCompatActivity {
         //for changing the images of the buttons
         top = (ImageButton)findViewById(R.id.imageButton2);
         bottom = (ImageButton)findViewById(R.id.imageButton4);
-
-        //for picking substrate
-        spinner = (Button) findViewById(R.id.button);
-        adapter = ArrayAdapter.createFromResource(this,
-                R.array.substrate_array, android.R.layout.simple_spinner_item);
-
     }
 
     public void createDialog(View view) {
@@ -230,17 +220,29 @@ public class IdentifyActivity extends AppCompatActivity {
 
 
     public void selectSubstrate(View view){
-        new AlertDialog.Builder(this)
-            .setAdapter(adapter, new DialogInterface.OnClickListener() {
-                public void onClick(DialogInterface dialog, int which) {
-                    spinner.setText(adapter.getItem(which));
-                    substrate = adapter.getItem(which).toString();
-                    dialog.dismiss();
-                }
-            }).create().show();
+        DialogFragment pickSubstrate = new SubstrateFragment();
+        pickSubstrate.show(getSupportFragmentManager(), "SubstrateFragment");
+    }
+
+    public void onSelect(DialogFragment dialog, int which){
+        Log.d("debug", "inside on select");
+        Log.d("debug-which", Integer.toString(which));
+        dialog.dismiss();
     }
 
     public void startProcessActivity(View view){
+        if(topPhotoPath == null && bottomPhotoPath == null){
+            Toast.makeText(IdentifyActivity.this, "Both Top Picture and Underside Picture can't be empty",
+                    Toast.LENGTH_LONG).show();
+            return;
+        }
+
+        if(substrate == null){
+            Toast.makeText(IdentifyActivity.this, "Please pick substrate",
+                    Toast.LENGTH_LONG).show();
+            return;
+        }
+
         Intent intent = new Intent(IdentifyActivity.this, ProcessActivity.class);
 
         //put top photo data
