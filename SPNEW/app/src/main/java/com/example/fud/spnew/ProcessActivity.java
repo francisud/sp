@@ -1,9 +1,11 @@
 package com.example.fud.spnew;
 
+import android.app.ProgressDialog;
 import android.content.res.AssetManager;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.net.Uri;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
@@ -46,6 +48,8 @@ import umich.cse.yctung.androidlibsvm.LibSVM;
 
 public class ProcessActivity extends AppCompatActivity {
 
+    ProgressDialog progressDialog;
+
     //FOR LOADING OPENCV
     private BaseLoaderCallback mLoaderCallback = new BaseLoaderCallback(this) {
         @Override
@@ -53,7 +57,8 @@ public class ProcessActivity extends AppCompatActivity {
             switch (status) {
                 case LoaderCallbackInterface.SUCCESS:
                 {
-                    start();
+                    progressDialog = new ProgressDialog(ProcessActivity.this);
+                    new AsyncClassifyTask().execute();
                 } break;
                 default:
                 {
@@ -75,44 +80,85 @@ public class ProcessActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_process);
-        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
-        setSupportActionBar(toolbar);
+    }
 
-        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+    private class AsyncClassifyTask extends AsyncTask<String, Void, Void>
+    {
+        @Override
+        protected void onPreExecute() {
+            super.onPreExecute();
+            progressDialog.setMessage("Classifying, please wait...");
+            progressDialog.show();
+        }
+
+        @Override
+        protected Void doInBackground(String... params) {
+            start();
+            return null;
+        }
+        @Override
+        protected void onPostExecute(Void result) {
+            progressDialog.dismiss();
+            Log.d("debug","after post execute");
+        }
     }
 
     private void start(){
-        //for getting the data from the previous activity
+        readySVMFiles();
+
         Bundle extras = getIntent().getExtras();
+
+        String substrate = extras.getString("substrate");
 
         Mat topPicture = null;
         Mat topPictureHistogram = null;
         Mat topPictureHuMoments = null;
         ArrayList<Double> topPictureTexture = null;
+        Uri topPhotoPath = null;
+        ArrayList<android.graphics.Point> topCoords = null;
 
-        Uri topPhotoPath = Uri.parse(extras.getString("topPhotoPath"));
-        ArrayList<android.graphics.Point> topCoords = (ArrayList<android.graphics.Point>) getIntent().getSerializableExtra("topCoords");
+        Mat undersidePicture = null;
+        Mat undersidePictureHistogram = null;
+        Mat undersidePictureHuMoments = null;
+        ArrayList<Double> undersidePictureTexture = null;
+        Uri bottomPhotoPath = null;
+        ArrayList<android.graphics.Point> bottomCoords = null;
 
-        topPicture = readPicture(topPhotoPath);
-        topPicture = imageSegmentation(topCoords, topPicture);
-        topPictureHistogram = getHistogram(topPicture);
-        topPictureHuMoments = getHuMoments(topPicture);
-        topPictureTexture = getGaborWavelets(topPicture);
-        writeToFile(topPictureHistogram,topPictureHuMoments,topPictureTexture);
+        if(getIntent().hasExtra("topPhotoPath")){
+            topPhotoPath = Uri.parse(extras.getString("topPhotoPath"));
+            topCoords = (ArrayList<android.graphics.Point>) getIntent().getSerializableExtra("topCoords");
 
-        readyFiles();
+            topPicture = readPicture(topPhotoPath);
+            topPicture = imageSegmentation(topCoords, topPicture);
+            topPictureHistogram = getHistogram(topPicture);
+            topPictureHuMoments = getHuMoments(topPicture);
+            topPictureTexture = getGaborWavelets(topPicture);
+            writeToFile(topPictureHistogram,topPictureHuMoments,topPictureTexture,substrate);
+            classify(0);
+        }
 
-        classify();
+        if(getIntent().hasExtra("bottomPhotoPath")){
+            bottomPhotoPath = Uri.parse(extras.getString("bottomPhotoPath"));
+            bottomCoords = (ArrayList<android.graphics.Point>) getIntent().getSerializableExtra("bottomCoords");
 
-        setPic(topPicture);
+            undersidePicture = readPicture(bottomPhotoPath);
+            undersidePicture = imageSegmentation(bottomCoords, undersidePicture);
+            undersidePictureHistogram = getHistogram(undersidePicture);
+            undersidePictureHuMoments = getHuMoments(undersidePicture);
+            undersidePictureTexture = getGaborWavelets(undersidePicture);
+            writeToFile(undersidePictureHistogram,undersidePictureHuMoments,undersidePictureTexture,substrate);
+            classify(1);
+        }
+
+//        setPic(topPicture);
     }
 
     private void setPic(Mat topPicture) {
         Bitmap bm = Bitmap.createBitmap(topPicture.cols(), topPicture.rows(), Bitmap.Config.ARGB_8888);
         Utils.matToBitmap(topPicture, bm);
 
-        ImageView iv = (ImageView) findViewById(R.id.oldPhoto);
-        iv.setImageBitmap(bm);
+//        ImageView iv = (ImageView) findViewById(R.id.oldPhoto);
+//        iv.setImageBitmap(bm);
     }
 
     //based on https://stackoverflow.com/a/39085038
@@ -377,7 +423,7 @@ public class ProcessActivity extends AppCompatActivity {
         return feature;
     }
 
-    private void writeToFile(Mat topPictureHistogram, Mat topPictureHuMoments, ArrayList<Double> topPictureTexture){
+    private void writeToFile(Mat topPictureHistogram, Mat topPictureHuMoments, ArrayList<Double> topPictureTexture, String substrate){
         File path = ProcessActivity.this.getFilesDir();
         File file = new File(path, "features.txt");
         FileOutputStream stream;
@@ -416,6 +462,14 @@ public class ProcessActivity extends AppCompatActivity {
                 counter++;
             }
 
+            //write substrate
+            stream.write(Integer.toString(counter).getBytes());
+            stream.write(":".getBytes());
+            stream.write(substrate.getBytes());
+
+            Log.d("debug-substrate", Integer.toString(counter));
+            Log.d("debug-substrate", substrate);
+
             stream.write("\n".getBytes());
 
             stream.close();
@@ -428,7 +482,7 @@ public class ProcessActivity extends AppCompatActivity {
         }
     }
 
-    private void readyFiles(){
+    private void readySVMFiles(){
         String directoryPath = getFilesDir().getAbsolutePath() + "/svm/";
         File svm = new File(directoryPath);
 
@@ -472,7 +526,7 @@ public class ProcessActivity extends AppCompatActivity {
         }
     }
 
-    private void classify(){
+    private void classify(int checker){
         LibSVM svm = new LibSVM();
 
         //read features
@@ -484,17 +538,25 @@ public class ProcessActivity extends AppCompatActivity {
         absolutePath = file.getAbsolutePath();
 
         //scale
-        String topScalingPath = getFilesDir().getAbsolutePath() + "/svm/svm-settings/top_settings.txt";
+        String scalingPath;
+        if(checker == 0)
+            scalingPath = getFilesDir().getAbsolutePath() + "/svm/svm-settings/top_settings.txt";
+        else
+            scalingPath = getFilesDir().getAbsolutePath() + "/svm/svm-settings/underside_settings.txt";
         List<String> options = new ArrayList<>();
         options.add("-r");
-        options.add(topScalingPath);
+        options.add(scalingPath);
         options.add(absolutePath);
         String optionsString = TextUtils.join(" ", options);
         svm.scale(optionsString, path + "/features.scaled");
 
 
         //classify
-        File fileDirectory = new File(getFilesDir().getAbsolutePath()+"/svm/svm-models/top-models");
+        File fileDirectory;
+        if(checker == 0)
+            fileDirectory = new File(getFilesDir().getAbsolutePath()+"/svm/svm-models/top-models");
+        else
+            fileDirectory = new File(getFilesDir().getAbsolutePath()+"/svm/svm-models/underside-models");
         File[] files = fileDirectory.listFiles();
         ArrayList<Double> percentage = new ArrayList<>();
         String outputText;
@@ -527,14 +589,6 @@ public class ProcessActivity extends AppCompatActivity {
 
                 else
                     percentage.add(Double.parseDouble(splitted[5]));
-
-//                Log.d("debug-0",splitted[0]);
-//                Log.d("debug-1",splitted[1]);
-//                Log.d("debug-2",splitted[2]);
-//                Log.d("debug-3",splitted[3]);
-//                Log.d("debug-4",splitted[4]);
-//                Log.d("debug-5",splitted[5]);
-
             }
             catch (Exception e){}
 
@@ -542,6 +596,7 @@ public class ProcessActivity extends AppCompatActivity {
 
         for(int i = 0; i < percentage.size(); i++)
             Log.d("debug - percentage", Double.toString(percentage.get(i)));
+
     }
 
 }

@@ -45,8 +45,6 @@ public class IdentifyActivity extends AppCompatActivity implements PictureSource
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_identify);
-        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
-        setSupportActionBar(toolbar);
 
         //for changing the images of the buttons
         top = (ImageButton)findViewById(R.id.imageButton2);
@@ -113,9 +111,9 @@ public class IdentifyActivity extends AppCompatActivity implements PictureSource
         ArrayAdapter<CharSequence> adapter = ArrayAdapter.createFromResource(this,
                 R.array.substrate_array, R.layout.substrate_listview);
 
-        substrate = adapter.getItem(which).toString();
+        substrate = Integer.toString(which+1);
         Button substrateButton = (Button)findViewById(R.id.substrateButton);
-        substrateButton.setText(substrate);
+        substrateButton.setText(adapter.getItem(which).toString());
     }
 
     //function for creating image file if source is camera
