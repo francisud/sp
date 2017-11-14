@@ -11,5 +11,6 @@
         android:layout_height="wrap_content"
         android:text="@string/substrate"
         android:textSize="20sp"
-        android:textStyle="bold"/>
+        android:textStyle="bold"
+        android:padding="15dp"/>
 </LinearLayout>

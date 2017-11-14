@@ -54,6 +54,7 @@ public class SubstrateFragment extends DialogFragment {
             tv.setText(adapter.getItem(i));
             tv.setTextSize(18);
             tv.setLayoutParams(new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT));
+            tv.setPadding(10,10,10,10);
             tv.setGravity(1);
 
             tv.setOnClickListener(new View.OnClickListener() {

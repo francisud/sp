@@ -97,15 +97,9 @@ public class CropActivity extends AppCompatActivity {
             final float scaleX = f[Matrix.MSCALE_X];
             final float scaleY = f[Matrix.MSCALE_Y];
 
-            Log.d("debug-values-scalex", Float.toString(scaleX));
-            Log.d("debug-values-scaley", Float.toString(scaleY));
-
             final Drawable d = iv.getDrawable();
             final int origWidth = d.getIntrinsicWidth();
             final int origHeight = d.getIntrinsicHeight();
-
-            Log.d("debug-values-origwidth", Integer.toString(origWidth));
-            Log.d("debug-values-origheight", Integer.toString(origHeight));
 
 //            final int actualWidth = Math.round(origWidth * scaleX);
 //            final int actualHeight = Math.round(origHeight * scaleY);
@@ -113,20 +107,11 @@ public class CropActivity extends AppCompatActivity {
             final int actualWidth = 500;
             final int actualHeight = 500;
 
-            Log.d("debug-values-actualw", Integer.toString(actualWidth));
-            Log.d("debug-values-actualh", Integer.toString(actualHeight));
-
             int imgViewW = iv.getMeasuredWidth();
             int imgViewH = iv.getMeasuredHeight();
 
-            Log.d("debug-values-imgw", Integer.toString(imgViewW));
-            Log.d("debug-values-imgh", Integer.toString(imgViewH));
-
             int startingX = Math.round((imgViewW - actualWidth)/2);
             int startingY = Math.round((imgViewH - actualHeight)/2);
-
-            Log.d("debug-values-sx", Integer.toString(startingX));
-            Log.d("debug-values-sy", Integer.toString(startingY));
 
             DrawView dv = (DrawView) findViewById(R.id.view);
             dv.getDimensions(actualWidth,actualHeight,startingX,startingY,origWidth,origHeight, scaleX, scaleY);
