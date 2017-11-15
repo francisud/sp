@@ -12,8 +12,10 @@ import android.support.v7.app.AppCompatActivity;
 import android.text.TextUtils;
 import android.util.Log;
 import android.view.View;
+import android.widget.AdapterView;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
+import android.widget.ListView;
 import android.widget.TableLayout;
 import android.widget.TableRow;
 import android.widget.TextView;
@@ -137,22 +139,6 @@ public class ProcessActivity extends AppCompatActivity {
 
         substrate = extras.getString("substrate");
 
-//        Mat topPicture = null;
-//        Mat topPictureHistogram = null;
-//        Mat topPictureHuMoments = null;
-//        ArrayList<Double> topPictureTexture = null;
-//        Uri topPhotoPath = null;
-//        ArrayList<android.graphics.Point> topCoords = null;
-//        ArrayList<Double> topPercentage = null;
-//
-//        Mat undersidePicture = null;
-//        Mat undersidePictureHistogram = null;
-//        Mat undersidePictureHuMoments = null;
-//        ArrayList<Double> undersidePictureTexture = null;
-//        Uri bottomPhotoPath = null;
-//        ArrayList<android.graphics.Point> bottomCoords = null;
-//        ArrayList<Double> bottomPercentage = null;
-
         if(getIntent().hasExtra("topPhotoPath")){
             topPhotoPath = Uri.parse(extras.getString("topPhotoPath"));
             topCoords = (ArrayList<android.graphics.Point>) getIntent().getSerializableExtra("topCoords");
@@ -180,50 +166,50 @@ public class ProcessActivity extends AppCompatActivity {
         }
     }
 
+    //based on https://www.journaldev.com/10416/android-listview-with-custom-adapter-example-tutorial
     private void setPic(Mat picture, ArrayList<Double> percentage, int which) {
         Bitmap bm = Bitmap.createBitmap(picture.cols(), picture.rows(), Bitmap.Config.ARGB_8888);
         Utils.matToBitmap(picture, bm);
 
-        LinearLayout topSpecies;
-        LinearLayout topPercentage;
-        TextView textView;
-        View view;
-        Double index;
         String[] substrate = getResources().getStringArray(R.array.species_array);
+        Double index = null;
+        ListView topListView = (ListView) findViewById(R.id.topListView);
+        ListView undersideListView = (ListView) findViewById(R.id.undersideListView);
+        ArrayList<ResultRowClass> rrc;
+        ResultAdapter adapter;
 
         if(which == 0){
-            ImageView iv = (ImageView) findViewById(R.id.topPhoto);
-            iv.setImageBitmap(bm);
-
-            topSpecies = (LinearLayout) findViewById(R.id.topSpecies);
-            topPercentage = (LinearLayout) findViewById(R.id.topPercentage);
-
+            rrc = new ArrayList<>();
             for(int i = 0; i < 10; i = i + 2){
-                view = new View(ProcessActivity.this);
-                view.setLayoutParams(new LinearLayout.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT, 1));
-                view.setBackgroundColor(Color.DKGRAY);
-
-                //add species
                 index = percentage.get(i);
-                textView = new TextView(ProcessActivity.this);
-                textView.setText(substrate[index.intValue()].toString());
-                textView.setGravity(17);
-                topSpecies.addView(textView);
-
-                //add percentage
-                textView = new TextView(ProcessActivity.this);
-                textView.setText(percentage.get(i+1).toString());
-                textView.setGravity(17);
-                topPercentage.addView(textView);
-
-//                topPercentage.addView(view);
+                rrc.add(new ResultRowClass(substrate[index.intValue()].toString(), percentage.get(i+1).toString()));
             }
 
+            adapter = new ResultAdapter(rrc, ProcessActivity.this);
+
+            topListView.setAdapter(adapter);
+            topListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+                @Override
+                public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                }
+            });
         }
 
         if(which == 1){
-            ImageView iv = (ImageView) findViewById(R.id.undersidePhoto);
-            iv.setImageBitmap(bm);
+            rrc = new ArrayList<>();
+            for(int i = 0; i < 10; i = i + 2){
+                index = percentage.get(i);
+                rrc.add(new ResultRowClass(substrate[index.intValue()].toString(), percentage.get(i+1).toString()));
+            }
+
+            adapter = new ResultAdapter(rrc, ProcessActivity.this);
+
+            undersideListView.setAdapter(adapter);
+            undersideListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+                @Override
+                public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                }
+            });
         }
 
     }
