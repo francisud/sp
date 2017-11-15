@@ -29,6 +29,46 @@
         <item>Leaf Litter</item>
     </string-array>
 
+    <string-array name="species_array">
+        <item>Agaricaceae</item>
+        <item>Agaricales</item>
+        <item>Auriculariaceae</item>
+        <item>Boletaceae</item>
+        <item>Boletinellaceae</item>
+        <item>Cantharellaceae</item>
+        <item>Ceratomyxa</item>
+        <item>Clavariaceae</item>
+        <item>Corticiaceae</item>
+        <item>Crepidotaceae</item>
+        <item>Cudoniaceae</item>
+        <item>Fomitopsidaceae</item>
+        <item>Ganodermataceae</item>
+        <item>Geastraceae</item>
+        <item>Hydnaceae</item>
+        <item>Hydnangiaceae</item>
+        <item>Hygrophoraceae</item>
+        <item>Hymenochaetaceae</item>
+        <item>Hysteriaceae</item>
+        <item>Lycogala</item>
+        <item>Marasmiaceae</item>
+        <item>Meruliaceae</item>
+        <item>Mycenaceae</item>
+        <item>Phaeolaceae</item>
+        <item>Pleurotaceae</item>
+        <item>Pluteaceae</item>
+        <item>Podoscyphaceae</item>
+        <item>Polyporaceae</item>
+        <item>Polyporales</item>
+        <item>Psathyrellaceae</item>
+        <item>Sarcoscyphaceae</item>
+        <item>Schizophyllaceae</item>
+        <item>Stereaceae</item>
+        <item>Strophariaceae</item>
+        <item>Theleporaceae</item>
+        <item>Tremellaceae</item>
+        <item>Tricholomataceae</item>
+    </string-array>
+
     <string name="done">DONE</string>
 
     <string name="topButton">Top Button</string>

@@ -4,14 +4,19 @@ import android.app.ProgressDialog;
 import android.content.res.AssetManager;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.graphics.Color;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
-import android.support.v7.widget.Toolbar;
 import android.text.TextUtils;
 import android.util.Log;
+import android.view.View;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
+import android.widget.TableLayout;
+import android.widget.TableRow;
+import android.widget.TextView;
 
 import org.opencv.android.BaseLoaderCallback;
 import org.opencv.android.LoaderCallbackInterface;
@@ -35,7 +40,9 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.lang.reflect.Array;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 import static java.lang.Math.sqrt;
@@ -49,6 +56,23 @@ import umich.cse.yctung.androidlibsvm.LibSVM;
 public class ProcessActivity extends AppCompatActivity {
 
     ProgressDialog progressDialog;
+
+    String substrate =  null;
+    Mat topPicture = null;
+    Mat topPictureHistogram = null;
+    Mat topPictureHuMoments = null;
+    ArrayList<Double> topPictureTexture = null;
+    Uri topPhotoPath = null;
+    ArrayList<android.graphics.Point> topCoords = null;
+    ArrayList<Double> topPercentage = null;
+
+    Mat undersidePicture = null;
+    Mat undersidePictureHistogram = null;
+    Mat undersidePictureHuMoments = null;
+    ArrayList<Double> undersidePictureTexture = null;
+    Uri bottomPhotoPath = null;
+    ArrayList<android.graphics.Point> bottomCoords = null;
+    ArrayList<Double> bottomPercentage = null;
 
     //FOR LOADING OPENCV
     private BaseLoaderCallback mLoaderCallback = new BaseLoaderCallback(this) {
@@ -68,18 +92,17 @@ public class ProcessActivity extends AppCompatActivity {
         }
     };
 
-    //FOR LOADING OPENCV
     @Override
     public void onResume()
     {
         super.onResume();
-        OpenCVLoader.initAsync(OpenCVLoader.OPENCV_VERSION_3_3_0, this, mLoaderCallback);
     }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_process);
+        OpenCVLoader.initAsync(OpenCVLoader.OPENCV_VERSION_3_3_0, this, mLoaderCallback);
     }
 
     private class AsyncClassifyTask extends AsyncTask<String, Void, Void>
@@ -98,8 +121,12 @@ public class ProcessActivity extends AppCompatActivity {
         }
         @Override
         protected void onPostExecute(Void result) {
+            if(topPicture != null)
+                setPic(topPicture, topPercentage, 0);
+
+            if(undersidePicture != null)
+                setPic(undersidePicture, bottomPercentage, 1);
             progressDialog.dismiss();
-            Log.d("debug","after post execute");
         }
     }
 
@@ -108,21 +135,23 @@ public class ProcessActivity extends AppCompatActivity {
 
         Bundle extras = getIntent().getExtras();
 
-        String substrate = extras.getString("substrate");
+        substrate = extras.getString("substrate");
 
-        Mat topPicture = null;
-        Mat topPictureHistogram = null;
-        Mat topPictureHuMoments = null;
-        ArrayList<Double> topPictureTexture = null;
-        Uri topPhotoPath = null;
-        ArrayList<android.graphics.Point> topCoords = null;
-
-        Mat undersidePicture = null;
-        Mat undersidePictureHistogram = null;
-        Mat undersidePictureHuMoments = null;
-        ArrayList<Double> undersidePictureTexture = null;
-        Uri bottomPhotoPath = null;
-        ArrayList<android.graphics.Point> bottomCoords = null;
+//        Mat topPicture = null;
+//        Mat topPictureHistogram = null;
+//        Mat topPictureHuMoments = null;
+//        ArrayList<Double> topPictureTexture = null;
+//        Uri topPhotoPath = null;
+//        ArrayList<android.graphics.Point> topCoords = null;
+//        ArrayList<Double> topPercentage = null;
+//
+//        Mat undersidePicture = null;
+//        Mat undersidePictureHistogram = null;
+//        Mat undersidePictureHuMoments = null;
+//        ArrayList<Double> undersidePictureTexture = null;
+//        Uri bottomPhotoPath = null;
+//        ArrayList<android.graphics.Point> bottomCoords = null;
+//        ArrayList<Double> bottomPercentage = null;
 
         if(getIntent().hasExtra("topPhotoPath")){
             topPhotoPath = Uri.parse(extras.getString("topPhotoPath"));
@@ -134,7 +163,7 @@ public class ProcessActivity extends AppCompatActivity {
             topPictureHuMoments = getHuMoments(topPicture);
             topPictureTexture = getGaborWavelets(topPicture);
             writeToFile(topPictureHistogram,topPictureHuMoments,topPictureTexture,substrate);
-            classify(0);
+            topPercentage = classify(0);
         }
 
         if(getIntent().hasExtra("bottomPhotoPath")){
@@ -147,18 +176,56 @@ public class ProcessActivity extends AppCompatActivity {
             undersidePictureHuMoments = getHuMoments(undersidePicture);
             undersidePictureTexture = getGaborWavelets(undersidePicture);
             writeToFile(undersidePictureHistogram,undersidePictureHuMoments,undersidePictureTexture,substrate);
-            classify(1);
+            bottomPercentage = classify(1);
         }
-
-//        setPic(topPicture);
     }
 
-    private void setPic(Mat topPicture) {
-        Bitmap bm = Bitmap.createBitmap(topPicture.cols(), topPicture.rows(), Bitmap.Config.ARGB_8888);
-        Utils.matToBitmap(topPicture, bm);
+    private void setPic(Mat picture, ArrayList<Double> percentage, int which) {
+        Bitmap bm = Bitmap.createBitmap(picture.cols(), picture.rows(), Bitmap.Config.ARGB_8888);
+        Utils.matToBitmap(picture, bm);
 
-//        ImageView iv = (ImageView) findViewById(R.id.oldPhoto);
-//        iv.setImageBitmap(bm);
+        LinearLayout topSpecies;
+        LinearLayout topPercentage;
+        TextView textView;
+        View view;
+        Double index;
+        String[] substrate = getResources().getStringArray(R.array.species_array);
+
+        if(which == 0){
+            ImageView iv = (ImageView) findViewById(R.id.topPhoto);
+            iv.setImageBitmap(bm);
+
+            topSpecies = (LinearLayout) findViewById(R.id.topSpecies);
+            topPercentage = (LinearLayout) findViewById(R.id.topPercentage);
+
+            for(int i = 0; i < 10; i = i + 2){
+                view = new View(ProcessActivity.this);
+                view.setLayoutParams(new LinearLayout.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT, 1));
+                view.setBackgroundColor(Color.DKGRAY);
+
+                //add species
+                index = percentage.get(i);
+                textView = new TextView(ProcessActivity.this);
+                textView.setText(substrate[index.intValue()].toString());
+                textView.setGravity(17);
+                topSpecies.addView(textView);
+
+                //add percentage
+                textView = new TextView(ProcessActivity.this);
+                textView.setText(percentage.get(i+1).toString());
+                textView.setGravity(17);
+                topPercentage.addView(textView);
+
+//                topPercentage.addView(view);
+            }
+
+        }
+
+        if(which == 1){
+            ImageView iv = (ImageView) findViewById(R.id.undersidePhoto);
+            iv.setImageBitmap(bm);
+        }
+
     }
 
     //based on https://stackoverflow.com/a/39085038
@@ -467,14 +534,8 @@ public class ProcessActivity extends AppCompatActivity {
             stream.write(":".getBytes());
             stream.write(substrate.getBytes());
 
-            Log.d("debug-substrate", Integer.toString(counter));
-            Log.d("debug-substrate", substrate);
-
             stream.write("\n".getBytes());
-
             stream.close();
-
-            Log.d("debug", "after writing");
         }
 
         catch (IOException e){
@@ -507,8 +568,6 @@ public class ProcessActivity extends AppCompatActivity {
                     InputStream in = am.open(assetFolder + "/" + files[i]);
                     FileOutputStream out = new FileOutputStream(directoryPath + assetFolder + "/" + files[i]);
 
-//                    Log.d("debug-writing path", directoryPath + assetFolder + "/" + files[i]);
-
                     byte buff[] = new byte[1024];
                     int read = 0;
 
@@ -526,7 +585,7 @@ public class ProcessActivity extends AppCompatActivity {
         }
     }
 
-    private void classify(int checker){
+    private ArrayList<Double> classify(int checker){
         LibSVM svm = new LibSVM();
 
         //read features
@@ -594,9 +653,16 @@ public class ProcessActivity extends AppCompatActivity {
 
         }
 
-        for(int i = 0; i < percentage.size(); i++)
-            Log.d("debug - percentage", Double.toString(percentage.get(i)));
+        ArrayList<Double> toReturn = new ArrayList<>();
+        int index;
+        for(int i = 0; i < 5; i++){
+            index = percentage.indexOf(Collections.max(percentage));
+            toReturn.add((double)index);
+            toReturn.add(percentage.get(index));
+            percentage.remove(index);
+        }
 
+        return toReturn;
     }
 
 }
