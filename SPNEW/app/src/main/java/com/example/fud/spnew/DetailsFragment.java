@@ -68,64 +68,16 @@ public class DetailsFragment extends DialogFragment{
 
         for(int i = 0; i < 3; i++){
             try{
-                in = am.open(cursor.getString(cursor.getColumnIndex("picture"+Integer.toString(i))));
+                in = am.open(cursor.getString(cursor.getColumnIndex("picture"+Integer.toString(i))) + ".JPG" );
                 Bitmap bitmap = BitmapFactory.decodeStream(in);
                 images.add(bitmap);
-            }catch (IOException e){}
+            }catch (IOException e){
+                Log.d("debug", "in catch" + e.toString());
+            }
         }
 
-        ArrayAdapter<Bitmap> adapter = new ArrayAdapter<Bitmap>(view.getContext(), android.R.layout.simple_gallery_item, images);
+        ImageListViewAdapter adapter = new ImageListViewAdapter(images, view.getContext());
         pictures.setAdapter(adapter);
-
-        //species textview
-//        tv = new TextView(getActivity());
-//        tv.setText(cursor.getString(cursor.getColumnIndex("colors")));
-//        tv.setTextSize(18);
-//        tv.setLayoutParams(new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT));
-//        tv.setPadding(10,10,10,10);
-//
-//        v = new View(getActivity());
-//        v.setLayoutParams(new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, 1));
-//        v.setBackgroundColor(Color.DKGRAY);
-
-        //colors textview
-
-        //shape textview
-
-        //texture textview
-
-        //substrate textview
-
-        //pictures listview(grid)
-
-        //button close
-
-
-        //for dispaying images
-//        for(int i = 0; i < adapter.getCount(); i++){
-//            v = new View(getActivity());
-//            v.setLayoutParams(new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, 1));
-//            v.setBackgroundColor(Color.DKGRAY);
-//
-//            final int id = i;
-//            tv = new TextView(getActivity());
-//            tv.setId(i);
-//            tv.setText(adapter.getItem(i));
-//            tv.setTextSize(18);
-//            tv.setLayoutParams(new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT));
-//            tv.setPadding(10,10,10,10);
-//            tv.setGravity(1);
-//
-//            tv.setOnClickListener(new View.OnClickListener() {
-//                @Override
-//                public void onClick(View v) {
-//                    mListener.onSelectSubstrate(SubstrateFragment.this, id);
-//                }
-//            });
-//
-//            layout.addView(v);
-//            layout.addView(tv);
-//        }
 
         builder.setView(view);
         return builder.create();

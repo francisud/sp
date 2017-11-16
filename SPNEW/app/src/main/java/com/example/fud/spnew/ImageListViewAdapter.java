@@ -6,6 +6,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
+import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.TextView;
 
@@ -16,11 +17,7 @@ public class ImageListViewAdapter extends ArrayAdapter<Bitmap> {
     Context mContext;
 
     private static class ViewHolder {
-        TextView speciesTV;
-        TextView colorsTV;
-        TextView textureTV;
-        TextView substrateTV;
-        ListView pictures;
+        ImageView imageView;
     }
 
     public ImageListViewAdapter(ArrayList<Bitmap> data, Context context) {
@@ -31,9 +28,24 @@ public class ImageListViewAdapter extends ArrayAdapter<Bitmap> {
 
     @Override
     public View getView(int position, View convertView, ViewGroup parent) {
+        Bitmap dataModel = getItem(position);
+        ImageListViewAdapter.ViewHolder viewHolder;
 
+        if (convertView == null) {
+            viewHolder = new ImageListViewAdapter.ViewHolder();
+            LayoutInflater inflater = LayoutInflater.from(getContext());
+            convertView = inflater.inflate(R.layout.image_row, parent, false);
+            viewHolder.imageView = (ImageView) convertView.findViewById(R.id.imageView);
 
+            convertView.setTag(viewHolder);
+        } else {
+            viewHolder = (ImageListViewAdapter.ViewHolder) convertView.getTag();
+        }
 
-        return null;
+//        viewHolder.imageView.setImageBitmap(Bitmap.createScaledBitmap(dataModel,200,200,false));
+        viewHolder.imageView.setImageBitmap(dataModel);
+
+        // Return the completed view to render on screen
+        return convertView;
     }
 }
