@@ -69,6 +69,11 @@
         <item>Tricholomataceae</item>
     </string-array>
 
+    <string name="species">Species</string>
+    <string name="colors">Colors</string>
+    <string name="textures">Textures</string>
+    <string name="substrates">Substrates</string>
+
     <string name="done">DONE</string>
 
     <string name="topButton">Top Button</string>

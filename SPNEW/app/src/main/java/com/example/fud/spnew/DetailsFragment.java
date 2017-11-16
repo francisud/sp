@@ -15,6 +15,7 @@ import android.support.v7.app.AlertDialog;
 import android.util.Log;
 import android.view.View;
 import android.widget.ArrayAdapter;
+import android.widget.GridView;
 import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.TextView;
@@ -55,7 +56,7 @@ public class DetailsFragment extends DialogFragment{
         TextView colorsTV = (TextView)layout.findViewById(R.id.colors);
         TextView textureTV = (TextView)layout.findViewById(R.id.texture);
         TextView substrateTV = (TextView)layout.findViewById(R.id.substrate);
-        ListView pictures = (ListView)layout.findViewById(R.id.pictures);
+        GridView pictures = (GridView)layout.findViewById(R.id.pictures);
 
         speciesTV.setText(cursor.getString(cursor.getColumnIndex("species")));
         colorsTV.setText(cursor.getString(cursor.getColumnIndex("colors")));
