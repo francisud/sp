@@ -2,17 +2,27 @@ package com.example.fud.spnew;
 
 import android.app.Activity;
 import android.app.Dialog;
+import android.content.res.AssetManager;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.support.v4.app.DialogFragment;
 import android.graphics.Color;
 import android.os.Bundle;
+import android.support.v4.widget.SimpleCursorAdapter;
 import android.support.v7.app.AlertDialog;
 import android.util.Log;
 import android.view.View;
 import android.widget.ArrayAdapter;
 import android.widget.LinearLayout;
+import android.widget.ListView;
 import android.widget.TextView;
+
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.ArrayList;
+import java.util.List;
 
 public class DetailsFragment extends DialogFragment{
 
@@ -29,8 +39,6 @@ public class DetailsFragment extends DialogFragment{
     public Dialog onCreateDialog(Bundle savedInstanceState) {
         String species = getArguments().getString("species").trim();
 
-        Log.d("debug", species);
-
         //database
         String query = "SELECT * FROM species WHERE species='" + species + "'";
         DatabaseHelper databaseHelper = new DatabaseHelper(getContext());
@@ -43,19 +51,42 @@ public class DetailsFragment extends DialogFragment{
         View view = getActivity().getLayoutInflater().inflate(R.layout.show_details, null);
         LinearLayout layout = (LinearLayout)view.findViewById(R.id.layout);
 
-        View v;
-        TextView tv;
+        TextView speciesTV = (TextView)layout.findViewById(R.id.species);
+        TextView colorsTV = (TextView)layout.findViewById(R.id.colors);
+        TextView textureTV = (TextView)layout.findViewById(R.id.texture);
+        TextView substrateTV = (TextView)layout.findViewById(R.id.substrate);
+        ListView pictures = (ListView)layout.findViewById(R.id.pictures);
+
+        speciesTV.setText(cursor.getString(cursor.getColumnIndex("species")));
+        colorsTV.setText(cursor.getString(cursor.getColumnIndex("colors")));
+        textureTV.setText(cursor.getString(cursor.getColumnIndex("texture")));
+        substrateTV.setText(cursor.getString(cursor.getColumnIndex("substrate")));
+
+        AssetManager am = getActivity().getAssets();
+        InputStream in;
+        ArrayList<Bitmap> images = new ArrayList<>();
+
+        for(int i = 0; i < 3; i++){
+            try{
+                in = am.open(cursor.getString(cursor.getColumnIndex("picture"+Integer.toString(i))));
+                Bitmap bitmap = BitmapFactory.decodeStream(in);
+                images.add(bitmap);
+            }catch (IOException e){}
+        }
+
+        ArrayAdapter<Bitmap> adapter = new ArrayAdapter<Bitmap>(view.getContext(), android.R.layout.simple_gallery_item, images);
+        pictures.setAdapter(adapter);
 
         //species textview
-        tv = new TextView(getActivity());
-        tv.setText(cursor.getString(cursor.getColumnIndex("colors")));
-        tv.setTextSize(18);
-        tv.setLayoutParams(new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT));
-        tv.setPadding(10,10,10,10);
-
-        v = new View(getActivity());
-        v.setLayoutParams(new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, 1));
-        v.setBackgroundColor(Color.DKGRAY);
+//        tv = new TextView(getActivity());
+//        tv.setText(cursor.getString(cursor.getColumnIndex("colors")));
+//        tv.setTextSize(18);
+//        tv.setLayoutParams(new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT));
+//        tv.setPadding(10,10,10,10);
+//
+//        v = new View(getActivity());
+//        v.setLayoutParams(new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, 1));
+//        v.setBackgroundColor(Color.DKGRAY);
 
         //colors textview
 
