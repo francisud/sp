@@ -9,7 +9,7 @@ import android.widget.TextView;
 
 import java.util.ArrayList;
 
-public class ResultAdapter extends ArrayAdapter<ResultRowClass> implements View.OnClickListener {
+public class ResultAdapter extends ArrayAdapter<ResultRowClass> {
     private ArrayList<ResultRowClass> data;
     Context mContext;
 
@@ -24,17 +24,6 @@ public class ResultAdapter extends ArrayAdapter<ResultRowClass> implements View.
         this.mContext=context;
     }
 
-    @Override
-    public void onClick(View v) {
-        int position = (Integer) v.getTag();
-        Object object = getItem(position);
-        ResultRowClass resultRowClass =(ResultRowClass) object;
-
-        switch (v.getId())
-        {
-
-        }
-    }
 
     @Override
     public View getView(int position, View convertView, ViewGroup parent) {
@@ -55,7 +44,6 @@ public class ResultAdapter extends ArrayAdapter<ResultRowClass> implements View.
         } else {
             viewHolder = (ViewHolder) convertView.getTag();
         }
-
 
         viewHolder.speciesTV.setText(dataModel.getSpecies());
         viewHolder.percentageTV.setText(dataModel.getPercentage());

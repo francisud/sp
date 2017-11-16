@@ -2,12 +2,18 @@ package com.example.fud.spnew;
 
 import android.content.ContentValues;
 import android.content.Context;
+import android.content.res.AssetManager;
 import android.database.Cursor;
 import android.database.SQLException;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.util.Log;
 
+import java.io.IOException;
+import java.io.InputStream;
+import java.sql.Blob;
 import java.util.ArrayList;
 
 /**
@@ -15,6 +21,8 @@ import java.util.ArrayList;
  */
 
 public class DatabaseHelper extends SQLiteOpenHelper {
+
+    private static boolean ifIntializedSpecies = false;
 
     private static final int DATABASE_VERSION = 1;
     private static final String DATABASE_NAME = "MycoSearch.db";
@@ -34,8 +42,11 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     public static final String IDENTIFIED_COLUMN_PERCENTAGE_UNDERSIDE = "underside_percentage";
     public static final String IDENTIFIED_COLUMN_DATA_UNDERSIDE = "underside_data";
 
+    Context mContext;
+
     public DatabaseHelper(Context context) {
         super(context, DATABASE_NAME , null, DATABASE_VERSION);
+        mContext = context;
     }
 
     @Override
@@ -47,16 +58,25 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 
     @Override
     public void onCreate(SQLiteDatabase db) {
+        Log.d("debug", "inside on create");
         try {
             db.execSQL(
                     "create table identified " +
-                            "(id integer primary key, date text " +
+                            "(id integer primary key autoincrement, date text " +
                             "top_picture text, top_species text, top_percentage text,  top_data text " +
                             "underside_picture text, underside_species text, underside_percentage text, underside_data text)"
             );
-        } catch (SQLException e) {
 
+
+            db.execSQL("create table species " +
+                    "(id integer primary key autoincrement, " +
+                    "species text, colors text, texture text, substrate text, picture0 text, picture1 text, " +
+                    "picture2 text)");
+        } catch (SQLException e) {
+            Log.d("debug", e.toString());
         }
+
+        initializeSpecies(db);
     }
 
     public void insertIdentified (String date,
@@ -86,17 +106,67 @@ public class DatabaseHelper extends SQLiteOpenHelper {
                 new String[] { Integer.toString(id) });
     }
 
-    public ArrayList<String> getAllIdentified() {
-        ArrayList<String> array_list = new ArrayList<String>();
+    private void initializeSpecies(SQLiteDatabase db){
+        /*<string-array name="species_array">
+        <item>Agaricaceae</item>
+        <item>Agaricales</item>
+        <item>Auriculariaceae</item>
+        <item>Boletaceae</item>
+        <item>Boletinellaceae</item>
+        <item>Cantharellaceae</item>
+        <item>Ceratomyxa</item>
+        <item>Clavariaceae</item>
+        <item>Corticiaceae</item>
+        <item>Crepidotaceae</item>
+        <item>Cudoniaceae</item>
+        <item>Fomitopsidaceae</item>
+        <item>Ganodermataceae</item>
+        <item>Geastraceae</item>
+        <item>Hydnaceae</item>
+        <item>Hydnangiaceae</item>
+        <item>Hygrophoraceae</item>
+        <item>Hymenochaetaceae</item>
+        <item>Hysteriaceae</item>
+        <item>Lycogala</item>
+        <item>Marasmiaceae</item>
+        <item>Meruliaceae</item>
+        <item>Mycenaceae</item>
+        <item>Phaeolaceae</item>
+        <item>Pleurotaceae</item>
+        <item>Pluteaceae</item>
+        <item>Podoscyphaceae</item>
+        <item>Polyporaceae</item>
+        <item>Polyporales</item>
+        <item>Psathyrellaceae</item>
+        <item>Sarcoscyphaceae</item>
+        <item>Schizophyllaceae</item>
+        <item>Stereaceae</item>
+        <item>Strophariaceae</item>
+        <item>Theleporaceae</item>
+        <item>Tremellaceae</item>
+        <item>Tricholomataceae</item>*/
 
-        SQLiteDatabase db = this.getReadableDatabase();
-        Cursor res =  db.rawQuery( "select * from identified", null );
-        res.moveToFirst();
+        ContentValues contentValues = new ContentValues();
+        String path = "picture-species/";
 
-        //need fixing
-        while(res.isAfterLast() == false){}
+//        "species text, colors text, texture text, substrate text, picture1 text, picture2 text, picture3 text)"
 
-        return array_list;
+        contentValues.put("species", "Agaricaceae");
+        contentValues.put("colors", "Gray, Brown, White, Yellow-Brown, Black");
+        contentValues.put("texture", "Smooth, Plicated, Crumbly, Scale-like, Web-like");
+        contentValues.put("substrate", "Soil, Decaying Wood, Dead Wood, Animal Manure");
+        for(int i = 0; i < 3; i++){
+            contentValues.put("picture" + Integer.toString(i), path + "agaricaceae" + Integer.toString(i));
+        }
+
+        long checker = db.insert("species", null, contentValues);
+        if(checker == -1)
+            Log.d("debug", "error in inserting");
+        else
+            Log.d("debug", "success in inserting");
+
+
+        ifIntializedSpecies = true;
     }
 
 }

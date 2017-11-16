@@ -1,10 +1,11 @@
 package com.example.fud.spnew;
 
+import android.app.FragmentManager;
+import android.support.v4.app.DialogFragment;
 import android.app.ProgressDialog;
 import android.content.res.AssetManager;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
-import android.graphics.Color;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
@@ -14,11 +15,7 @@ import android.util.Log;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ImageView;
-import android.widget.LinearLayout;
 import android.widget.ListView;
-import android.widget.TableLayout;
-import android.widget.TableRow;
-import android.widget.TextView;
 
 import org.opencv.android.BaseLoaderCallback;
 import org.opencv.android.LoaderCallbackInterface;
@@ -124,10 +121,11 @@ public class ProcessActivity extends AppCompatActivity {
         @Override
         protected void onPostExecute(Void result) {
             if(topPicture != null)
-                setPic(topPicture, topPercentage, 0);
+                displayResults(topPhotoPath, topPercentage, 0);
 
             if(undersidePicture != null)
-                setPic(undersidePicture, bottomPercentage, 1);
+                displayResults(bottomPhotoPath, bottomPercentage, 1);
+
             progressDialog.dismiss();
         }
     }
@@ -167,7 +165,9 @@ public class ProcessActivity extends AppCompatActivity {
     }
 
     //based on https://www.journaldev.com/10416/android-listview-with-custom-adapter-example-tutorial
-    private void setPic(Mat picture, ArrayList<Double> percentage, int which) {
+    private void displayResults(Uri photoPath, ArrayList<Double> percentage, int which) {
+        Mat picture = readPicture(photoPath);
+        Imgproc.cvtColor(picture, picture, Imgproc.COLOR_BGR2RGB);
         Bitmap bm = Bitmap.createBitmap(picture.cols(), picture.rows(), Bitmap.Config.ARGB_8888);
         Utils.matToBitmap(picture, bm);
 
@@ -175,44 +175,63 @@ public class ProcessActivity extends AppCompatActivity {
         Double index = null;
         ListView topListView = (ListView) findViewById(R.id.topListView);
         ListView undersideListView = (ListView) findViewById(R.id.undersideListView);
-        ArrayList<ResultRowClass> rrc;
+        final ArrayList<ResultRowClass> rrcTop;
+        final ArrayList<ResultRowClass> rrcUnderside;
         ResultAdapter adapter;
+        ImageView iv;
 
         if(which == 0){
-            rrc = new ArrayList<>();
+            iv = (ImageView) findViewById(R.id.topPhoto);
+            iv.setImageBitmap(bm);
+
+            rrcTop = new ArrayList<>();
             for(int i = 0; i < 10; i = i + 2){
                 index = percentage.get(i);
-                rrc.add(new ResultRowClass(substrate[index.intValue()].toString(), percentage.get(i+1).toString()));
+                rrcTop.add(new ResultRowClass(substrate[index.intValue()].toString(), percentage.get(i+1).toString()));
             }
 
-            adapter = new ResultAdapter(rrc, ProcessActivity.this);
+            adapter = new ResultAdapter(rrcTop, ProcessActivity.this);
 
             topListView.setAdapter(adapter);
             topListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
                 @Override
                 public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                    ResultRowClass picked = rrcTop.get(position);
+                    showDetails(picked.getSpecies());
                 }
             });
         }
 
         if(which == 1){
-            rrc = new ArrayList<>();
+            iv = (ImageView) findViewById(R.id.undersidePhoto);
+            iv.setImageBitmap(bm);
+
+            rrcUnderside = new ArrayList<>();
             for(int i = 0; i < 10; i = i + 2){
                 index = percentage.get(i);
-                rrc.add(new ResultRowClass(substrate[index.intValue()].toString(), percentage.get(i+1).toString()));
+                rrcUnderside.add(new ResultRowClass(substrate[index.intValue()].toString(), percentage.get(i+1).toString()));
             }
 
-            adapter = new ResultAdapter(rrc, ProcessActivity.this);
+            adapter = new ResultAdapter(rrcUnderside, ProcessActivity.this);
 
             undersideListView.setAdapter(adapter);
             undersideListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
                 @Override
                 public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                    ResultRowClass picked = rrcUnderside.get(position);
+                    showDetails(picked.getSpecies());
                 }
             });
         }
-
     }
+
+    //dialog for showing details
+    private void showDetails(String species){
+        FragmentManager fm = ProcessActivity.this.getFragmentManager();
+        DetailsFragment details = DetailsFragment.newInstance(species);
+        details.show(getSupportFragmentManager(), "dialog");
+    }
+
 
     //based on https://stackoverflow.com/a/39085038
     private Mat readPicture(Uri photoPath){
