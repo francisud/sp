@@ -9,12 +9,18 @@ import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
 import android.text.TextUtils;
 import android.util.Log;
+import android.view.Gravity;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.AdapterView;
+import android.widget.Button;
+import android.widget.GridView;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.ListView;
 
 import org.opencv.android.BaseLoaderCallback;
@@ -126,6 +132,13 @@ public class ProcessActivity extends AppCompatActivity {
             if(undersidePicture != null)
                 displayResults(bottomPhotoPath, bottomPercentage, 1);
 
+            //add button
+            LinearLayout layout = (LinearLayout) findViewById(R.id.layout);
+            Button button = new Button(ProcessActivity.this);
+            button.setLayoutParams(new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT));
+            button.setText("Done");
+            layout.addView(button);
+
             progressDialog.dismiss();
         }
     }
@@ -173,16 +186,27 @@ public class ProcessActivity extends AppCompatActivity {
 
         String[] substrate = getResources().getStringArray(R.array.species_array);
         Double index = null;
-        ListView topListView = (ListView) findViewById(R.id.topListView);
-        ListView undersideListView = (ListView) findViewById(R.id.undersideListView);
+
+        LinearLayout layout = (LinearLayout) findViewById(R.id.layout);
+
         final ArrayList<ResultRowClass> rrcTop;
         final ArrayList<ResultRowClass> rrcUnderside;
         ResultAdapter adapter;
-        ImageView iv;
 
         if(which == 0){
-            iv = (ImageView) findViewById(R.id.topPhoto);
+            ImageView iv = new ImageView(this);
+            LinearLayout.LayoutParams lp1 = new LinearLayout.LayoutParams((int) getResources().getDimension(R.dimen.content_process_width), (int) getResources().getDimension(R.dimen.content_process_height));
+            lp1.gravity = Gravity.CENTER_HORIZONTAL;
+            iv.setLayoutParams(lp1);
             iv.setImageBitmap(bm);
+
+            ListView topListView = new ListView(this);
+            LinearLayout.LayoutParams lp2 = new LinearLayout.LayoutParams(
+                    ActionBar.LayoutParams.MATCH_PARENT,
+                    (int) getResources().getDimension(R.dimen.zerodp),
+                    1.0f);
+            topListView.setLayoutParams(lp2);
+
 
             rrcTop = new ArrayList<>();
             for(int i = 0; i < 10; i = i + 2){
@@ -200,11 +224,25 @@ public class ProcessActivity extends AppCompatActivity {
                     showDetails(picked.getSpecies());
                 }
             });
+
+            layout.addView(iv);
+            layout.addView(topListView);
         }
 
         if(which == 1){
-            iv = (ImageView) findViewById(R.id.undersidePhoto);
+            ImageView iv = new ImageView(this);
+            LinearLayout.LayoutParams lp1 = new LinearLayout.LayoutParams((int) getResources().getDimension(R.dimen.content_process_width), (int) getResources().getDimension(R.dimen.content_process_height));
+            lp1.gravity = Gravity.CENTER_HORIZONTAL;
+            iv.setLayoutParams(lp1);
             iv.setImageBitmap(bm);
+
+            ListView undersideListView = new ListView(this);
+            LinearLayout.LayoutParams lp2 = new LinearLayout.LayoutParams(
+                    ActionBar.LayoutParams.MATCH_PARENT,
+                    (int) getResources().getDimension(R.dimen.zerodp),
+                    1.0f);
+            undersideListView.setLayoutParams(lp2);
+
 
             rrcUnderside = new ArrayList<>();
             for(int i = 0; i < 10; i = i + 2){
@@ -222,6 +260,9 @@ public class ProcessActivity extends AppCompatActivity {
                     showDetails(picked.getSpecies());
                 }
             });
+
+            layout.addView(iv);
+            layout.addView(undersideListView);
         }
     }
 
