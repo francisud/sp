@@ -4,6 +4,7 @@ import android.app.AlertDialog;
 import android.app.FragmentManager;
 import android.content.ContentValues;
 import android.content.DialogInterface;
+import android.content.Intent;
 import android.database.sqlite.SQLiteDatabase;
 import android.support.v4.app.DialogFragment;
 import android.app.ProgressDialog;
@@ -158,15 +159,24 @@ public class ProcessActivity extends AppCompatActivity {
 
                     builder.setPositiveButton(R.string.save, new DialogInterface.OnClickListener() {
                         public void onClick(DialogInterface dialog, int id) {
-                            saveClassified();
-                            dialog.dismiss();
-                            //clean activities
+                            if(saveClassified()){
+                                dialog.dismiss();
+
+                                //clean activities
+                                Intent intent = new Intent(getApplicationContext(), Main2Activity.class);
+                                intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+                                startActivity(intent);
+                            }
                         }
                     });
                     builder.setNegativeButton(R.string.no, new DialogInterface.OnClickListener() {
                         public void onClick(DialogInterface dialog, int id) {
                             dialog.dismiss();
+
                             //clean activities
+                            Intent intent = new Intent(getApplicationContext(), Main2Activity.class);
+                            intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+                            startActivity(intent);
                         }
                     });
 
@@ -283,7 +293,7 @@ public class ProcessActivity extends AppCompatActivity {
     }
 
 
-    public void saveClassified(){
+    public boolean saveClassified(){
         DatabaseHelper databaseHelper = new DatabaseHelper(this);
         SQLiteDatabase db = databaseHelper.getReadableDatabase();
         ContentValues values = new ContentValues();
@@ -361,6 +371,8 @@ public class ProcessActivity extends AppCompatActivity {
 
         long checker = db.insert("identified", null, values);
         db.close();
+
+        return true;
     }
 
 
