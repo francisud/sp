@@ -1,10 +1,10 @@
 package com.example.fud.spnew;
 
-public class ResultRowClass {
+public class Class_ResultRow {
     private String species;
     private String percentage;
 
-    public ResultRowClass(String species, String percentage){
+    public Class_ResultRow(String species, String percentage){
         this.species = species;
         this.percentage = percentage;
     }

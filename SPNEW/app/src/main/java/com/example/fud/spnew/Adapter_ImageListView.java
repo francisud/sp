@@ -7,12 +7,10 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 import android.widget.ImageView;
-import android.widget.ListView;
-import android.widget.TextView;
 
 import java.util.ArrayList;
 
-public class ImageListViewAdapter extends ArrayAdapter<Bitmap> {
+public class Adapter_ImageListView extends ArrayAdapter<Bitmap> {
     private ArrayList<Bitmap> data;
     Context mContext;
 
@@ -20,7 +18,7 @@ public class ImageListViewAdapter extends ArrayAdapter<Bitmap> {
         ImageView imageView;
     }
 
-    public ImageListViewAdapter(ArrayList<Bitmap> data, Context context) {
+    public Adapter_ImageListView(ArrayList<Bitmap> data, Context context) {
         super(context, R.layout.show_details, data);
         this.data = data;
         this.mContext=context;
@@ -29,17 +27,17 @@ public class ImageListViewAdapter extends ArrayAdapter<Bitmap> {
     @Override
     public View getView(int position, View convertView, ViewGroup parent) {
         Bitmap dataModel = getItem(position);
-        ImageListViewAdapter.ViewHolder viewHolder;
+        Adapter_ImageListView.ViewHolder viewHolder;
 
         if (convertView == null) {
-            viewHolder = new ImageListViewAdapter.ViewHolder();
+            viewHolder = new Adapter_ImageListView.ViewHolder();
             LayoutInflater inflater = LayoutInflater.from(getContext());
             convertView = inflater.inflate(R.layout.image_row, parent, false);
             viewHolder.imageView = (ImageView) convertView.findViewById(R.id.imageView);
 
             convertView.setTag(viewHolder);
         } else {
-            viewHolder = (ImageListViewAdapter.ViewHolder) convertView.getTag();
+            viewHolder = (Adapter_ImageListView.ViewHolder) convertView.getTag();
         }
 
 //        viewHolder.imageView.setImageBitmap(Bitmap.createScaledBitmap(dataModel,200,200,false));

@@ -11,7 +11,7 @@ import android.widget.ArrayAdapter;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
-public class PictureSourceFragment extends DialogFragment {
+public class Fragment_PictureSource extends DialogFragment {
 
     PictureSourceFragmentListener mListener;
     public interface PictureSourceFragmentListener {
@@ -59,7 +59,7 @@ public class PictureSourceFragment extends DialogFragment {
             tv.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    mListener.onSelectSource(PictureSourceFragment.this, id);
+                    mListener.onSelectSource(Fragment_PictureSource.this, id);
                 }
             });
 

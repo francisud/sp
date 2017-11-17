@@ -16,7 +16,7 @@
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
         <activity
-            android:name=".Main2Activity"
+            android:name=".Activity_Main2"
             android:label=""
             android:theme="@style/AppTheme.NoActionBar">
             <intent-filter>
@@ -25,15 +25,15 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <activity android:name=".MainActivity" />
+        <activity android:name=".Activity_Main" />
         <activity
-            android:name=".IdentifyActivity"
+            android:name=".Activity_Identify"
             android:label="@string/title_activity_identify"
-            android:parentActivityName=".Main2Activity"
+            android:parentActivityName=".Activity_Main2"
             android:theme="@style/AppTheme.NoActionBar">
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
-                android:value="com.example.fud.spnew.Main2Activity" />
+                android:value="com.example.fud.spnew.Activity_Main2" />
         </activity>
 
         <provider
@@ -47,23 +47,23 @@
         </provider>
 
         <activity
-            android:name=".ProcessActivity"
+            android:name=".Activity_Process"
             android:label="@string/title_activity_process"
-            android:parentActivityName=".IdentifyActivity"
+            android:parentActivityName=".Activity_Identify"
             android:theme="@style/AppTheme.NoActionBar">
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
-                android:value="com.example.fud.spnew.IdentifyActivity" />
+                android:value="com.example.fud.spnew.Activity_Identify" />
         </activity>
 
         <activity
-            android:name=".CropActivity"
+            android:name=".Activity_Crop"
             android:label="@string/title_activity_crop"
             android:theme="@style/AppTheme.NoActionBar">
             android:parentActivityName=".IdentifyActivity">
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
-                android:value="com.example.fud.spnew.IdentifyActivity" />
+                android:value="com.example.fud.spnew.Activity_Identify" />
         </activity>
     </application>
 

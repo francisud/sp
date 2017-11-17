@@ -11,7 +11,7 @@ import android.widget.ArrayAdapter;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
-public class SubstrateFragment extends DialogFragment {
+public class Fragment_Substrate extends DialogFragment {
 
     SubstrateFragmentListener mListener;
 
@@ -60,7 +60,7 @@ public class SubstrateFragment extends DialogFragment {
             tv.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    mListener.onSelectSubstrate(SubstrateFragment.this, id);
+                    mListener.onSelectSubstrate(Fragment_Substrate.this, id);
                 }
             });
 

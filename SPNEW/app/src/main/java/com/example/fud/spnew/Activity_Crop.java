@@ -4,28 +4,21 @@ import android.app.Activity;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
-import android.graphics.Canvas;
-import android.graphics.Color;
 import android.graphics.Matrix;
-import android.graphics.Paint;
 import android.graphics.Point;
-import android.graphics.Rect;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.Bundle;
 import android.provider.MediaStore;
 import android.support.v7.app.AppCompatActivity;
-import android.util.Log;
 import android.view.Display;
 import android.view.View;
-import android.view.ViewTreeObserver;
 import android.view.Window;
 import android.widget.ImageView;
-import android.widget.Toast;
 
 import java.util.ArrayList;
 
-public class CropActivity extends AppCompatActivity {
+public class Activity_Crop extends AppCompatActivity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -113,14 +106,14 @@ public class CropActivity extends AppCompatActivity {
             int startingX = Math.round((imgViewW - actualWidth)/2);
             int startingY = Math.round((imgViewH - actualHeight)/2);
 
-            DrawView dv = (DrawView) findViewById(R.id.view);
+            View_Draw dv = (View_Draw) findViewById(R.id.view);
             dv.getDimensions(actualWidth,actualHeight,startingX,startingY,origWidth,origHeight, scaleX, scaleY);
         }
     }
 
     //return the coordinates of the rectangle
     public void toReturn(View view){
-        DrawView dv = (DrawView) findViewById(R.id.view);
+        View_Draw dv = (View_Draw) findViewById(R.id.view);
         ArrayList<Point> coordinates = dv.getCoordinates();
         float[] scaling = dv.getScaling();
         Intent returnIntent = new Intent();

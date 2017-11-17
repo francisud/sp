@@ -20,7 +20,7 @@ import java.util.ArrayList;
  * https://stackoverflow.com/a/17807469
  **/
 
-public class DrawView extends View {
+public class View_Draw extends View {
 
     int imageWidth, imageHeight, startingX, startingY, origWidth, origHeight;
     float scaleX, scaleY;
@@ -37,18 +37,18 @@ public class DrawView extends View {
     Paint paint;
     Canvas canvas;
 
-    public DrawView(Context context) {
+    public View_Draw(Context context) {
         super(context);
         paint = new Paint();
         setFocusable(true); // necessary for getting the touch events
         canvas = new Canvas();
     }
 
-    public DrawView(Context context, AttributeSet attrs, int defStyle) {
+    public View_Draw(Context context, AttributeSet attrs, int defStyle) {
         super(context, attrs, defStyle);
     }
 
-    public DrawView(Context context, AttributeSet attrs) {
+    public View_Draw(Context context, AttributeSet attrs) {
         super(context, attrs);
         paint = new Paint();
         setFocusable(true); // necessary for getting the touch events

@@ -1,6 +1,5 @@
 package com.example.fud.spnew;
 
-import android.app.Activity;
 import android.app.Dialog;
 import android.content.res.AssetManager;
 import android.database.Cursor;
@@ -8,27 +7,22 @@ import android.database.sqlite.SQLiteDatabase;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.support.v4.app.DialogFragment;
-import android.graphics.Color;
 import android.os.Bundle;
-import android.support.v4.widget.SimpleCursorAdapter;
 import android.support.v7.app.AlertDialog;
 import android.util.Log;
 import android.view.View;
-import android.widget.ArrayAdapter;
 import android.widget.GridView;
 import android.widget.LinearLayout;
-import android.widget.ListView;
 import android.widget.TextView;
 
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
-import java.util.List;
 
-public class DetailsFragment extends DialogFragment{
+public class Fragment_Details extends DialogFragment{
 
-    public static DetailsFragment newInstance(String species){
-        DetailsFragment frag = new DetailsFragment();
+    public static Fragment_Details newInstance(String species){
+        Fragment_Details frag = new Fragment_Details();
         Bundle args = new Bundle();
         args.putString("species", species);
         frag.setArguments(args);
@@ -42,8 +36,8 @@ public class DetailsFragment extends DialogFragment{
 
         //database
         String query = "SELECT * FROM species WHERE species='" + species + "'";
-        DatabaseHelper databaseHelper = new DatabaseHelper(getContext());
-        SQLiteDatabase db = databaseHelper.getReadableDatabase();
+        Helper_Database helperDatabase = new Helper_Database(getContext());
+        SQLiteDatabase db = helperDatabase.getReadableDatabase();
         Cursor cursor = db.rawQuery(query,null);
         cursor.moveToFirst();
 
@@ -77,7 +71,7 @@ public class DetailsFragment extends DialogFragment{
             }
         }
 
-        ImageListViewAdapter adapter = new ImageListViewAdapter(images, view.getContext());
+        Adapter_ImageListView adapter = new Adapter_ImageListView(images, view.getContext());
         pictures.setAdapter(adapter);
 
         builder.setView(view);

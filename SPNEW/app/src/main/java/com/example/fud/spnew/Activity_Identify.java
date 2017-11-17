@@ -8,7 +8,6 @@ import android.os.Environment;
 import android.provider.MediaStore;
 import android.support.v4.content.FileProvider;
 import android.support.v7.app.AppCompatActivity;
-import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.View;
 import android.net.Uri;
@@ -24,7 +23,7 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 
-public class IdentifyActivity extends AppCompatActivity implements PictureSourceFragment.PictureSourceFragmentListener,SubstrateFragment.SubstrateFragmentListener {
+public class Activity_Identify extends AppCompatActivity implements Fragment_PictureSource.PictureSourceFragmentListener,Fragment_Substrate.SubstrateFragmentListener {
     private ImageButton top;
     private ImageButton bottom;
 
@@ -53,8 +52,8 @@ public class IdentifyActivity extends AppCompatActivity implements PictureSource
 
     //dialog for selecting source of photo
     public void selectSource(View view){
-        PictureSourceFragment pickSource = new PictureSourceFragment();
-        pickSource.show(getSupportFragmentManager(), "PictureSourceFragment");
+        Fragment_PictureSource pickSource = new Fragment_PictureSource();
+        pickSource.show(getSupportFragmentManager(), "Fragment_PictureSource");
 
         switch (view.getId()) {
             case R.id.imageButton2:
@@ -101,8 +100,8 @@ public class IdentifyActivity extends AppCompatActivity implements PictureSource
 
     //dialog for selecting substrate
     public void selectSubstrate(View view){
-        DialogFragment pickSubstrate = new SubstrateFragment();
-        pickSubstrate.show(getSupportFragmentManager(), "SubstrateFragment");
+        DialogFragment pickSubstrate = new Fragment_Substrate();
+        pickSubstrate.show(getSupportFragmentManager(), "Fragment_Substrate");
     }
 
     public void onSelectSubstrate(DialogFragment dialog, int which){
@@ -181,7 +180,7 @@ public class IdentifyActivity extends AppCompatActivity implements PictureSource
 
     //for starting activity to get bounding box
     private void startCrop(){
-        Intent cropIntent = new Intent(IdentifyActivity.this, CropActivity.class);
+        Intent cropIntent = new Intent(Activity_Identify.this, Activity_Crop.class);
 
         if(source.equals("top")){
             cropIntent.putExtra("photoPath", topPhotoPath.toString());
@@ -229,18 +228,18 @@ public class IdentifyActivity extends AppCompatActivity implements PictureSource
 
     public void startProcessActivity(View view){
         if(topPhotoPath == null && bottomPhotoPath == null){
-            Toast.makeText(IdentifyActivity.this, "Both Top Picture and Underside Picture can't be empty",
+            Toast.makeText(Activity_Identify.this, "Both Top Picture and Underside Picture can't be empty",
                     Toast.LENGTH_LONG).show();
             return;
         }
 
         if(substrate == null){
-            Toast.makeText(IdentifyActivity.this, "Please pick substrate",
+            Toast.makeText(Activity_Identify.this, "Please pick substrate",
                     Toast.LENGTH_LONG).show();
             return;
         }
 
-        Intent intent = new Intent(IdentifyActivity.this, ProcessActivity.class);
+        Intent intent = new Intent(Activity_Identify.this, Activity_Process.class);
 
         //put top photo data
         if(topPhotoPath != null){

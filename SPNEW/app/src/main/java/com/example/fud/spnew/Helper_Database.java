@@ -12,7 +12,7 @@ import android.util.Log;
  * Created by FUD on 11/12/2017.
  */
 
-public class DatabaseHelper extends SQLiteOpenHelper {
+public class Helper_Database extends SQLiteOpenHelper {
     private static final int DATABASE_VERSION = 1;
     private static final String DATABASE_NAME = "MycoSearch.db";
 
@@ -33,7 +33,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 
     Context mContext;
 
-    public DatabaseHelper(Context context) {
+    public Helper_Database(Context context) {
         super(context, DATABASE_NAME , null, DATABASE_VERSION);
         mContext = context;
     }

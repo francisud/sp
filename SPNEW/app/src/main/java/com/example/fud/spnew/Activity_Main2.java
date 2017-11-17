@@ -1,38 +1,22 @@
 package com.example.fud.spnew;
 
-import android.content.Context;
-import android.content.Intent;
 import android.database.sqlite.SQLiteDatabase;
 import android.os.Bundle;
 import android.support.design.widget.BottomNavigationView;
-import android.support.design.widget.FloatingActionButton;
-import android.support.design.widget.Snackbar;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentActivity;
 import android.support.v4.app.FragmentTransaction;
-import android.util.Log;
-import android.view.View;
-import android.support.design.widget.NavigationView;
-import android.support.v4.view.GravityCompat;
-import android.support.v4.widget.DrawerLayout;
-import android.support.v7.app.ActionBarDrawerToggle;
-import android.support.v7.app.AppCompatActivity;
-import android.support.v7.widget.Toolbar;
-import android.view.Menu;
 import android.view.MenuItem;
-import android.widget.Button;
 
-import java.io.File;
-
-public class Main2Activity extends FragmentActivity {
+public class Activity_Main2 extends FragmentActivity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
         //database
-        DatabaseHelper databaseHelper = new DatabaseHelper(this);
-        SQLiteDatabase db = databaseHelper.getWritableDatabase();
+        Helper_Database helperDatabase = new Helper_Database(this);
+        SQLiteDatabase db = helperDatabase.getWritableDatabase();
 
         setContentView(R.layout.content_main2);
 
@@ -41,9 +25,9 @@ public class Main2Activity extends FragmentActivity {
         if (findViewById(R.id.fragment_container) != null) {
             if (savedInstanceState != null) {return;}
 
-            HomeFragment homeFragment = new HomeFragment();
-            homeFragment.setArguments(getIntent().getExtras());
-            getSupportFragmentManager().beginTransaction().add(R.id.fragment_container, homeFragment).commit();
+            Fragment_Home fragmentHome = new Fragment_Home();
+            fragmentHome.setArguments(getIntent().getExtras());
+            getSupportFragmentManager().beginTransaction().add(R.id.fragment_container, fragmentHome).commit();
 
             bnv.setSelectedItemId(R.id.identify);
         }
@@ -74,11 +58,11 @@ public class Main2Activity extends FragmentActivity {
         Fragment newFragment = null;
 
         if(id == 0)
-            newFragment = new MyMushroomsFragment();
+            newFragment = new Fragment_MyMushrooms();
         if(id == 1)
-            newFragment = new HomeFragment();
+            newFragment = new Fragment_Home();
         if(id == 2)
-            newFragment = new HowToFragment();
+            newFragment = new Fragment_HowTo();
 
         Bundle args = new Bundle();
         newFragment.setArguments(args);

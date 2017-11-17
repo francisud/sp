@@ -9,8 +9,8 @@ import android.widget.TextView;
 
 import java.util.ArrayList;
 
-public class ResultAdapter extends ArrayAdapter<ResultRowClass> {
-    private ArrayList<ResultRowClass> data;
+public class Adapter_Result extends ArrayAdapter<Class_ResultRow> {
+    private ArrayList<Class_ResultRow> data;
     Context mContext;
 
     private static class ViewHolder {
@@ -18,7 +18,7 @@ public class ResultAdapter extends ArrayAdapter<ResultRowClass> {
         TextView percentageTV;
     }
 
-    public ResultAdapter(ArrayList<ResultRowClass> data, Context context) {
+    public Adapter_Result(ArrayList<Class_ResultRow> data, Context context) {
         super(context, R.layout.result_row, data);
         this.data = data;
         this.mContext=context;
@@ -28,7 +28,7 @@ public class ResultAdapter extends ArrayAdapter<ResultRowClass> {
     @Override
     public View getView(int position, View convertView, ViewGroup parent) {
         // Get the data item for this position
-        ResultRowClass dataModel = getItem(position);
+        Class_ResultRow dataModel = getItem(position);
         // Check if an existing view is being reused, otherwise inflate the view
         ViewHolder viewHolder; // view lookup cache stored in tag
 

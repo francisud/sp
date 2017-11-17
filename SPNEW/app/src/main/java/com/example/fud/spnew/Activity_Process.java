@@ -6,7 +6,6 @@ import android.content.ContentValues;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.database.sqlite.SQLiteDatabase;
-import android.support.v4.app.DialogFragment;
 import android.app.ProgressDialog;
 import android.content.res.AssetManager;
 import android.graphics.Bitmap;
@@ -17,13 +16,10 @@ import android.os.Bundle;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
 import android.text.TextUtils;
-import android.util.Log;
 import android.view.Gravity;
 import android.view.View;
-import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.Button;
-import android.widget.GridView;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.ListView;
@@ -50,11 +46,9 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collections;
-import java.util.Date;
 import java.util.List;
 
 import static java.lang.Math.sqrt;
@@ -65,7 +59,7 @@ import static org.opencv.core.CvType.CV_8UC3;
 import umich.cse.yctung.androidlibsvm.LibSVM;
 
 
-public class ProcessActivity extends AppCompatActivity {
+public class Activity_Process extends AppCompatActivity {
 
     ProgressDialog progressDialog;
 
@@ -99,7 +93,7 @@ public class ProcessActivity extends AppCompatActivity {
             switch (status) {
                 case LoaderCallbackInterface.SUCCESS:
                 {
-                    progressDialog = new ProgressDialog(ProcessActivity.this);
+                    progressDialog = new ProgressDialog(Activity_Process.this);
                     new AsyncClassifyTask().execute();
                 } break;
                 default:
@@ -147,14 +141,14 @@ public class ProcessActivity extends AppCompatActivity {
 
             //add button
             LinearLayout layout = (LinearLayout) findViewById(R.id.layout);
-            Button button = new Button(ProcessActivity.this);
+            Button button = new Button(Activity_Process.this);
             button.setLayoutParams(new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT));
             button.setText("Done");
             button.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
 
-                    final AlertDialog.Builder builder = new AlertDialog.Builder(ProcessActivity.this);
+                    final AlertDialog.Builder builder = new AlertDialog.Builder(Activity_Process.this);
                     builder.setMessage(R.string.save_data);
 
                     builder.setPositiveButton(R.string.save, new DialogInterface.OnClickListener() {
@@ -163,7 +157,7 @@ public class ProcessActivity extends AppCompatActivity {
                                 dialog.dismiss();
 
                                 //clean activities
-                                Intent intent = new Intent(getApplicationContext(), Main2Activity.class);
+                                Intent intent = new Intent(getApplicationContext(), Activity_Main2.class);
                                 intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
                                 startActivity(intent);
                             }
@@ -174,7 +168,7 @@ public class ProcessActivity extends AppCompatActivity {
                             dialog.dismiss();
 
                             //clean activities
-                            Intent intent = new Intent(getApplicationContext(), Main2Activity.class);
+                            Intent intent = new Intent(getApplicationContext(), Activity_Main2.class);
                             intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
                             startActivity(intent);
                         }
@@ -239,8 +233,8 @@ public class ProcessActivity extends AppCompatActivity {
         iv.setLayoutParams(lp1);
         iv.setImageBitmap(bm);
 
-        final ArrayList<ResultRowClass> rrc;
-        ResultAdapter adapter;
+        final ArrayList<Class_ResultRow> rrc;
+        Adapter_Result adapter;
 
         String[] species = getResources().getStringArray(R.array.species_array);
         Double index = null;
@@ -256,7 +250,7 @@ public class ProcessActivity extends AppCompatActivity {
         rrc = new ArrayList<>();
         for(int i = 0; i < 10; i = i + 2){
             index = percentage.get(i);
-            rrc.add(new ResultRowClass(species[index.intValue()].toString(), percentage.get(i+1).toString()));
+            rrc.add(new Class_ResultRow(species[index.intValue()].toString(), percentage.get(i+1).toString()));
 
             if(which == 0){
                 topSavingSpecies.add(species[index.intValue()].toString());
@@ -269,13 +263,13 @@ public class ProcessActivity extends AppCompatActivity {
             }
         }
 
-        adapter = new ResultAdapter(rrc, ProcessActivity.this);
+        adapter = new Adapter_Result(rrc, Activity_Process.this);
 
         listView.setAdapter(adapter);
     listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                ResultRowClass picked = rrc.get(position);
+                Class_ResultRow picked = rrc.get(position);
                 showDetails(picked.getSpecies());
             }
         });
@@ -287,15 +281,15 @@ public class ProcessActivity extends AppCompatActivity {
 
     //dialog for showing details
     private void showDetails(String species){
-        FragmentManager fm = ProcessActivity.this.getFragmentManager();
-        DetailsFragment details = DetailsFragment.newInstance(species);
+        FragmentManager fm = Activity_Process.this.getFragmentManager();
+        Fragment_Details details = Fragment_Details.newInstance(species);
         details.show(getSupportFragmentManager(), "dialog");
     }
 
 
     public boolean saveClassified(){
-        DatabaseHelper databaseHelper = new DatabaseHelper(this);
-        SQLiteDatabase db = databaseHelper.getReadableDatabase();
+        Helper_Database helperDatabase = new Helper_Database(this);
+        SQLiteDatabase db = helperDatabase.getReadableDatabase();
         ContentValues values = new ContentValues();
 
         //get date
@@ -639,14 +633,14 @@ public class ProcessActivity extends AppCompatActivity {
     }
 
     private void writeToFile(Mat topPictureHistogram, Mat topPictureHuMoments, ArrayList<Double> topPictureTexture, String substrate, int which){
-        File path = ProcessActivity.this.getFilesDir();
+        File path = Activity_Process.this.getFilesDir();
         File file = new File(path, "features.txt");
         FileOutputStream stream;
         List<String> holderStrings = null;
 
         if(which == 0)
             holderStrings = topSavingData;
-        if(which == 2)
+        if(which == 1)
             holderStrings = bottomSavingData;
 
         try {
@@ -745,7 +739,7 @@ public class ProcessActivity extends AppCompatActivity {
         LibSVM svm = new LibSVM();
 
         //read features
-        File path = ProcessActivity.this.getFilesDir();
+        File path = Activity_Process.this.getFilesDir();
         File file;
         FileInputStream in;
         String absolutePath = null;

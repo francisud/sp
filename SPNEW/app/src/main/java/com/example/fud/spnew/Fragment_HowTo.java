@@ -1,6 +1,5 @@
 package com.example.fud.spnew;
 
-import android.content.Context;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
@@ -12,12 +11,12 @@ import android.view.ViewGroup;
 /**
  * A simple {@link Fragment} subclass.
  * Activities that contain this fragment must implement the
- * {@link HowToFragment.OnFragmentInteractionListener} interface
+ * {@link Fragment_HowTo.OnFragmentInteractionListener} interface
  * to handle interaction events.
- * Use the {@link HowToFragment#newInstance} factory method to
+ * Use the {@link Fragment_HowTo#newInstance} factory method to
  * create an instance of this fragment.
  */
-public class HowToFragment extends Fragment {
+public class Fragment_HowTo extends Fragment {
     // TODO: Rename parameter arguments, choose names that match
     // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
     private static final String ARG_PARAM1 = "param1";
@@ -29,7 +28,7 @@ public class HowToFragment extends Fragment {
 
     private OnFragmentInteractionListener mListener;
 
-    public HowToFragment() {
+    public Fragment_HowTo() {
         // Required empty public constructor
     }
 
@@ -39,11 +38,11 @@ public class HowToFragment extends Fragment {
      *
      * @param param1 Parameter 1.
      * @param param2 Parameter 2.
-     * @return A new instance of fragment HowToFragment.
+     * @return A new instance of fragment Fragment_HowTo.
      */
     // TODO: Rename and change types and number of parameters
-    public static HowToFragment newInstance(String param1, String param2) {
-        HowToFragment fragment = new HowToFragment();
+    public static Fragment_HowTo newInstance(String param1, String param2) {
+        Fragment_HowTo fragment = new Fragment_HowTo();
         Bundle args = new Bundle();
         args.putString(ARG_PARAM1, param1);
         args.putString(ARG_PARAM2, param2);

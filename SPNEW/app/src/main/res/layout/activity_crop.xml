@@ -6,7 +6,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
-    tools:context="com.example.fud.spnew.CropActivity">
+    tools:context="com.example.fud.spnew.Activity_Crop">
 
     <!--android:layout_alignParentTop="true"-->
     <!--android:layout_above="@+id/button4"-->
@@ -20,7 +20,7 @@
         app:srcCompat="@mipmap/ic_launcher" />
 
     <view
-        class="com.example.fud.spnew.DrawView"
+        class="com.example.fud.spnew.View_Draw"
         android:id="@+id/view"
         android:scaleType="fitXY"
         android:layout_width="500px"
