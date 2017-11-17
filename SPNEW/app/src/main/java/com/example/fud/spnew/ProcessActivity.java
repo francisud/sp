@@ -1,6 +1,10 @@
 package com.example.fud.spnew;
 
+import android.app.AlertDialog;
 import android.app.FragmentManager;
+import android.content.ContentValues;
+import android.content.DialogInterface;
+import android.database.sqlite.SQLiteDatabase;
 import android.support.v4.app.DialogFragment;
 import android.app.ProgressDialog;
 import android.content.res.AssetManager;
@@ -47,7 +51,9 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.lang.reflect.Array;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Collections;
+import java.util.Date;
 import java.util.List;
 
 import static java.lang.Math.sqrt;
@@ -70,6 +76,9 @@ public class ProcessActivity extends AppCompatActivity {
     Uri topPhotoPath = null;
     ArrayList<android.graphics.Point> topCoords = null;
     ArrayList<Double> topPercentage = null;
+    List<String> topSavingSpecies = new ArrayList<>();
+    List<String> topSavingPercentage = new ArrayList<>();
+    List<String> topSavingData = new ArrayList<>();
 
     Mat undersidePicture = null;
     Mat undersidePictureHistogram = null;
@@ -78,6 +87,9 @@ public class ProcessActivity extends AppCompatActivity {
     Uri bottomPhotoPath = null;
     ArrayList<android.graphics.Point> bottomCoords = null;
     ArrayList<Double> bottomPercentage = null;
+    List<String> bottomSavingSpecies = new ArrayList<>();
+    List<String> bottomSavingPercentage = new ArrayList<>();
+    List<String> bottomSavingData = new ArrayList<>();
 
     //FOR LOADING OPENCV
     private BaseLoaderCallback mLoaderCallback = new BaseLoaderCallback(this) {
@@ -137,6 +149,31 @@ public class ProcessActivity extends AppCompatActivity {
             Button button = new Button(ProcessActivity.this);
             button.setLayoutParams(new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT));
             button.setText("Done");
+            button.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+
+                    final AlertDialog.Builder builder = new AlertDialog.Builder(ProcessActivity.this);
+                    builder.setMessage(R.string.save_data);
+
+                    builder.setPositiveButton(R.string.save, new DialogInterface.OnClickListener() {
+                        public void onClick(DialogInterface dialog, int id) {
+                            saveClassified();
+                            dialog.dismiss();
+                            //clean activities
+                        }
+                    });
+                    builder.setNegativeButton(R.string.no, new DialogInterface.OnClickListener() {
+                        public void onClick(DialogInterface dialog, int id) {
+                            dialog.dismiss();
+                            //clean activities
+                        }
+                    });
+
+                    AlertDialog dialog = builder.create();
+                    dialog.show();
+                }
+            });
             layout.addView(button);
 
             progressDialog.dismiss();
@@ -159,7 +196,7 @@ public class ProcessActivity extends AppCompatActivity {
             topPictureHistogram = getHistogram(topPicture);
             topPictureHuMoments = getHuMoments(topPicture);
             topPictureTexture = getGaborWavelets(topPicture);
-            writeToFile(topPictureHistogram,topPictureHuMoments,topPictureTexture,substrate);
+            writeToFile(topPictureHistogram,topPictureHuMoments,topPictureTexture,substrate,0);
             topPercentage = classify(0);
         }
 
@@ -172,98 +209,70 @@ public class ProcessActivity extends AppCompatActivity {
             undersidePictureHistogram = getHistogram(undersidePicture);
             undersidePictureHuMoments = getHuMoments(undersidePicture);
             undersidePictureTexture = getGaborWavelets(undersidePicture);
-            writeToFile(undersidePictureHistogram,undersidePictureHuMoments,undersidePictureTexture,substrate);
+            writeToFile(undersidePictureHistogram,undersidePictureHuMoments,undersidePictureTexture,substrate,1);
             bottomPercentage = classify(1);
         }
     }
 
     //based on https://www.journaldev.com/10416/android-listview-with-custom-adapter-example-tutorial
     private void displayResults(Uri photoPath, ArrayList<Double> percentage, int which) {
+        //read image
         Mat picture = readPicture(photoPath);
         Imgproc.cvtColor(picture, picture, Imgproc.COLOR_BGR2RGB);
         Bitmap bm = Bitmap.createBitmap(picture.cols(), picture.rows(), Bitmap.Config.ARGB_8888);
         Utils.matToBitmap(picture, bm);
 
-        String[] substrate = getResources().getStringArray(R.array.species_array);
-        Double index = null;
+        //display image
+        ImageView iv = new ImageView(this);
+        LinearLayout.LayoutParams lp1 = new LinearLayout.LayoutParams((int) getResources().getDimension(R.dimen.content_process_width), (int) getResources().getDimension(R.dimen.content_process_height));
+        lp1.gravity = Gravity.CENTER_HORIZONTAL;
+        iv.setLayoutParams(lp1);
+        iv.setImageBitmap(bm);
 
-        LinearLayout layout = (LinearLayout) findViewById(R.id.layout);
-
-        final ArrayList<ResultRowClass> rrcTop;
-        final ArrayList<ResultRowClass> rrcUnderside;
+        final ArrayList<ResultRowClass> rrc;
         ResultAdapter adapter;
 
-        if(which == 0){
-            ImageView iv = new ImageView(this);
-            LinearLayout.LayoutParams lp1 = new LinearLayout.LayoutParams((int) getResources().getDimension(R.dimen.content_process_width), (int) getResources().getDimension(R.dimen.content_process_height));
-            lp1.gravity = Gravity.CENTER_HORIZONTAL;
-            iv.setLayoutParams(lp1);
-            iv.setImageBitmap(bm);
+        String[] species = getResources().getStringArray(R.array.species_array);
+        Double index = null;
 
-            ListView topListView = new ListView(this);
-            LinearLayout.LayoutParams lp2 = new LinearLayout.LayoutParams(
-                    ActionBar.LayoutParams.MATCH_PARENT,
-                    (int) getResources().getDimension(R.dimen.zerodp),
-                    1.0f);
-            topListView.setLayoutParams(lp2);
+        ListView listView = new ListView(this);
+        LinearLayout.LayoutParams lp2 = new LinearLayout.LayoutParams(
+                ActionBar.LayoutParams.MATCH_PARENT,
+                (int) getResources().getDimension(R.dimen.zerodp),
+                1.0f);
+        listView.setLayoutParams(lp2);
 
+        //add all species and percentage
+        rrc = new ArrayList<>();
+        for(int i = 0; i < 10; i = i + 2){
+            index = percentage.get(i);
+            rrc.add(new ResultRowClass(species[index.intValue()].toString(), percentage.get(i+1).toString()));
 
-            rrcTop = new ArrayList<>();
-            for(int i = 0; i < 10; i = i + 2){
-                index = percentage.get(i);
-                rrcTop.add(new ResultRowClass(substrate[index.intValue()].toString(), percentage.get(i+1).toString()));
+            if(which == 0){
+                topSavingSpecies.add(species[index.intValue()].toString());
+                topSavingPercentage.add(percentage.get(i+1).toString());
             }
 
-            adapter = new ResultAdapter(rrcTop, ProcessActivity.this);
-
-            topListView.setAdapter(adapter);
-            topListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-                @Override
-                public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                    ResultRowClass picked = rrcTop.get(position);
-                    showDetails(picked.getSpecies());
-                }
-            });
-
-            layout.addView(iv);
-            layout.addView(topListView);
-        }
-
-        if(which == 1){
-            ImageView iv = new ImageView(this);
-            LinearLayout.LayoutParams lp1 = new LinearLayout.LayoutParams((int) getResources().getDimension(R.dimen.content_process_width), (int) getResources().getDimension(R.dimen.content_process_height));
-            lp1.gravity = Gravity.CENTER_HORIZONTAL;
-            iv.setLayoutParams(lp1);
-            iv.setImageBitmap(bm);
-
-            ListView undersideListView = new ListView(this);
-            LinearLayout.LayoutParams lp2 = new LinearLayout.LayoutParams(
-                    ActionBar.LayoutParams.MATCH_PARENT,
-                    (int) getResources().getDimension(R.dimen.zerodp),
-                    1.0f);
-            undersideListView.setLayoutParams(lp2);
-
-
-            rrcUnderside = new ArrayList<>();
-            for(int i = 0; i < 10; i = i + 2){
-                index = percentage.get(i);
-                rrcUnderside.add(new ResultRowClass(substrate[index.intValue()].toString(), percentage.get(i+1).toString()));
+            if(which == 1){
+                bottomSavingSpecies.add(species[index.intValue()].toString());
+                bottomSavingPercentage.add(percentage.get(i+1).toString());
             }
-
-            adapter = new ResultAdapter(rrcUnderside, ProcessActivity.this);
-
-            undersideListView.setAdapter(adapter);
-            undersideListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-                @Override
-                public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                    ResultRowClass picked = rrcUnderside.get(position);
-                    showDetails(picked.getSpecies());
-                }
-            });
-
-            layout.addView(iv);
-            layout.addView(undersideListView);
         }
+
+        adapter = new ResultAdapter(rrc, ProcessActivity.this);
+
+        listView.setAdapter(adapter);
+    listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                ResultRowClass picked = rrc.get(position);
+                showDetails(picked.getSpecies());
+            }
+        });
+
+        LinearLayout layout = (LinearLayout) findViewById(R.id.layout);
+        layout.addView(iv);
+        layout.addView(listView);
     }
 
     //dialog for showing details
@@ -271,6 +280,87 @@ public class ProcessActivity extends AppCompatActivity {
         FragmentManager fm = ProcessActivity.this.getFragmentManager();
         DetailsFragment details = DetailsFragment.newInstance(species);
         details.show(getSupportFragmentManager(), "dialog");
+    }
+
+
+    public void saveClassified(){
+        DatabaseHelper databaseHelper = new DatabaseHelper(this);
+        SQLiteDatabase db = databaseHelper.getReadableDatabase();
+        ContentValues values = new ContentValues();
+
+        //get date
+        String date = Calendar.getInstance().getTime().toString();
+
+        byte[] top_picture = null;
+        int top_picture_type = -1;
+        int top_picture_width = -1;
+        int top_picture_height = -1;
+        String top_species = null;
+        String top_percentage = null;
+        String top_data = null;
+
+        byte[] underside_picture = null;
+        int underside_picture_type = -1;
+        int underside_picture_width = -1;
+        int underside_picture_height = -1;
+        String underside_species = null;
+        String underside_percentage = null;
+        String underside_data = null;
+
+        if(topPhotoPath != null){
+            //read image and convert to blob
+            Mat image = readPicture(topPhotoPath);
+            long nbytes = image.total() * image.elemSize();
+            top_picture = new byte[ (int)nbytes ];
+            image.get(0, 0,top_picture);
+
+            top_picture_type = image.type();
+            top_picture_width = image.cols();
+            top_picture_height = image.rows();
+
+            //top species, percentage, numerical data
+            top_species = TextUtils.join(",", topSavingSpecies);
+            top_percentage = TextUtils.join(",", topSavingPercentage);
+            top_data = TextUtils.join("", topSavingData);
+        }
+
+        if(bottomPhotoPath != null){
+            //read image and convert to blob
+            Mat image = readPicture(bottomPhotoPath);
+            long nbytes = image.total() * image.elemSize();
+            underside_picture = new byte[ (int)nbytes ];
+            image.get(0, 0,underside_picture);
+
+            underside_picture_type = image.type();
+            underside_picture_width = image.cols();
+            underside_picture_height = image.rows();
+
+            //underside species, percentage, numerical data
+            underside_species = TextUtils.join(",", bottomSavingSpecies);
+            underside_percentage = TextUtils.join(",", bottomSavingPercentage);
+            underside_data = TextUtils.join("", bottomSavingData);
+        }
+
+        values.put("date", date);
+
+        values.put("top_picture",top_picture);
+        values.put("top_picture_type",top_picture_type);
+        values.put("top_picture_width",top_picture_width);
+        values.put("top_picture_height",top_picture_height);
+        values.put("top_species",top_species);
+        values.put("top_percentage",top_percentage);
+        values.put("top_data",top_data);
+
+        values.put("underside_picture",underside_picture);
+        values.put("underside_picture_type",underside_picture_type);
+        values.put("underside_picture_width",underside_picture_width);
+        values.put("underside_picture_height",underside_picture_height);
+        values.put("underside_species",underside_species);
+        values.put("underside_percentage",underside_percentage);
+        values.put("underside_data",underside_data);
+
+        long checker = db.insert("identified", null, values);
+        db.close();
     }
 
 
@@ -536,51 +626,59 @@ public class ProcessActivity extends AppCompatActivity {
         return feature;
     }
 
-    private void writeToFile(Mat topPictureHistogram, Mat topPictureHuMoments, ArrayList<Double> topPictureTexture, String substrate){
+    private void writeToFile(Mat topPictureHistogram, Mat topPictureHuMoments, ArrayList<Double> topPictureTexture, String substrate, int which){
         File path = ProcessActivity.this.getFilesDir();
         File file = new File(path, "features.txt");
         FileOutputStream stream;
+        List<String> holderStrings = null;
+
+        if(which == 0)
+            holderStrings = topSavingData;
+        if(which == 2)
+            holderStrings = bottomSavingData;
 
         try {
             stream = new FileOutputStream(file);
 
             int counter = 1;
             double holder;
+            String stringToWrite;
             stream.write("1 ".getBytes());
+            holderStrings.add("1 ");
 
             for(int i = 0; i < 768; i++){
                 holder = topPictureHistogram.get(i,0)[0];
-                stream.write(Integer.toString(counter).getBytes());
-                stream.write(":".getBytes());
-                stream.write(Double.toString(holder).getBytes());
-                stream.write(" ".getBytes());
+                stringToWrite = Integer.toString(counter) + ":" + Double.toString(holder) + " ";
+                stream.write(stringToWrite.getBytes());
                 counter++;
+
+                holderStrings.add(stringToWrite);
             }
 
             for(int i = 0; i < topPictureHuMoments.rows(); i++){
                 holder = topPictureHuMoments.get(i,0)[0];
-                stream.write(Integer.toString(counter).getBytes());
-                stream.write(":".getBytes());
-                stream.write(Double.toString(holder).getBytes());
-                stream.write(" ".getBytes());
+                stringToWrite = Integer.toString(counter) + ":" + Double.toString(holder) + " ";
+                stream.write(stringToWrite.getBytes());
                 counter++;
+
+                holderStrings.add(stringToWrite);
             }
 
             for(int i = 0; i < topPictureTexture.size(); i++){
                 holder = topPictureTexture.get(i);
-                stream.write(Integer.toString(counter).getBytes());
-                stream.write(":".getBytes());
-                stream.write(Double.toString(holder).getBytes());
-                stream.write(" ".getBytes());
+                stringToWrite = Integer.toString(counter) + ":" + Double.toString(holder) + " ";
+                stream.write(stringToWrite.getBytes());
                 counter++;
+
+                holderStrings.add(stringToWrite);
             }
 
             //write substrate
-            stream.write(Integer.toString(counter).getBytes());
-            stream.write(":".getBytes());
-            stream.write(substrate.getBytes());
+            stringToWrite = Integer.toString(counter) + ":" + substrate + "\n";
+            stream.write(stringToWrite.getBytes());
 
-            stream.write("\n".getBytes());
+            holderStrings.add(stringToWrite);
+
             stream.close();
         }
 

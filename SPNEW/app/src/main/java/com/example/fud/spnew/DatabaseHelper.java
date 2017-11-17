@@ -50,16 +50,19 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         try {
             db.execSQL(
                     "create table identified " +
-                            "(id integer primary key autoincrement, date text " +
-                            "top_picture text, top_species text, top_percentage text,  top_data text " +
-                            "underside_picture text, underside_species text, underside_percentage text, underside_data text)"
-            );
+                            "(id integer primary key autoincrement, date text, " +
 
+                            "top_picture blob, top_picture_type integer, top_picture_width integer, top_picture_height integer, " +
+                            "top_species text, top_percentage text,  top_data text, " +
+                            "underside_picture blob, underside_picture_type integer, underside_picture_width integer, underside_picture_height integer, " +
+                            "underside_species text, underside_percentage text, underside_data text)"
+            );
 
             db.execSQL("create table species " +
                     "(id integer primary key autoincrement, " +
                     "species text, colors text, texture text, substrate text, picture0 text, picture1 text, " +
                     "picture2 text)");
+
         } catch (SQLException e) {}
 
         initializeSpecies(db);

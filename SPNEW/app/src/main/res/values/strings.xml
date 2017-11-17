@@ -74,7 +74,10 @@
     <string name="textures">Textures</string>
     <string name="substrates">Substrates</string>
 
+    <string name="save_data">Save Data?></string>
     <string name="done">DONE</string>
+    <string name="save">SAVE</string>
+    <string name="no">NO</string>
 
     <string name="topButton">Top Button</string>
     <string name="sideButton">Side Button</string>
