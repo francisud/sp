@@ -5,31 +5,10 @@ import android.content.Context;
 import android.database.SQLException;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
-import android.util.Log;
-
-
-/**
- * Created by FUD on 11/12/2017.
- */
 
 public class Helper_Database extends SQLiteOpenHelper {
     private static final int DATABASE_VERSION = 1;
     private static final String DATABASE_NAME = "MycoSearch.db";
-
-    public static final String IDENTIFIED_TABLE_NAME  = "identified";
-
-    public static final String IDENTIFIED_COLUMN_ID   = "id";
-    public static final String IDENTIFIED_COLUMN_DATE = "date";
-
-    public static final String IDENTIFIED_COLUMN_PICTURE_TOP = "top_picture";
-    public static final String IDENTIFIED_COLUMN_SPECIES_TOP = "top_species";
-    public static final String IDENTIFIED_COLUMN_PERCENTAGE_TOP = "top_percentage";
-    public static final String IDENTIFIED_COLUMN_DATA_TOP = "top_data";
-
-    public static final String IDENTIFIED_COLUMN_PICTURE_UNDERSIDE = "underside_picture";
-    public static final String IDENTIFIED_COLUMN_SPECIES_UNDERSIDE = "underside_species";
-    public static final String IDENTIFIED_COLUMN_PERCENTAGE_UNDERSIDE = "underside_percentage";
-    public static final String IDENTIFIED_COLUMN_DATA_UNDERSIDE = "underside_data";
 
     Context mContext;
 
@@ -66,33 +45,6 @@ public class Helper_Database extends SQLiteOpenHelper {
         } catch (SQLException e) {}
 
         initializeSpecies(db);
-    }
-
-    public void insertIdentified (String date,
-                         String top_picture, String top_species, String top_percentage, String top_data,
-                         String underside_picture, String underside_species, String underside_percentage, String underside_data) {
-        SQLiteDatabase db = this.getWritableDatabase();
-        ContentValues contentValues = new ContentValues();
-        contentValues.put("date", date);
-
-        contentValues.put("top_picture", top_picture);
-        contentValues.put("top_species", top_species);
-        contentValues.put("top_percentage", top_percentage);
-        contentValues.put("top_data", top_data);
-
-        contentValues.put("underside_picture", underside_picture);
-        contentValues.put("underside_species", underside_species);
-        contentValues.put("underside_percentage", underside_percentage);
-        contentValues.put("underside_data", underside_data);
-
-        db.insert("identified", null, contentValues);
-    }
-
-    public int deleteIdentified (int id) {
-        SQLiteDatabase db = this.getWritableDatabase();
-        return db.delete("identified",
-                "id = ? ",
-                new String[] { Integer.toString(id) });
     }
 
     private void initializeSpecies(SQLiteDatabase db){

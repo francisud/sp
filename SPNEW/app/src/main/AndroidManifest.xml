@@ -16,7 +16,7 @@
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
         <activity
-            android:name=".Activity_Main2"
+            android:name=".Activity_Main"
             android:label=""
             android:theme="@style/AppTheme.NoActionBar">
             <intent-filter>
@@ -25,15 +25,14 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <activity android:name=".Activity_Main" />
         <activity
             android:name=".Activity_Identify"
             android:label="@string/title_activity_identify"
-            android:parentActivityName=".Activity_Main2"
+            android:parentActivityName=".Activity_Main"
             android:theme="@style/AppTheme.NoActionBar">
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
-                android:value="com.example.fud.spnew.Activity_Main2" />
+                android:value="com.example.fud.spnew.Activity_Main" />
         </activity>
 
         <provider

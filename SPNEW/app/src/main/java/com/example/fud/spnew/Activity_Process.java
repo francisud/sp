@@ -157,7 +157,7 @@ public class Activity_Process extends AppCompatActivity {
                                 dialog.dismiss();
 
                                 //clean activities
-                                Intent intent = new Intent(getApplicationContext(), Activity_Main2.class);
+                                Intent intent = new Intent(getApplicationContext(), Activity_Main.class);
                                 intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
                                 startActivity(intent);
                             }
@@ -168,7 +168,7 @@ public class Activity_Process extends AppCompatActivity {
                             dialog.dismiss();
 
                             //clean activities
-                            Intent intent = new Intent(getApplicationContext(), Activity_Main2.class);
+                            Intent intent = new Intent(getApplicationContext(), Activity_Main.class);
                             intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
                             startActivity(intent);
                         }
@@ -266,7 +266,7 @@ public class Activity_Process extends AppCompatActivity {
         adapter = new Adapter_Result(rrc, Activity_Process.this);
 
         listView.setAdapter(adapter);
-    listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+        listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                 Class_ResultRow picked = rrc.get(position);
