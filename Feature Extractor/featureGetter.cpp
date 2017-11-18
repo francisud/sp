@@ -4,11 +4,6 @@ functions related:
     void checkBoundary();
     void showImage();
     void onMouse( int event, int x, int y, int f, void* );
-
-https://docs.opencv.org/2.4/doc/tutorials/imgproc/histograms/histogram_calculation/histogram_calculation.html - getting the LAB histogram
-functions related:
-    Mat getHistogram(Mat &image);
-
 */
 
 #include "opencv2/imgproc/imgproc.hpp"
@@ -37,16 +32,19 @@ void checkBoundary();
 void showImage();
 void onMouse( int event, int x, int y, int f, void* );
 Mat imageSegmentation(Mat &image);
-Mat getHistogram(Mat &image);
+Mat getColorMoments(Mat &image);
 Mat getHuMoments(Mat &image);
 Mat getGaborWavelets(Mat &image);
+Mat GetSquareImage(Mat &img);
 
 int main ( int argc, char** argv ){
     cout<<" Click and drag for Selection"<<endl<<endl;
     cout<<" Press 'Space Bar' to process the image"<<endl<<endl;
-    input=imread(argv[1],1);
-        
-	resize(input, src, Size(500, 500), 0, 0, INTER_CUBIC);
+
+    input=imread(argv[1],1);        
+	// resize(input, src, Size(500, 500), 0, 0, INTER_CUBIC);
+	
+	src = GetSquareImage(input);
 		 
     namedWindow(winName,WINDOW_NORMAL);
     setMouseCallback(winName,onMouse,NULL );
@@ -59,43 +57,34 @@ int main ( int argc, char** argv ){
 
     Mat img = src.clone();    
     Mat foreground = imageSegmentation(img);
-    Mat hist = getHistogram(foreground);
+    Mat color = getColorMoments(foreground);
     Mat hu = getHuMoments(foreground);
     Mat gw = getGaborWavelets(foreground);
 		
-		ofstream features;
-		features.open ("features.txt");	
-		
-		int counter = 1;
+	ofstream features;
+	features.open ("features.txt");	
+	
+	int counter = 1;
 
-		features << "1 ";
-		
-		for(int i = 0; i < 256; i++){
-			features << counter << ":" << hist.at<float>(i,0) << " ";
-			counter++;
-		}
-		
-		for(int i = 256; i < 512; i++){
-			features << counter << ":" << hist.at<float>(i,0) << " ";
-			counter++;
-		}
-		
-		for(int i = 512; i < 768; i++){
-			features << counter << ":" << hist.at<float>(i,0) << " ";
-			counter++;
-		}		
-		
-		for(int i = 0; i < hu.rows; i++){
-			features << counter << ":" << hu.at<double>(i,0) << " ";
-			counter++;
-		}
-		
-		for(int i = 0; i < gw.rows; i++){
-			features << counter << ":" << gw.at<double>(i,0) << " ";
-			counter++;
-		}			
-		
-		features.close();		
+	features << "1 ";
+	
+	for(int i = 0; i < color.rows; i++){
+		features << counter << ":" << color.at<double>(i,0) << " ";
+		counter++;
+	}	
+	
+	
+	for(int i = 0; i < hu.rows-1; i++){
+		features << counter << ":" << hu.at<double>(i,0) << " ";
+		counter++;
+	}
+	
+	for(int i = 0; i < gw.rows; i++){
+		features << counter << ":" << gw.at<double>(i,0) << " ";
+		counter++;
+	}			
+	
+	features.close();		
 		
     cout<<" Image is processed. Open 'features.txt' to get numerical features."<<endl<<endl;
 
@@ -180,6 +169,38 @@ void onMouse( int event, int x, int y, int f, void* ){
     showImage();
 }
 
+//based on https://stackoverflow.com/a/28563810
+Mat GetSquareImage(Mat &img){
+	int target_width = 500;
+
+    int width = img.cols,
+       height = img.rows;
+
+    Mat square = Mat::zeros( target_width, target_width, img.type() );
+
+    int max_dim = ( width >= height ) ? width : height;
+    float scale = ( ( float ) target_width ) / max_dim;
+    Rect roi;
+    if ( width >= height )
+    {
+        roi.width = target_width;
+        roi.x = 0;
+        roi.height = height * scale;
+        roi.y = ( target_width - roi.height ) / 2;
+    }
+    else
+    {
+        roi.y = 0;
+        roi.height = target_width;
+        roi.width = width * scale;
+        roi.x = ( target_width - roi.width ) / 2;
+    }
+
+    resize( img, square( roi ), roi.size() );
+
+    return square;
+}
+
 
 Mat imageSegmentation(Mat &img){
   //bounding rectangle
@@ -216,37 +237,115 @@ Mat imageSegmentation(Mat &img){
 }
 
 
-Mat getHistogram(Mat &image) {
-  Mat grayScale;
-  Mat mask;
+Mat getColorMoments(Mat &image) {
+  int totalPixels = 0;
 
-  //compute mask
-  cvtColor(image,grayScale,CV_BGR2GRAY);
-  threshold(grayScale,mask,254,255,THRESH_BINARY_INV);    
+  double b_mean = 0;
+  double g_mean = 0;
+  double r_mean = 0;
 
-	//split the channels
-  vector<Mat> bgr_planes;
-  split( image, bgr_planes );
+  double b_stddev = 0;
+  double g_stddev = 0;
+  double r_stddev = 0;
 
-  int histSize = 256;
-  float range[] = {0,256} ;
-  const float* histRange = {range};
+  double b_skewness = 0;
+  double g_skewness = 0;
+  double r_skewness = 0;
 
-  Mat b_hist, g_hist, r_hist;
 
-  calcHist( &bgr_planes[0], 1, 0, mask, b_hist, 1, &histSize, &histRange);
-  calcHist( &bgr_planes[1], 1, 0, mask, g_hist, 1, &histSize, &histRange);
-  calcHist( &bgr_planes[2], 1, 0, mask, r_hist, 1, &histSize, &histRange);
-  
-  b_hist.reshape(1,1);
-  g_hist.reshape(1,1);
-  r_hist.reshape(1,1);
-  
-  Mat feature;  
-  feature.push_back(b_hist);
-  feature.push_back(g_hist);
-  feature.push_back(r_hist);
+  Vec3b pixel;
+
+  //computing total pixels
+  for(int i = 0; i < image.rows; i++){
+  	for(int j = 0; j < image.cols; j++){
+  		pixel = image.at<Vec3b>(i,j);
+
+  		//if not background
+  		if(pixel.val[0] != 255 && pixel.val[1] != 255 && pixel.val[2] != 255){
+  			totalPixels += 1;
+  		}
+  	}
+  }
+
+  //computing means
+  for(int i = 0; i < image.rows; i++){
+  	for(int j = 0; j < image.cols; j++){
+  		pixel = image.at<Vec3b>(i,j);
+
+  		if(pixel.val[0] != 255 && pixel.val[1] != 255 && pixel.val[2] != 255){
+  			b_mean += pixel.val[0];
+  			g_mean += pixel.val[1];
+  			r_mean += pixel.val[2];
+  		}
+  	}
+  }
+
+  b_mean = b_mean / totalPixels;
+  g_mean = g_mean / totalPixels;
+  r_mean = r_mean / totalPixels;
+
+  //computing stddev and skewness
+  for(int i = 0; i < image.rows; i++){
+  	for(int j = 0; j < image.cols; j++){
+  		pixel = image.at<Vec3b>(i,j);
+
+  		if(pixel.val[0] != 255 && pixel.val[1] != 255 && pixel.val[2] != 255){
+  			b_stddev += (pixel.val[0] - b_mean) * (pixel.val[0] - b_mean);
+  			g_stddev += (pixel.val[1] - g_mean) * (pixel.val[1] - g_mean);
+  			r_stddev += (pixel.val[2] - r_mean) * (pixel.val[2] - r_mean);
+
+  			b_skewness += (pixel.val[0] - b_mean) * (pixel.val[0] - b_mean) * (pixel.val[0] - b_mean);
+  			g_skewness += (pixel.val[1] - g_mean) * (pixel.val[1] - g_mean) * (pixel.val[1] - g_mean);
+  			r_skewness += (pixel.val[2] - r_mean) * (pixel.val[2] - r_mean) * (pixel.val[2] - r_mean);
+  		}
+  	}
+  }
+
+  b_stddev /= totalPixels;
+  g_stddev /= totalPixels;
+  r_stddev /= totalPixels;
+
+  b_stddev = sqrt(b_stddev);
+  g_stddev = sqrt(g_stddev);
+  r_stddev = sqrt(r_stddev);
+
+  b_skewness /= totalPixels;
+  g_skewness /= totalPixels;
+  r_skewness /= totalPixels;
+
+  b_skewness = cbrt(b_skewness);
+  g_skewness = cbrt(g_skewness);
+  r_skewness = cbrt(r_skewness);
+
+
+  // cout << static_cast<int>(totalPixels) << endl;
+
+  // cout << static_cast<double>(b_mean) << endl;
+  // cout << static_cast<double>(g_mean) << endl;
+  // cout << static_cast<double>(r_mean) << endl;
+
+  // cout << static_cast<double>(b_stddev) << endl;
+  // cout << static_cast<double>(g_stddev) << endl;
+  // cout << static_cast<double>(r_stddev) << endl;
+
+  // cout << static_cast<double>(b_skewness) << endl;
+  // cout << static_cast<double>(g_skewness) << endl;
+  // cout << static_cast<double>(r_skewness) << endl;
       
+  Mat feature;
+  feature.push_back(b_mean);
+  feature.push_back(g_mean);
+  feature.push_back(r_mean);
+
+  feature.push_back(b_stddev);
+  feature.push_back(g_stddev);
+  feature.push_back(r_stddev);
+
+  feature.push_back(b_skewness);
+  feature.push_back(g_skewness);
+  feature.push_back(r_skewness);
+
+  cout << feature.rows << endl;
   return feature;
 }
 
