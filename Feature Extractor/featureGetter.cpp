@@ -46,7 +46,7 @@ int main ( int argc, char** argv ){
 	
 	src = GetSquareImage(input);
 		 
-    namedWindow(winName,WINDOW_NORMAL);
+    namedWindow(winName,WINDOW_AUTOSIZE);
     setMouseCallback(winName,onMouse,NULL );
     imshow(winName,src);
 
@@ -73,7 +73,7 @@ int main ( int argc, char** argv ){
 		counter++;
 	}	
 	
-	
+	//remove last feature, not scale / rotation invariant
 	for(int i = 0; i < hu.rows-1; i++){
 		features << counter << ":" << hu.at<double>(i,0) << " ";
 		counter++;
@@ -84,6 +84,8 @@ int main ( int argc, char** argv ){
 		counter++;
 	}			
 	
+	cout<< counter << endl;
+
 	features.close();		
 		
     cout<<" Image is processed. Open 'features.txt' to get numerical features."<<endl<<endl;
