@@ -16,6 +16,7 @@ import android.os.Bundle;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
 import android.text.TextUtils;
+import android.util.Log;
 import android.view.Gravity;
 import android.view.View;
 import android.widget.AdapterView;
@@ -31,8 +32,6 @@ import org.opencv.android.Utils;
 import org.opencv.core.Core;
 import org.opencv.core.CvType;
 import org.opencv.core.Mat;
-import org.opencv.core.MatOfFloat;
-import org.opencv.core.MatOfInt;
 import org.opencv.core.MatOfPoint;
 import org.opencv.core.Rect;
 import org.opencv.core.Scalar;
@@ -51,8 +50,8 @@ import java.util.Calendar;
 import java.util.Collections;
 import java.util.List;
 
+import static java.lang.Math.cbrt;
 import static java.lang.Math.sqrt;
-import static org.opencv.core.Core.split;
 import static org.opencv.core.CvType.CV_32F;
 import static org.opencv.core.CvType.CV_8UC3;
 
@@ -65,7 +64,7 @@ public class Activity_Process extends AppCompatActivity {
 
     String substrate =  null;
     Mat topPicture = null;
-    Mat topPictureHistogram = null;
+    ArrayList<Double> topPictureColorMoments = null;
     Mat topPictureHuMoments = null;
     ArrayList<Double> topPictureTexture = null;
     Uri topPhotoPath = null;
@@ -74,9 +73,10 @@ public class Activity_Process extends AppCompatActivity {
     List<String> topSavingSpecies = new ArrayList<>();
     List<String> topSavingPercentage = new ArrayList<>();
     List<String> topSavingData = new ArrayList<>();
+    float[] topScaling = null;
 
     Mat undersidePicture = null;
-    Mat undersidePictureHistogram = null;
+    ArrayList<Double> undersidePictureColorMoments = null;
     Mat undersidePictureHuMoments = null;
     ArrayList<Double> undersidePictureTexture = null;
     Uri bottomPhotoPath = null;
@@ -85,6 +85,7 @@ public class Activity_Process extends AppCompatActivity {
     List<String> bottomSavingSpecies = new ArrayList<>();
     List<String> bottomSavingPercentage = new ArrayList<>();
     List<String> bottomSavingData = new ArrayList<>();
+    float[] bottomScaling = null;
 
     //FOR LOADING OPENCV
     private BaseLoaderCallback mLoaderCallback = new BaseLoaderCallback(this) {
@@ -196,11 +197,12 @@ public class Activity_Process extends AppCompatActivity {
             topCoords = (ArrayList<android.graphics.Point>) getIntent().getSerializableExtra("topCoords");
 
             topPicture = readPicture(topPhotoPath);
-            topPicture = imageSegmentation(topCoords, topPicture);
-            topPictureHistogram = getHistogram(topPicture);
+            topScaling = (float[]) getIntent().getSerializableExtra("topScaling");
+            topPicture = imageSegmentation(topCoords, topPicture, topScaling);
+            topPictureColorMoments = getColorMoments(topPicture);
             topPictureHuMoments = getHuMoments(topPicture);
             topPictureTexture = getGaborWavelets(topPicture);
-            writeToFile(topPictureHistogram,topPictureHuMoments,topPictureTexture,substrate,0);
+            writeToFile(topPictureColorMoments,topPictureHuMoments,topPictureTexture,substrate,0);
             topPercentage = classify(0);
         }
 
@@ -209,11 +211,12 @@ public class Activity_Process extends AppCompatActivity {
             bottomCoords = (ArrayList<android.graphics.Point>) getIntent().getSerializableExtra("bottomCoords");
 
             undersidePicture = readPicture(bottomPhotoPath);
-            undersidePicture = imageSegmentation(bottomCoords, undersidePicture);
-            undersidePictureHistogram = getHistogram(undersidePicture);
+            bottomScaling = (float[]) getIntent().getSerializableExtra("bottomScaling");
+            undersidePicture = imageSegmentation(bottomCoords, undersidePicture, bottomScaling);
+            undersidePictureColorMoments = getColorMoments(undersidePicture);
             undersidePictureHuMoments = getHuMoments(undersidePicture);
             undersidePictureTexture = getGaborWavelets(undersidePicture);
-            writeToFile(undersidePictureHistogram,undersidePictureHuMoments,undersidePictureTexture,substrate,1);
+            writeToFile(undersidePictureColorMoments,undersidePictureHuMoments,undersidePictureTexture,substrate,1);
             bottomPercentage = classify(1);
         }
     }
@@ -390,7 +393,7 @@ public class Activity_Process extends AppCompatActivity {
         return ImageMat;
     }
 
-    private Mat imageSegmentation(ArrayList<android.graphics.Point> coords, Mat img){
+    private Mat imageSegmentation(ArrayList<android.graphics.Point> coords, Mat img, float[] scaling){
         //bounding rectangle
         int x1, y1, x2, y2;
         x1 = coords.get(0).x;
@@ -408,8 +411,8 @@ public class Activity_Process extends AppCompatActivity {
         org.opencv.core.Size fgSize = new org.opencv.core.Size(width,height);
 
         //based on - https://github.com/schenkerx/GrabCutDemo/blob/master/app/src/main/java/cvworkout2/graphcutdemo/MainActivity.java
-        //Imgproc.resize(img, img, new Size(), scaling[0], scaling[1], Imgproc.INTER_CUBIC);
-        Imgproc.resize(img, img, new Size(500,500), 0, 0, Imgproc.INTER_CUBIC);
+        Imgproc.resize(img, img, new Size(), scaling[0], scaling[1], Imgproc.INTER_CUBIC);
+//        Imgproc.resize(img, img, new Size(500,500), 0, 0, Imgproc.INTER_CUBIC);
 
         Mat firstMask = new Mat();
         Mat bgModel = new Mat();
@@ -442,49 +445,117 @@ public class Activity_Process extends AppCompatActivity {
         return finalForeground;
     }
 
-    //based onhttps://docs.opencv.org/2.4/doc/tutorials/imgproc/histograms/histogram_calculation/histogram_calculation.html
-    //RGB color space is used
-    private Mat getHistogram(Mat image){
-        Mat grayScale = new Mat();
-        Mat mask = new Mat();
-        Mat b_hist = new Mat(), g_hist = new Mat(), r_hist = new Mat();
+    private ArrayList<Double> getColorMoments(Mat image){
+        int totalPixels = 0;
 
-        //compute mask
-        Imgproc.cvtColor(image,grayScale,Imgproc.COLOR_BGR2GRAY);
-        Imgproc.threshold(grayScale,mask,254,255,Imgproc.THRESH_BINARY_INV);
+        double b_mean = 0;
+        double g_mean = 0;
+        double r_mean = 0;
 
-        //split channels
-        List<Mat> bgr_planes  = new ArrayList<>();
-        split(image, bgr_planes);
+        double b_stddev = 0;
+        double g_stddev = 0;
+        double r_stddev = 0;
 
-        //histogram settings
-        MatOfInt channels = new MatOfInt(0);
-        MatOfInt histSize = new MatOfInt(256);
-        MatOfFloat ranges = new MatOfFloat(0f, 256f);
+        double b_skewness = 0;
+        double g_skewness = 0;
+        double r_skewness = 0;
 
-        List<Mat> planesList = new ArrayList<>();
+        double[] pixel;
 
-        //calculate histogram
-        planesList.add(bgr_planes.get(0));
-        Imgproc.calcHist(planesList, channels, mask, b_hist, histSize, ranges, false);
-        planesList.remove(0);
+        //computing total pixels
+        for(int i = 0; i < image.rows(); i++){
+            for(int j = 0; j < image.cols(); j++){
+                pixel = image.get(i,j);
 
-        planesList.add(bgr_planes.get(1));
-        Imgproc.calcHist(planesList, channels, mask, g_hist, histSize, ranges, false);
-        planesList.remove(0);
+                //if not background
+                if(pixel[0] != 255 && pixel[1] != 255 && pixel[2] != 255){
+                    totalPixels += 1;
+                }
+            }
+        }
 
-        planesList.add(bgr_planes.get(2));
-        Imgproc.calcHist(planesList, channels, mask, r_hist, histSize, ranges, false);
+        //computing means
+        for(int i = 0; i < image.rows(); i++){
+            for(int j = 0; j < image.cols(); j++){
+                pixel = image.get(i,j);
 
-        //for storing/writing
-        b_hist.reshape(1,1);
-        g_hist.reshape(1,1);
-        r_hist.reshape(1,1);
+                if(pixel[0] != 255 && pixel[1] != 255 && pixel[2] != 255){
+                    b_mean += pixel[0];
+                    g_mean += pixel[1];
+                    r_mean += pixel[2];
+                }
+            }
+        }
 
-        Mat feature = new Mat();
-        feature.push_back(b_hist);
-        feature.push_back(g_hist);
-        feature.push_back(r_hist);
+        b_mean = b_mean / totalPixels;
+        g_mean = g_mean / totalPixels;
+        r_mean = r_mean / totalPixels;
+
+        b_mean = (double)Math.round(b_mean * 1000d) / 1000d;
+        g_mean = (double)Math.round(g_mean * 1000d) / 1000d;
+        r_mean = (double)Math.round(r_mean * 1000d) / 1000d;
+
+        //computing stddev and skewness
+        for(int i = 0; i < image.rows(); i++){
+            for(int j = 0; j < image.cols(); j++){
+                pixel = image.get(i,j);
+
+                if(pixel[0] != 255 && pixel[1] != 255 && pixel[2] != 255){
+                    b_stddev += (pixel[0] - b_mean) * (pixel[0] - b_mean);
+                    g_stddev += (pixel[1] - g_mean) * (pixel[1] - g_mean);
+                    r_stddev += (pixel[2] - r_mean) * (pixel[2] - r_mean);
+
+                    b_skewness += (pixel[0] - b_mean) * (pixel[0] - b_mean) * (pixel[0] - b_mean);
+                    g_skewness += (pixel[1] - g_mean) * (pixel[1] - g_mean) * (pixel[1] - g_mean);
+                    r_skewness += (pixel[2] - r_mean) * (pixel[2] - r_mean) * (pixel[2] - r_mean);
+                }
+            }
+        }
+
+        b_stddev /= totalPixels;
+        g_stddev /= totalPixels;
+        r_stddev /= totalPixels;
+
+        b_stddev = (double)Math.round(b_stddev * 1000d) / 1000d;
+        g_stddev = (double)Math.round(g_stddev * 1000d) / 1000d;
+        r_stddev = (double)Math.round(r_stddev * 1000d) / 1000d;
+
+        b_stddev = sqrt(b_stddev);
+        g_stddev = sqrt(g_stddev);
+        r_stddev = sqrt(r_stddev);
+
+        b_stddev = (double)Math.round(b_stddev * 1000d) / 1000d;
+        g_stddev = (double)Math.round(g_stddev * 1000d) / 1000d;
+        r_stddev = (double)Math.round(r_stddev * 1000d) / 1000d;
+
+        b_skewness /= totalPixels;
+        g_skewness /= totalPixels;
+        r_skewness /= totalPixels;
+
+        b_skewness = (double)Math.round(b_skewness * 1000d) / 1000d;
+        g_skewness = (double)Math.round(g_skewness * 1000d) / 1000d;
+        r_skewness = (double)Math.round(r_skewness * 1000d) / 1000d;
+
+        b_skewness = cbrt(b_skewness);
+        g_skewness = cbrt(g_skewness);
+        r_skewness = cbrt(r_skewness);
+
+        b_skewness = (double)Math.round(b_skewness * 1000d) / 1000d;
+        g_skewness = (double)Math.round(g_skewness * 1000d) / 1000d;
+        r_skewness = (double)Math.round(r_skewness * 1000d) / 1000d;
+
+        ArrayList<Double> feature = new ArrayList<>();
+        feature.add(b_mean);
+        feature.add(g_mean);
+        feature.add(r_mean);
+
+        feature.add(b_stddev);
+        feature.add(g_stddev);
+        feature.add(r_stddev);
+
+        feature.add(b_skewness);
+        feature.add(g_skewness);
+        feature.add(r_skewness);
 
         return feature;
     }
@@ -592,6 +663,11 @@ public class Activity_Process extends AppCompatActivity {
         mean3 = mean3 / divisor;
         mean4 = mean4 / divisor;
 
+        mean1 = (double)Math.round(mean1 * 1000d) / 1000d;
+        mean2 = (double)Math.round(mean2 * 1000d) / 1000d;
+        mean3 = (double)Math.round(mean3 * 1000d) / 1000d;
+        mean4 = (double)Math.round(mean4 * 1000d) / 1000d;
+
         holder1 = 0.0;
         holder2 = 0.0;
         holder3 = 0.0;
@@ -619,6 +695,11 @@ public class Activity_Process extends AppCompatActivity {
         variance3 = variance3 / divisor;
         variance4 = variance4 / divisor;
 
+        variance1 = (double)Math.round(variance1 * 1000d) / 1000d;
+        variance2 = (double)Math.round(variance2 * 1000d) / 1000d;
+        variance3 = (double)Math.round(variance3 * 1000d) / 1000d;
+        variance4 = (double)Math.round(variance4 * 1000d) / 1000d;
+
         ArrayList<Double> feature = new ArrayList<>();
         feature.add(mean1);
         feature.add(mean2);
@@ -632,7 +713,7 @@ public class Activity_Process extends AppCompatActivity {
         return feature;
     }
 
-    private void writeToFile(Mat topPictureHistogram, Mat topPictureHuMoments, ArrayList<Double> topPictureTexture, String substrate, int which){
+    private void writeToFile(ArrayList<Double> topPictureColorMoments, Mat topPictureHuMoments, ArrayList<Double> topPictureTexture, String substrate, int which){
         File path = Activity_Process.this.getFilesDir();
         File file = new File(path, "features.txt");
         FileOutputStream stream;
@@ -652,8 +733,8 @@ public class Activity_Process extends AppCompatActivity {
             stream.write("1 ".getBytes());
             holderStrings.add("1 ");
 
-            for(int i = 0; i < 768; i++){
-                holder = topPictureHistogram.get(i,0)[0];
+            for(int i = 0; i < topPictureColorMoments.size(); i++){
+                holder = topPictureColorMoments.get(i);
                 stringToWrite = Integer.toString(counter) + ":" + Double.toString(holder) + " ";
                 stream.write(stringToWrite.getBytes());
                 counter++;
@@ -661,7 +742,7 @@ public class Activity_Process extends AppCompatActivity {
                 holderStrings.add(stringToWrite);
             }
 
-            for(int i = 0; i < topPictureHuMoments.rows(); i++){
+            for(int i = 0; i < topPictureHuMoments.rows()-1; i++){
                 holder = topPictureHuMoments.get(i,0)[0];
                 stringToWrite = Integer.toString(counter) + ":" + Double.toString(holder) + " ";
                 stream.write(stringToWrite.getBytes());
@@ -678,6 +759,7 @@ public class Activity_Process extends AppCompatActivity {
 
                 holderStrings.add(stringToWrite);
             }
+
 
             //write substrate
             stringToWrite = Integer.toString(counter) + ":" + substrate + "\n";

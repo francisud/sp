@@ -94,11 +94,11 @@ public class Activity_Crop extends AppCompatActivity {
             final int origWidth = d.getIntrinsicWidth();
             final int origHeight = d.getIntrinsicHeight();
 
-//            final int actualWidth = Math.round(origWidth * scaleX);
-//            final int actualHeight = Math.round(origHeight * scaleY);
+            final int actualWidth = Math.round(origWidth * scaleX);
+            final int actualHeight = Math.round(origHeight * scaleY);
 
-            final int actualWidth = 500;
-            final int actualHeight = 500;
+//            final int actualWidth = 500;
+//            final int actualHeight = 500;
 
             int imgViewW = iv.getMeasuredWidth();
             int imgViewH = iv.getMeasuredHeight();

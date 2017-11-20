@@ -38,6 +38,8 @@ public class Activity_Identify extends AppCompatActivity implements Fragment_Pic
     private Uri bottomPhotoPath = null;
     private ArrayList<Point> topCoords = new ArrayList<>();
     private ArrayList<Point> bottomCoords = new ArrayList<>();
+    private float[] topScaling = null;
+    private float[] bottomScaling = null;
     private String substrate = null;
 
     @Override
@@ -220,9 +222,11 @@ public class Activity_Identify extends AppCompatActivity implements Fragment_Pic
         //get top mushroom coordinates
         if (requestCode == 3 && resultCode == RESULT_OK) {
             topCoords = (ArrayList<Point>) data.getSerializableExtra("coordinates");
+            topScaling = (float[]) data.getSerializableExtra("scaling");
         }
         if (requestCode == 5 && resultCode == RESULT_OK) {
             bottomCoords = (ArrayList<Point>) data.getSerializableExtra("coordinates");
+            bottomScaling = (float[]) data.getSerializableExtra("scaling");
         }
     }
 
@@ -245,11 +249,13 @@ public class Activity_Identify extends AppCompatActivity implements Fragment_Pic
         if(topPhotoPath != null){
             intent.putExtra("topPhotoPath", topPhotoPath.toString());
             intent.putExtra("topCoords", topCoords);
+            intent.putExtra("topScaling", topScaling);
         }
 
         if(bottomPhotoPath != null){
             intent.putExtra("bottomPhotoPath", bottomPhotoPath.toString());
             intent.putExtra("bottomCoords", bottomCoords);
+            intent.putExtra("bottomScaling", bottomScaling);
         }
 
         intent.putExtra("substrate", substrate);
