@@ -8,6 +8,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.ImageButton;
 
 
 /**
@@ -70,7 +71,7 @@ public class Fragment_Home extends Fragment {
 
         View view =  inflater.inflate(R.layout.fragment_home, container, false);
 
-        Button identifyButton = (Button) view.findViewById(R.id.identifyButton);
+        ImageButton identifyButton = (ImageButton) view.findViewById(R.id.identifyButton);
 
         identifyButton.setOnClickListener(new View.OnClickListener() {
             @Override

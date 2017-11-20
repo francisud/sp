@@ -16,18 +16,22 @@
 
         <ImageButton
             android:id="@+id/imageButton2"
-            app:srcCompat="@drawable/ic_menu_camera"
-            android:layout_width="75dp"
-            android:layout_height="75dp"
+            app:srcCompat="@drawable/top_view"
+            android:scaleType="fitCenter"
+            android:background="@null"
+            android:layout_width="125dp"
+            android:layout_height="125dp"
             android:layout_marginBottom="35dp"
             android:layout_gravity="center"
             android:onClick="selectSource" />
 
         <ImageButton
             android:id="@+id/imageButton4"
-            app:srcCompat="@drawable/ic_menu_camera"
-            android:layout_width="75dp"
-            android:layout_height="75dp"
+            app:srcCompat="@drawable/bottom_view"
+            android:scaleType="fitCenter"
+            android:background="@null"
+            android:layout_width="125dp"
+            android:layout_height="125dp"
             android:layout_marginBottom="35dp"
             android:layout_gravity="center"
             android:onClick="selectSource" />

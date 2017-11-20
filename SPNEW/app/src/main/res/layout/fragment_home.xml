@@ -8,14 +8,16 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent">
 
-        <Button
+        <ImageButton
             android:id="@+id/identifyButton"
             android:layout_width="185dp"
             android:layout_height="141dp"
             android:layout_centerInParent="true"
-            android:text="Identify"
             tools:layout_editor_absoluteX="110dp"
-            tools:layout_editor_absoluteY="193dp" />
+            tools:layout_editor_absoluteY="193dp"
+            android:src="@drawable/identify"
+            android:scaleType="fitCenter"
+            android:background="@null"/>
 
     </RelativeLayout>
 

@@ -2,11 +2,11 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android">
     <item android:id="@+id/my_mushrooms"
         android:title="@string/my_mushrooms"
-        android:icon="@drawable/ball" />
+        android:icon="@drawable/my_mushrooms" />
 
     <item android:id="@+id/identify"
         android:title="@string/identify"
-        android:icon="@drawable/ball" />
+        android:icon="@drawable/identify" />
 
     <item android:id="@+id/how_to"
         android:title="@string/how_to"

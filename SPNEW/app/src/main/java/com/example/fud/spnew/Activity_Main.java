@@ -21,6 +21,7 @@ public class Activity_Main extends FragmentActivity {
         setContentView(R.layout.content_main2);
 
         BottomNavigationView bnv = (BottomNavigationView) findViewById(R.id.navigation);
+        bnv.setItemIconTintList(null);
 
         if (findViewById(R.id.fragment_container) != null) {
             if (savedInstanceState != null) {return;}
