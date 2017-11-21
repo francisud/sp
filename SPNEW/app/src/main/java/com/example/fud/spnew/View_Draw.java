@@ -192,7 +192,6 @@ public class View_Draw extends View {
             ColorBall ball = colorballs.get(i);
 
             canvas.drawBitmap(ball.getBitmap(), ball.getX() - ball.getWidthOfBall()/2, ball.getY() - ball.getHeightOfBall()/2, paint);
-            canvas.drawText("" + (i+1), ball.getX(), ball.getY(), paint);
         }
     }
 

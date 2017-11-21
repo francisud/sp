@@ -277,6 +277,7 @@ public class Activity_Process extends AppCompatActivity {
                 showDetails(picked.getSpecies());
             }
         });
+        listView.setScrollbarFadingEnabled(false);
 
         LinearLayout layout = (LinearLayout) findViewById(R.id.layout);
         layout.addView(iv);
