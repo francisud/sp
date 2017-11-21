@@ -14,6 +14,12 @@
         android:layout_gravity="center"
         android:orientation="vertical">
 
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/top_photo"
+            android:layout_gravity="center"/>
+
         <ImageButton
             android:id="@+id/imageButton2"
             app:srcCompat="@drawable/top_view"
@@ -21,7 +27,7 @@
             android:background="@null"
             android:layout_width="125dp"
             android:layout_height="125dp"
-            android:layout_marginBottom="35dp"
+            android:layout_marginBottom="20dp"
             android:layout_gravity="center"
             android:onClick="selectSource" />
 
@@ -32,28 +38,34 @@
             android:background="@null"
             android:layout_width="125dp"
             android:layout_height="125dp"
-            android:layout_marginBottom="35dp"
             android:layout_gravity="center"
             android:onClick="selectSource" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/underside_photo"
+            android:layout_gravity="center"
+            android:layout_marginBottom="20dp"/>
+
 
         <Button
             android:id="@+id/substrateButton"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginTop="35dp"
+            android:layout_marginTop="20dp"
             android:layout_gravity="center"
             android:onClick="selectSubstrate"
-            android:text="Pick Substrate"
-             />
+            android:text="@string/pick_substrate" />
 
         <Button
             android:id="@+id/processButton"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginTop="35dp"
+            android:layout_marginTop="20dp"
             android:layout_gravity="center"
             android:onClick="startProcessActivity"
-            android:text="Process" />
+            android:text="@string/identify" />
 
     </LinearLayout>
 

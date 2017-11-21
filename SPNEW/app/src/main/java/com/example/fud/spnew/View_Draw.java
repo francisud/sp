@@ -58,6 +58,13 @@ public class View_Draw extends View {
     public ArrayList getCoordinates(){
         ArrayList<Point> coordinates = new ArrayList<Point>();
 
+        //to send notice to activity that user did not select bounding box
+        if(points[0] == null){
+            coordinates.add(new Point(0,0));
+            coordinates.add(new Point(0,0));
+            return coordinates;
+        }
+
         float left, top, right, bottom;
         left = points[0].x;
         top = points[0].y;

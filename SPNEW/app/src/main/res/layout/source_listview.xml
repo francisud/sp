@@ -12,6 +12,6 @@
         android:text="@string/action"
         android:textSize="20sp"
         android:textStyle="bold"
-        android:padding="15dp"/>
+        android:padding="25dp"/>
 
 </LinearLayout>

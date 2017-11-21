@@ -232,7 +232,7 @@ public class Activity_Identify extends AppCompatActivity implements Fragment_Pic
 
     public void startProcessActivity(View view){
         if(topPhotoPath == null && bottomPhotoPath == null){
-            Toast.makeText(Activity_Identify.this, "Both Top Picture and Underside Picture can't be empty",
+            Toast.makeText(Activity_Identify.this, "Both Top Photo and Underside Photo can't be empty",
                     Toast.LENGTH_LONG).show();
             return;
         }

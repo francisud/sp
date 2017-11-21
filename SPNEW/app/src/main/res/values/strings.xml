@@ -9,6 +9,10 @@
     <string name="title_activity_identify">IdentifyActivity</string>
 
     <string name="pick_action">Picture Source:</string>
+    <string name="pick_substrate">Pick Substrate</string>
+
+    <string name="top_photo">Top Photo</string>
+    <string name="underside_photo">Underside Photo</string>
 
     <string name="action">Picture Source</string>
     <string-array name="action_array">
@@ -74,7 +78,7 @@
     <string name="textures">Textures</string>
     <string name="substrates">Substrates</string>
 
-    <string name="save_data">Save Data?></string>
+    <string name="save_data">Save Data?</string>
     <string name="done">DONE</string>
     <string name="save">SAVE</string>
     <string name="no">NO</string>

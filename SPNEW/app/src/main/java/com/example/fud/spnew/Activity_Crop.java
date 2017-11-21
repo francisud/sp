@@ -12,13 +12,18 @@ import android.os.Bundle;
 import android.provider.MediaStore;
 import android.support.v7.app.AppCompatActivity;
 import android.view.Display;
+import android.view.Gravity;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.Window;
 import android.widget.ImageView;
+import android.widget.Toast;
 
 import java.util.ArrayList;
 
 public class Activity_Crop extends AppCompatActivity {
+
+    Toast toast;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -43,6 +48,9 @@ public class Activity_Crop extends AppCompatActivity {
             iv.setImageBitmap(MediaStore.Images.Media.getBitmap(this.getContentResolver(), photoPath));
         }catch(Exception e){}
 
+        toast = Toast.makeText(this, "Please select the fungi using the smallest bounding box possible", Toast.LENGTH_LONG);
+        toast.setGravity(Gravity.CENTER, 0, 0);
+        toast.show();
     }
 
     //BASED ON - https://developer.android.com/topic/performance/graphics/load-bitmap.html
@@ -115,11 +123,37 @@ public class Activity_Crop extends AppCompatActivity {
     public void toReturn(View view){
         View_Draw dv = (View_Draw) findViewById(R.id.view);
         ArrayList<Point> coordinates = dv.getCoordinates();
+
+        //check if bounding box exists
+        if(coordinates.get(0).x == coordinates.get(1).x && coordinates.get(0).y == coordinates.get(1).y){
+            toast.setGravity(Gravity.CENTER, 0, 0);
+            toast.show();
+            return;
+        }
+
         float[] scaling = dv.getScaling();
         Intent returnIntent = new Intent();
         returnIntent.putExtra("coordinates", coordinates);
         returnIntent.putExtra("scaling", scaling);
         setResult(Activity.RESULT_OK,returnIntent);
         finish();
+    }
+
+    @Override
+    public void onBackPressed() {
+        View_Draw dv = (View_Draw) findViewById(R.id.view);
+        ArrayList<Point> coordinates = dv.getCoordinates();
+
+        //check if bounding box exists
+        if(coordinates.get(0).x == coordinates.get(1).x && coordinates.get(0).y == coordinates.get(1).y){
+            toast.setGravity(Gravity.CENTER, 0, 0);
+            toast.show();
+            return;
+        }
+    }
+
+    public boolean onTouchEvent(MotionEvent event) {
+        toast.cancel();
+        return true;
     }
 }

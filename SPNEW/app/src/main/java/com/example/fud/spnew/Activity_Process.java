@@ -124,6 +124,7 @@ public class Activity_Process extends AppCompatActivity {
         protected void onPreExecute() {
             super.onPreExecute();
             progressDialog.setMessage("Classifying, please wait...");
+            progressDialog.setCancelable(false);
             progressDialog.show();
         }
 
