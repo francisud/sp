@@ -9,8 +9,10 @@ import android.graphics.Paint;
 import android.graphics.Point;
 import android.util.AttributeSet;
 import android.util.Log;
+import android.view.Gravity;
 import android.view.MotionEvent;
 import android.view.View;
+import android.widget.Toast;
 
 import java.util.ArrayList;
 
@@ -37,6 +39,9 @@ public class View_Draw extends View {
     Paint paint;
     Canvas canvas;
 
+    Toast toast;
+    Boolean first = true;
+
     public View_Draw(Context context) {
         super(context);
         paint = new Paint();
@@ -55,6 +60,15 @@ public class View_Draw extends View {
         canvas = new Canvas();
     }
 
+    public void showToast(){
+        toast.setGravity(Gravity.CENTER, 0, 0);
+        toast.show();
+    }
+
+    public void closeToast(){
+        toast.cancel();
+    }
+
     public ArrayList getCoordinates(){
         ArrayList<Point> coordinates = new ArrayList<Point>();
 
@@ -62,6 +76,8 @@ public class View_Draw extends View {
         if(points[0] == null){
             coordinates.add(new Point(0,0));
             coordinates.add(new Point(0,0));
+            toast.setGravity(Gravity.CENTER, 0, 0);
+            toast.show();
             return coordinates;
         }
 
@@ -124,6 +140,13 @@ public class View_Draw extends View {
     // the method that draws the balls
     @Override
     protected void onDraw(Canvas canvas) {
+        if(first){
+            toast = Toast.makeText(this.getContext(), "Please select the fungi using the smallest bounding box possible", Toast.LENGTH_LONG);
+            toast.setGravity(Gravity.CENTER, 0, 0);
+            toast.show();
+            first = false;
+        }
+
         if(points[3]==null) //point4 null when user did not touch and move on screen.
             return;
         int left, top, right, bottom;
@@ -175,6 +198,8 @@ public class View_Draw extends View {
 
     // events when touching the screen
     public boolean onTouchEvent(MotionEvent event) {
+        toast.cancel();
+
         int eventaction = event.getAction();
 
         int X = (int) event.getX();

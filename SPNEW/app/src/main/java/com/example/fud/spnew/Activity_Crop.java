@@ -11,6 +11,7 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.provider.MediaStore;
 import android.support.v7.app.AppCompatActivity;
+import android.util.Log;
 import android.view.Display;
 import android.view.Gravity;
 import android.view.MotionEvent;
@@ -22,8 +23,6 @@ import android.widget.Toast;
 import java.util.ArrayList;
 
 public class Activity_Crop extends AppCompatActivity {
-
-    Toast toast;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -48,9 +47,6 @@ public class Activity_Crop extends AppCompatActivity {
             iv.setImageBitmap(MediaStore.Images.Media.getBitmap(this.getContentResolver(), photoPath));
         }catch(Exception e){}
 
-        toast = Toast.makeText(this, "Please select the fungi using the smallest bounding box possible", Toast.LENGTH_LONG);
-        toast.setGravity(Gravity.CENTER, 0, 0);
-        toast.show();
     }
 
     //BASED ON - https://developer.android.com/topic/performance/graphics/load-bitmap.html
@@ -126,8 +122,6 @@ public class Activity_Crop extends AppCompatActivity {
 
         //check if bounding box exists
         if(coordinates.get(0).x == coordinates.get(1).x && coordinates.get(0).y == coordinates.get(1).y){
-            toast.setGravity(Gravity.CENTER, 0, 0);
-            toast.show();
             return;
         }
 
@@ -146,14 +140,14 @@ public class Activity_Crop extends AppCompatActivity {
 
         //check if bounding box exists
         if(coordinates.get(0).x == coordinates.get(1).x && coordinates.get(0).y == coordinates.get(1).y){
-            toast.setGravity(Gravity.CENTER, 0, 0);
-            toast.show();
+            dv.showToast();
             return;
         }
     }
 
     public boolean onTouchEvent(MotionEvent event) {
-        toast.cancel();
+        View_Draw dv = (View_Draw) findViewById(R.id.view);
+        dv.closeToast();
         return true;
     }
 }
