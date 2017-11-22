@@ -44,27 +44,30 @@ public class Fragment_MyMushrooms extends Fragment {
                              Bundle savedInstanceState) {
 
         View view = inflater.inflate(R.layout.fragment_my_mushrooms, container, false);
-        GridView listView = (GridView) view.findViewById(R.id.gridView);
+        ListView listView = (ListView) view.findViewById(R.id.gridView);
 
         final ArrayList<Class_MyMushroomGridItem> holder = new ArrayList<>();
         Class_MyMushroomGridItem item;
         Bitmap bm;
         byte[] picture;
         String date;
+        int id;
         if(cursor != null){
             do {
                 picture = cursor.getBlob(cursor.getColumnIndex("top_picture"));
                 if(picture != null){
                     bm = BitmapFactory.decodeByteArray(picture, 0 ,picture.length);
                     date = cursor.getString(cursor.getColumnIndex("date"));
-                    item = new Class_MyMushroomGridItem(bm,date);
+                    id = cursor.getInt(cursor.getColumnIndex("id"));
+                    item = new Class_MyMushroomGridItem(bm,date,id);
                     holder.add(item);
                 }
                 else{
                     picture = cursor.getBlob(cursor.getColumnIndex("underside_picture"));
                     bm = BitmapFactory.decodeByteArray(picture, 0 ,picture.length);
                     date = cursor.getString(cursor.getColumnIndex("date"));
-                    item = new Class_MyMushroomGridItem(bm,date);
+                    id = cursor.getInt(cursor.getColumnIndex("id"));
+                    item = new Class_MyMushroomGridItem(bm,date,id);
                     holder.add(item);
                 }
 

@@ -1,11 +1,17 @@
 package com.example.fud.spnew;
 
+import android.app.AlertDialog;
 import android.content.Context;
+import android.content.DialogInterface;
+import android.database.Cursor;
+import android.database.sqlite.SQLiteDatabase;
 import android.graphics.Bitmap;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
+import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
 
@@ -20,6 +26,8 @@ public class Adapter_MyMushrooms extends ArrayAdapter<Class_MyMushroomGridItem> 
     private static class ViewHolder {
         ImageView imageView;
         TextView textView;
+        Button buttonUpload;
+        Button buttonDelete;
     }
 
     public Adapter_MyMushrooms(ArrayList<Class_MyMushroomGridItem> data, Context context) {
@@ -29,7 +37,7 @@ public class Adapter_MyMushrooms extends ArrayAdapter<Class_MyMushroomGridItem> 
     }
 
     @Override
-    public View getView(int position, View convertView, ViewGroup parent) {
+    public View getView(final int position, View convertView, ViewGroup parent) {
         Class_MyMushroomGridItem dataModel = getItem(position);
         Adapter_MyMushrooms.ViewHolder viewHolder;
 
@@ -39,6 +47,8 @@ public class Adapter_MyMushrooms extends ArrayAdapter<Class_MyMushroomGridItem> 
             convertView = inflater.inflate(R.layout.mymushrooms_imageview, parent, false);
             viewHolder.imageView = (ImageView) convertView.findViewById(R.id.imageView);
             viewHolder.textView = (TextView) convertView.findViewById(R.id.textView);
+            viewHolder.buttonUpload = (Button) convertView.findViewById(R.id.buttonUpload);
+            viewHolder.buttonDelete = (Button) convertView.findViewById(R.id.buttonDelete);
 
             convertView.setTag(viewHolder);
         } else {
@@ -46,48 +56,57 @@ public class Adapter_MyMushrooms extends ArrayAdapter<Class_MyMushroomGridItem> 
         }
 
         viewHolder.imageView.setImageBitmap(dataModel.getImage());
-        viewHolder.textView.setText(dataModel.getTitle());
+        viewHolder.textView.setText(dataModel.getDate());
+
+        viewHolder.buttonUpload.setOnClickListener(new View.OnClickListener() {
+            public void onClick(View v) {
+                AlertDialog.Builder builder = new AlertDialog.Builder(mContext);
+                builder.setMessage("Upload data?");
+                builder.setPositiveButton("Yes", new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int id) {
+                        dialog.dismiss();
+
+                    }
+                });
+                builder.setNegativeButton("No", new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int id) {
+                        dialog.dismiss();
+                    }
+                });
+                AlertDialog alert = builder.create();
+                alert.show();
+            }
+        });
+
+        viewHolder.buttonDelete.setOnClickListener(new View.OnClickListener() {
+            public void onClick(View v) {
+                AlertDialog.Builder builder = new AlertDialog.Builder(mContext);
+                builder.setMessage("Delete data?");
+                builder.setPositiveButton("Yes", new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int id) {
+                        int idToRemove = data.get(position).getId();
+
+                        data.remove(position);
+
+                        Helper_Database helperDatabase = new Helper_Database(getContext());
+                        SQLiteDatabase db = helperDatabase.getWritableDatabase();
+                        db.execSQL("DELETE FROM identified where id = ?", new String[]{Integer.toString(idToRemove)});
+                        notifyDataSetChanged();
+                        dialog.dismiss();
+
+                    }
+                });
+                builder.setNegativeButton("No", new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int id) {
+                        dialog.dismiss();
+                    }
+                });
+                AlertDialog alert = builder.create();
+                alert.show();
+            }
+        });
 
         // Return the completed view to render on screen
         return convertView;
     }
 }
-
-
-//public class Adapter_MyMushrooms extends ArrayAdapter<Class_MyMushroomGridItem> {
-//    private Context context;
-//    private Class_MyMushroomGridItem data;
-//
-//    public Adapter_MyMushrooms(Context context, Class_MyMushroomGridItem data) {
-//        super(context, R.layout.mymushrooms_imageview, data);
-//        this.context = context;
-//        this.data = data;
-//    }
-//
-//    @Override
-//    public View getView(int position, View convertView, ViewGroup parent) {
-//        View row = convertView;
-//        ViewHolder holder = null;
-//
-//        if (row == null) {
-//            LayoutInflater inflater = LayoutInflater.from(getContext());
-//            row = inflater.inflate(R.layout.mymushrooms_imageview, parent, false);
-//            holder = new ViewHolder();
-//            holder.imageTitle = (TextView) row.findViewById(R.id.text);
-//            holder.image = (ImageView) row.findViewById(R.id.image);
-//            row.setTag(holder);
-//        } else {
-//            holder = (ViewHolder) row.getTag();
-//        }
-//
-//        Class_MyMushroomGridItem item = data;
-//        holder.imageTitle.setText(item.getTitle());
-//        holder.image.setImageBitmap(item.getImage());
-//        return row;
-//    }
-//
-//    static class ViewHolder {
-//        TextView imageTitle;
-//        ImageView image;
-//    }
-//}

@@ -4,20 +4,27 @@ import android.graphics.Bitmap;
 
 public class Class_MyMushroomGridItem {
     private Bitmap image;
-    private String title;
+    private String date;
+    private int id;
 
-    public Class_MyMushroomGridItem(Bitmap image, String title) {
+    public Class_MyMushroomGridItem(Bitmap image, String date, int id) {
         super();
         this.image = image;
-        this.title = title;
+        this.date = date;
+        this.id = id;
     }
 
     public Bitmap getImage() {
         return image;
     }
 
-    public String getTitle() {
-        return title;
+    public String getDate() {
+        return date;
     }
+
+    public int getId(){
+        return id;
+    }
+
 
 }
