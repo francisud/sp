@@ -32,11 +32,14 @@ public class Fragment_MyMushrooms extends Fragment {
         if(getter != null){
             cursor = getter;
         }
+
+        Log.d("debug","inside oncreate-mm");
     }
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
+
 
         View view = inflater.inflate(R.layout.fragment_my_mushrooms, container, false);
         ListView listView = (ListView) view.findViewById(R.id.listview);

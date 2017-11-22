@@ -5,14 +5,31 @@ import android.os.Bundle;
 import android.support.design.widget.BottomNavigationView;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentActivity;
+import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentTransaction;
+import android.util.Log;
 import android.view.MenuItem;
 
 public class Activity_Main extends FragmentActivity {
 
+    Fragment[] fragments;
+
+    Fragment_MyMushrooms fragment_myMushrooms;
+    Fragment_Identify fragment_identify;
+    Fragment_HowTo fragment_howTo;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+        fragment_myMushrooms = new Fragment_MyMushrooms();
+        fragment_identify = new Fragment_Identify();
+        fragment_howTo = new Fragment_HowTo();
+
+        fragments = new Fragment[3];
+        fragments[0] = fragment_myMushrooms;
+        fragments[1] = fragment_identify;
+        fragments[2] = fragment_howTo;
 
         //database
         Helper_Database helperDatabase = new Helper_Database(this);
@@ -26,9 +43,19 @@ public class Activity_Main extends FragmentActivity {
         if (findViewById(R.id.fragment_container) != null) {
             if (savedInstanceState != null) {return;}
 
-            Fragment_Home fragmentHome = new Fragment_Home();
-            fragmentHome.setArguments(getIntent().getExtras());
-            getSupportFragmentManager().beginTransaction().add(R.id.fragment_container, fragmentHome).commit();
+//                fragment_identify.setArguments(getIntent().getExtras());
+//                getSupportFragmentManager().beginTransaction().add(R.id.fragment_container, fragment_identify).commit();
+
+            FragmentManager manager = getSupportFragmentManager();
+            FragmentTransaction transaction = manager.beginTransaction();
+            transaction.add(R.id.fragment_container, fragment_myMushrooms, "0");
+            transaction.add(R.id.fragment_container, fragment_identify, "1");
+            transaction.add(R.id.fragment_container, fragment_howTo, "2");
+
+            transaction.hide(fragment_myMushrooms);
+            transaction.hide(fragment_howTo);
+
+            transaction.commit();
 
             bnv.setSelectedItemId(R.id.identify);
         }
@@ -54,22 +81,22 @@ public class Activity_Main extends FragmentActivity {
     }
 
     private void changeFragment(int id){
-        // Create fragment and give it an argument specifying the article it should show
-
         Fragment newFragment = null;
 
-        if(id == 0)
-            newFragment = new Fragment_MyMushrooms();
-        if(id == 1)
-            newFragment = new Fragment_Home();
-        if(id == 2)
-            newFragment = new Fragment_HowTo();
+        FragmentManager manager = getSupportFragmentManager();
+        FragmentTransaction transaction = manager.beginTransaction();
 
-        Bundle args = new Bundle();
-        newFragment.setArguments(args);
+        for(int i = 0; i < 3; i++){
+            if(i == id){
+                newFragment = fragments[i];
+                transaction.show(newFragment);
+            }
 
-        FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
-        transaction.replace(R.id.fragment_container, newFragment);
+            else{
+                newFragment = fragments[i];
+                transaction.hide(newFragment);
+            }
+        }
         transaction.commit();
     }
 }
