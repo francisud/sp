@@ -1,12 +1,23 @@
-<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     tools:context="com.example.fud.spnew.Fragment_MyMushrooms">
 
     <GridView
-        android:layout_width="wrap_content"
+        android:id="@+id/gridView"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:id="@+id/gridview"></GridView>
+        android:layout_margin="5dp"
+        android:columnWidth="100dp"
+        android:drawSelectorOnTop="true"
+        android:gravity="center"
+        android:numColumns="auto_fit"
+        android:stretchMode="columnWidth"
+        android:verticalSpacing="5dp"
+        android:focusable="true"
+        android:clickable="true">
 
-</FrameLayout>
+    </GridView>
+
+</RelativeLayout>

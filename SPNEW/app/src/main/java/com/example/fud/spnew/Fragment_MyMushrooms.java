@@ -32,7 +32,7 @@ public class Fragment_MyMushrooms extends Fragment {
         Helper_Database helperDatabase = new Helper_Database(getContext());
         SQLiteDatabase db = helperDatabase.getWritableDatabase();
 
-        Cursor getter = db.rawQuery("SELECT * FROM identified", null);
+        Cursor getter = db.rawQuery("SELECT * FROM identified ORDER BY datetime(date) DESC", null);
         if(getter.getCount() > 0){
             cursor = getter;
             cursor.moveToFirst();
@@ -44,22 +44,28 @@ public class Fragment_MyMushrooms extends Fragment {
                              Bundle savedInstanceState) {
 
         View view = inflater.inflate(R.layout.fragment_my_mushrooms, container, false);
-        GridView listView = (GridView) view.findViewById(R.id.gridview);
+        GridView listView = (GridView) view.findViewById(R.id.gridView);
 
-        final ArrayList<Bitmap> holder = new ArrayList<>();
+        final ArrayList<Class_MyMushroomGridItem> holder = new ArrayList<>();
+        Class_MyMushroomGridItem item;
         Bitmap bm;
         byte[] picture;
+        String date;
         if(cursor != null){
             do {
                 picture = cursor.getBlob(cursor.getColumnIndex("top_picture"));
                 if(picture != null){
                     bm = BitmapFactory.decodeByteArray(picture, 0 ,picture.length);
-                    holder.add(bm);
+                    date = cursor.getString(cursor.getColumnIndex("date"));
+                    item = new Class_MyMushroomGridItem(bm,date);
+                    holder.add(item);
                 }
                 else{
                     picture = cursor.getBlob(cursor.getColumnIndex("underside_picture"));
                     bm = BitmapFactory.decodeByteArray(picture, 0 ,picture.length);
-                    holder.add(bm);
+                    date = cursor.getString(cursor.getColumnIndex("date"));
+                    item = new Class_MyMushroomGridItem(bm,date);
+                    holder.add(item);
                 }
 
             }while(cursor.moveToNext());
@@ -71,6 +77,12 @@ public class Fragment_MyMushrooms extends Fragment {
                 @Override
                 public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                     Log.d("debug", Integer.toString(position));
+
+                    cursor.moveToFirst();
+                    for(int i = 0; i < position; i++)
+                        cursor.moveToNext();
+
+
                 }
             });
         }

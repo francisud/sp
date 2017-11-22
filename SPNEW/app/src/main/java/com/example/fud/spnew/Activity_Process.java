@@ -298,9 +298,6 @@ public class Activity_Process extends AppCompatActivity {
         SQLiteDatabase db = helperDatabase.getReadableDatabase();
         ContentValues values = new ContentValues();
 
-        //get date
-        String date = Calendar.getInstance().getTime().toString();
-
         byte[] top_picture = null;
         String top_species = null;
         String top_percentage = null;
@@ -324,8 +321,6 @@ public class Activity_Process extends AppCompatActivity {
             underside_percentage = TextUtils.join(",", bottomSavingPercentage);
             underside_data = TextUtils.join("", bottomSavingData);
         }
-
-        values.put("date", date);
 
         values.put("top_picture",top_picture);
         values.put("top_species",top_species);
@@ -879,7 +874,7 @@ public class Activity_Process extends AppCompatActivity {
         for(int i = 0; i < 5; i++){
             index = percentage.indexOf(Collections.max(percentage));
             toReturn.add((double)index);
-            toReturn.add(percentage.get(index));
+            toReturn.add((double)Math.round((100 * percentage.get(index)) * 100d) / 100d);
             percentage.remove(index);
         }
 
