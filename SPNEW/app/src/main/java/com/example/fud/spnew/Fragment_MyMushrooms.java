@@ -2,6 +2,8 @@ package com.example.fud.spnew;
 
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
@@ -10,6 +12,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
+import android.widget.GridView;
 import android.widget.ListView;
 
 import java.util.ArrayList;
@@ -23,41 +26,56 @@ public class Fragment_MyMushrooms extends Fragment {
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
+        cursor = null;
         super.onCreate(savedInstanceState);
 
         Helper_Database helperDatabase = new Helper_Database(getContext());
         SQLiteDatabase db = helperDatabase.getWritableDatabase();
 
         Cursor getter = db.rawQuery("SELECT * FROM identified", null);
-        if(getter != null){
+        if(getter.getCount() > 0){
             cursor = getter;
+            cursor.moveToFirst();
         }
-
-        Log.d("debug","inside oncreate-mm");
     }
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
 
-
         View view = inflater.inflate(R.layout.fragment_my_mushrooms, container, false);
-        ListView listView = (ListView) view.findViewById(R.id.listview);
+        GridView listView = (GridView) view.findViewById(R.id.gridview);
 
-        final ArrayList<String> holder = new ArrayList<>();
-        do {
-            holder.add("test");
-        }while(cursor.moveToNext());
+        final ArrayList<Bitmap> holder = new ArrayList<>();
+        Bitmap bm;
+        byte[] picture;
+        if(cursor != null){
+            do {
+                picture = cursor.getBlob(cursor.getColumnIndex("top_picture"));
+                if(picture != null){
+                    bm = BitmapFactory.decodeByteArray(picture, 0 ,picture.length);
+                    holder.add(bm);
+                }
+                else{
+                    picture = cursor.getBlob(cursor.getColumnIndex("underside_picture"));
+                    bm = BitmapFactory.decodeByteArray(picture, 0 ,picture.length);
+                    holder.add(bm);
+                }
 
-        Adapter_MyMushrooms adapter = new Adapter_MyMushrooms(holder, getContext());
-        listView.setAdapter(adapter);
+            }while(cursor.moveToNext());
 
-        listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-            @Override
-            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                Log.d("debug", Integer.toString(position));
-            }
-        });
+            Adapter_MyMushrooms adapter = new Adapter_MyMushrooms(holder, getContext());
+            listView.setAdapter(adapter);
+
+            listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+                @Override
+                public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                    Log.d("debug", Integer.toString(position));
+                }
+            });
+        }
+
+        Log.d("debug","inside oncreateview-mm");
 
         return view;
     }
@@ -67,23 +85,6 @@ public class Fragment_MyMushrooms extends Fragment {
             mListener.onFragmentInteraction(uri);
         }
     }
-
-//    @Override
-//    public void onAttach(Context context) {
-//        super.onAttach(context);
-//        if (context instanceof OnFragmentInteractionListener) {
-//            mListener = (OnFragmentInteractionListener) context;
-//        } else {
-//            throw new RuntimeException(context.toString()
-//                    + " must implement OnFragmentInteractionListener");
-//        }
-//    }
-//
-//    @Override
-//    public void onDetach() {
-//        super.onDetach();
-//        mListener = null;
-//    }
 
 
     public interface OnFragmentInteractionListener {

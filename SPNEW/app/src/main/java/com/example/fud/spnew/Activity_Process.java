@@ -39,6 +39,7 @@ import org.opencv.core.Size;
 import org.opencv.imgproc.Imgproc;
 import org.opencv.imgproc.Moments;
 
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -301,50 +302,24 @@ public class Activity_Process extends AppCompatActivity {
         String date = Calendar.getInstance().getTime().toString();
 
         byte[] top_picture = null;
-        int top_picture_type = -1;
-        int top_picture_width = -1;
-        int top_picture_height = -1;
         String top_species = null;
         String top_percentage = null;
         String top_data = null;
 
         byte[] underside_picture = null;
-        int underside_picture_type = -1;
-        int underside_picture_width = -1;
-        int underside_picture_height = -1;
         String underside_species = null;
         String underside_percentage = null;
         String underside_data = null;
 
         if(topPhotoPath != null){
-            //read image and convert to blob
-            Mat image = readPicture(topPhotoPath);
-            long nbytes = image.total() * image.elemSize();
-            top_picture = new byte[ (int)nbytes ];
-            image.get(0, 0,top_picture);
-
-            top_picture_type = image.type();
-            top_picture_width = image.cols();
-            top_picture_height = image.rows();
-
-            //top species, percentage, numerical data
+            top_picture = bitmaptoBlob(topPhotoPath);
             top_species = TextUtils.join(",", topSavingSpecies);
             top_percentage = TextUtils.join(",", topSavingPercentage);
             top_data = TextUtils.join("", topSavingData);
         }
 
         if(bottomPhotoPath != null){
-            //read image and convert to blob
-            Mat image = readPicture(bottomPhotoPath);
-            long nbytes = image.total() * image.elemSize();
-            underside_picture = new byte[ (int)nbytes ];
-            image.get(0, 0,underside_picture);
-
-            underside_picture_type = image.type();
-            underside_picture_width = image.cols();
-            underside_picture_height = image.rows();
-
-            //underside species, percentage, numerical data
+            underside_picture = bitmaptoBlob(bottomPhotoPath);
             underside_species = TextUtils.join(",", bottomSavingSpecies);
             underside_percentage = TextUtils.join(",", bottomSavingPercentage);
             underside_data = TextUtils.join("", bottomSavingData);
@@ -353,17 +328,11 @@ public class Activity_Process extends AppCompatActivity {
         values.put("date", date);
 
         values.put("top_picture",top_picture);
-        values.put("top_picture_type",top_picture_type);
-        values.put("top_picture_width",top_picture_width);
-        values.put("top_picture_height",top_picture_height);
         values.put("top_species",top_species);
         values.put("top_percentage",top_percentage);
         values.put("top_data",top_data);
 
         values.put("underside_picture",underside_picture);
-        values.put("underside_picture_type",underside_picture_type);
-        values.put("underside_picture_width",underside_picture_width);
-        values.put("underside_picture_height",underside_picture_height);
         values.put("underside_species",underside_species);
         values.put("underside_percentage",underside_percentage);
         values.put("underside_data",underside_data);
@@ -374,6 +343,24 @@ public class Activity_Process extends AppCompatActivity {
         return true;
     }
 
+    private byte[] bitmaptoBlob(Uri photoPath){
+        InputStream stream = null;
+        try {
+            stream = getContentResolver().openInputStream(photoPath);
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        }
+
+        BitmapFactory.Options bmpFactoryOptions = new BitmapFactory.Options();
+        bmpFactoryOptions.inPreferredConfig = Bitmap.Config.ARGB_8888;
+
+        Bitmap bmp = BitmapFactory.decodeStream(stream, null, bmpFactoryOptions);
+        ByteArrayOutputStream bos = new ByteArrayOutputStream();
+        bmp.compress(Bitmap.CompressFormat.JPEG, 100, bos);
+        byte[] bArray = bos.toByteArray();
+
+        return bArray;
+    }
 
     //based on https://stackoverflow.com/a/39085038
     private Mat readPicture(Uri photoPath){
