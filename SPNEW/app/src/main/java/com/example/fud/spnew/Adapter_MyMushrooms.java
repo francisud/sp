@@ -3,15 +3,13 @@ package com.example.fud.spnew;
 import android.app.AlertDialog;
 import android.content.Context;
 import android.content.DialogInterface;
-import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
-import android.graphics.Bitmap;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
+import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.TextView;
 
@@ -26,12 +24,12 @@ public class Adapter_MyMushrooms extends ArrayAdapter<Class_MyMushroomGridItem> 
     private static class ViewHolder {
         ImageView imageView;
         TextView textView;
-        Button buttonUpload;
-        Button buttonDelete;
+        ImageButton buttonUpload;
+        ImageButton buttonDelete;
     }
 
     public Adapter_MyMushrooms(ArrayList<Class_MyMushroomGridItem> data, Context context) {
-        super(context, R.layout.mymushrooms_imageview, data);
+        super(context, R.layout.mymushrooms_row, data);
         this.data = data;
         this.mContext=context;
     }
@@ -44,11 +42,11 @@ public class Adapter_MyMushrooms extends ArrayAdapter<Class_MyMushroomGridItem> 
         if (convertView == null) {
             viewHolder = new Adapter_MyMushrooms.ViewHolder();
             LayoutInflater inflater = LayoutInflater.from(getContext());
-            convertView = inflater.inflate(R.layout.mymushrooms_imageview, parent, false);
+            convertView = inflater.inflate(R.layout.mymushrooms_row, parent, false);
             viewHolder.imageView = (ImageView) convertView.findViewById(R.id.imageView);
             viewHolder.textView = (TextView) convertView.findViewById(R.id.textView);
-            viewHolder.buttonUpload = (Button) convertView.findViewById(R.id.buttonUpload);
-            viewHolder.buttonDelete = (Button) convertView.findViewById(R.id.buttonDelete);
+            viewHolder.buttonUpload = (ImageButton) convertView.findViewById(R.id.buttonUpload);
+            viewHolder.buttonDelete = (ImageButton) convertView.findViewById(R.id.buttonDelete);
 
             convertView.setTag(viewHolder);
         } else {
