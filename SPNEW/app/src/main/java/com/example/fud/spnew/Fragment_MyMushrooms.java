@@ -35,8 +35,8 @@ public class Fragment_MyMushrooms extends Fragment {
         Helper_Database helperDatabase = new Helper_Database(getContext());
         SQLiteDatabase db = helperDatabase.getWritableDatabase();
 
-        Cursor topGetter = db.rawQuery("SELECT id, date, top_picture FROM identified ORDER BY datetime(date) DESC", null);
-        Cursor undersideGetter = db.rawQuery("SELECT id, date, underside_picture FROM identified ORDER BY datetime(date) DESC", null);
+        Cursor topGetter = db.rawQuery("SELECT id, date, top_picture_scaled FROM identified ORDER BY datetime(date) DESC", null);
+        Cursor undersideGetter = db.rawQuery("SELECT id, date, underside_picture_scaled FROM identified ORDER BY datetime(date) DESC", null);
 
         if(topGetter != null && topGetter.getCount() > 0){
             topCursor = topGetter;
@@ -63,7 +63,7 @@ public class Fragment_MyMushrooms extends Fragment {
 
         if(topCursor != null && topCursor.getCount() > 0){
             do {
-                picture = topCursor.getBlob(topCursor.getColumnIndex("top_picture"));
+                picture = topCursor.getBlob(topCursor.getColumnIndex("top_picture_scaled"));
                 if(picture != null){
                     bm = BitmapFactory.decodeByteArray(picture, 0 ,picture.length);
                     date = topCursor.getString(topCursor.getColumnIndex("date"));
@@ -72,7 +72,7 @@ public class Fragment_MyMushrooms extends Fragment {
                     holder.add(item);
                 }
                 else{
-                    picture = undersideCursor.getBlob(undersideCursor.getColumnIndex("underside_picture"));
+                    picture = undersideCursor.getBlob(undersideCursor.getColumnIndex("underside_picture_scaled"));
                     bm = BitmapFactory.decodeByteArray(picture, 0 ,picture.length);
                     date = undersideCursor.getString(undersideCursor.getColumnIndex("date"));
                     id = undersideCursor.getInt(undersideCursor.getColumnIndex("id"));

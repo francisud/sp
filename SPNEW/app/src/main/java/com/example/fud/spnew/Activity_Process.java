@@ -228,7 +228,7 @@ public class Activity_Process extends AppCompatActivity {
         //read image
         Mat picture = readPicture(photoPath);
         Imgproc.cvtColor(picture, picture, Imgproc.COLOR_BGR2RGB);
-        Bitmap bm = Bitmap.createBitmap(picture.cols(), picture.rows(), Bitmap.Config.ARGB_8888);
+        Bitmap bm = Bitmap.createBitmap(picture.cols(), picture.rows(), Bitmap.Config.RGB_565);
         Utils.matToBitmap(picture, bm);
 
         //display image
@@ -299,17 +299,20 @@ public class Activity_Process extends AppCompatActivity {
         ContentValues values = new ContentValues();
 
         byte[] top_picture = null;
+        byte[] top_picture_scaled = null;
         String top_species = null;
         String top_percentage = null;
         String top_data = null;
 
         byte[] underside_picture = null;
+        byte[] underside_picture_scaled = null;
         String underside_species = null;
         String underside_percentage = null;
         String underside_data = null;
 
         if(topPhotoPath != null){
             top_picture = bitmaptoBlob(topPhotoPath);
+            top_picture_scaled = scaledbitmaptoBlob(topPhotoPath);
             top_species = TextUtils.join(",", topSavingSpecies);
             top_percentage = TextUtils.join(",", topSavingPercentage);
             top_data = TextUtils.join("", topSavingData);
@@ -317,17 +320,20 @@ public class Activity_Process extends AppCompatActivity {
 
         if(bottomPhotoPath != null){
             underside_picture = bitmaptoBlob(bottomPhotoPath);
+            underside_picture_scaled = scaledbitmaptoBlob(bottomPhotoPath);
             underside_species = TextUtils.join(",", bottomSavingSpecies);
             underside_percentage = TextUtils.join(",", bottomSavingPercentage);
             underside_data = TextUtils.join("", bottomSavingData);
         }
 
         values.put("top_picture",top_picture);
+        values.put("top_picture_scaled",top_picture_scaled);
         values.put("top_species",top_species);
         values.put("top_percentage",top_percentage);
         values.put("top_data",top_data);
 
         values.put("underside_picture",underside_picture);
+        values.put("underside_picture_scaled",underside_picture_scaled);
         values.put("underside_species",underside_species);
         values.put("underside_percentage",underside_percentage);
         values.put("underside_data",underside_data);
@@ -347,7 +353,7 @@ public class Activity_Process extends AppCompatActivity {
         }
 
         BitmapFactory.Options bmpFactoryOptions = new BitmapFactory.Options();
-        bmpFactoryOptions.inPreferredConfig = Bitmap.Config.ARGB_8888;
+        bmpFactoryOptions.inPreferredConfig = Bitmap.Config.RGB_565;
 
         Bitmap bmp = BitmapFactory.decodeStream(stream, null, bmpFactoryOptions);
         ByteArrayOutputStream bos = new ByteArrayOutputStream();
@@ -355,6 +361,59 @@ public class Activity_Process extends AppCompatActivity {
         byte[] bArray = bos.toByteArray();
 
         return bArray;
+    }
+
+    private byte[] scaledbitmaptoBlob(Uri photoPath){
+//        Bitmap bmp = BitmapFactory.decodeStream(stream, null, bmpFactoryOptions);
+        InputStream stream = null;
+
+        final BitmapFactory.Options options = new BitmapFactory.Options();
+        options.inJustDecodeBounds = true;
+
+        try {
+            stream = getContentResolver().openInputStream(photoPath);
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        }
+        BitmapFactory.decodeStream(stream, null, options);
+
+        options.inSampleSize = calculateInSampleSize(options, 100, 100);
+
+        options.inJustDecodeBounds = false;
+
+        try {
+            stream = getContentResolver().openInputStream(photoPath);
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        }
+        Bitmap bmp = BitmapFactory.decodeStream(stream, null, options);
+
+        ByteArrayOutputStream bos = new ByteArrayOutputStream();
+        bmp.compress(Bitmap.CompressFormat.JPEG, 50, bos);
+        byte[] bArray = bos.toByteArray();
+
+        return bArray;
+    }
+
+    public static int calculateInSampleSize(
+        BitmapFactory.Options options, int reqWidth, int reqHeight) {
+        // Raw height and width of image
+        final int height = options.outHeight;
+        final int width = options.outWidth;
+        int inSampleSize = 1;
+
+        if (height > reqHeight || width > reqWidth) {
+
+            final int halfHeight = height / 2;
+            final int halfWidth = width / 2;
+
+            while ((halfHeight / inSampleSize) >= reqHeight
+                    && (halfWidth / inSampleSize) >= reqWidth) {
+                inSampleSize *= 2;
+            }
+        }
+
+        return inSampleSize;
     }
 
     //based on https://stackoverflow.com/a/39085038
@@ -367,7 +426,7 @@ public class Activity_Process extends AppCompatActivity {
         }
 
         BitmapFactory.Options bmpFactoryOptions = new BitmapFactory.Options();
-        bmpFactoryOptions.inPreferredConfig = Bitmap.Config.ARGB_8888;
+        bmpFactoryOptions.inPreferredConfig = Bitmap.Config.RGB_565;
 
         Bitmap bmp = BitmapFactory.decodeStream(stream, null, bmpFactoryOptions);
         Mat ImageMat = new Mat(bmp.getWidth(), bmp.getHeight(), CV_8UC3);
