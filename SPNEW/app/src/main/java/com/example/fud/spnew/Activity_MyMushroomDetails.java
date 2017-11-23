@@ -43,8 +43,8 @@ public class Activity_MyMushroomDetails extends AppCompatActivity {
         Helper_Database helperDatabase = new Helper_Database(this);
         SQLiteDatabase db = helperDatabase.getWritableDatabase();
 
-        Cursor topGetter = db.rawQuery("SELECT substrate, top_picture, top_species, top_percentage FROM identified ORDER BY datetime(date) DESC", null);
-        Cursor undersideGetter = db.rawQuery("SELECT underside_picture, underside_species, underside_percentage FROM identified ORDER BY datetime(date) DESC", null);
+        Cursor topGetter = db.rawQuery("SELECT substrate, top_picture_scaled, top_species, top_percentage FROM identified ORDER BY datetime(date) DESC", null);
+        Cursor undersideGetter = db.rawQuery("SELECT underside_picture_scaled, underside_species, underside_percentage FROM identified ORDER BY datetime(date) DESC", null);
 
         topGetter.moveToFirst();
         undersideGetter.moveToFirst();
@@ -68,17 +68,17 @@ public class Activity_MyMushroomDetails extends AppCompatActivity {
         textView.setPadding(0,15,0,0);
         layout.addView(textView);
 
-        byte[] top_blob = topGetter.getBlob(topGetter.getColumnIndex("top_picture"));
+        byte[] top_blob = topGetter.getBlob(topGetter.getColumnIndex("top_picture_scaled"));
         if(top_blob != null){
-            Bitmap top_picture = BitmapFactory.decodeByteArray(top_blob, 0 ,top_blob.length);
+            Bitmap top_picture = decodeSampledBitmapFromResource(top_blob, 150, 150);
             String top_species = topGetter.getString(topGetter.getColumnIndex("top_species"));
             String top_percentage = topGetter.getString(topGetter.getColumnIndex("top_percentage"));
             displayResults(top_picture, top_species, top_percentage);
         }
 
-        byte[] underside_blob = undersideGetter.getBlob(undersideGetter.getColumnIndex("underside_picture"));
+        byte[] underside_blob = undersideGetter.getBlob(undersideGetter.getColumnIndex("underside_picture_scaled"));
         if(underside_blob != null){
-            Bitmap underside_picture = BitmapFactory.decodeByteArray(underside_blob, 0 ,underside_blob.length);
+            Bitmap underside_picture = decodeSampledBitmapFromResource(underside_blob, 150, 150);
             String underside_species = undersideGetter.getString(undersideGetter.getColumnIndex("underside_species"));
             String underside_percentage = undersideGetter.getString(undersideGetter.getColumnIndex("underside_percentage"));
             displayResults(underside_picture, underside_species, underside_percentage);
@@ -134,5 +134,43 @@ public class Activity_MyMushroomDetails extends AppCompatActivity {
         FragmentManager fm = Activity_MyMushroomDetails.this.getFragmentManager();
         Fragment_Details details = Fragment_Details.newInstance(species);
         details.show(getSupportFragmentManager(), "dialog");
+    }
+
+    public static Bitmap decodeSampledBitmapFromResource(byte[] image, int reqWidth, int reqHeight) {
+
+        // First decode with inJustDecodeBounds=true to check dimensions
+        final BitmapFactory.Options options = new BitmapFactory.Options();
+        options.inJustDecodeBounds = true;
+        BitmapFactory.decodeByteArray(image, 0 ,image.length, options);
+
+        // Calculate inSampleSize
+        options.inSampleSize = calculateInSampleSize(options, reqWidth, reqHeight);
+
+        // Decode bitmap with inSampleSize set
+        options.inJustDecodeBounds = false;
+        return BitmapFactory.decodeByteArray(image, 0 ,image.length, options);
+    }
+
+    public static int calculateInSampleSize(
+            BitmapFactory.Options options, int reqWidth, int reqHeight) {
+        // Raw height and width of image
+        final int height = options.outHeight;
+        final int width = options.outWidth;
+        int inSampleSize = 1;
+
+        if (height > reqHeight || width > reqWidth) {
+
+            final int halfHeight = height / 2;
+            final int halfWidth = width / 2;
+
+            // Calculate the largest inSampleSize value that is a power of 2 and keeps both
+            // height and width larger than the requested height and width.
+            while ((halfHeight / inSampleSize) >= reqHeight
+                    && (halfWidth / inSampleSize) >= reqWidth) {
+                inSampleSize *= 2;
+            }
+        }
+
+        return inSampleSize;
     }
 }
