@@ -471,7 +471,7 @@ public class Activity_Process extends AppCompatActivity {
         org.opencv.core.Size fgSize = new org.opencv.core.Size(width,height);
 
         //based on - https://github.com/schenkerx/GrabCutDemo/blob/master/app/src/main/java/cvworkout2/graphcutdemo/MainActivity.java
-//        Imgproc.resize(img, img, new Size(), scaling[0], scaling[1], Imgproc.INTER_CUBIC);
+        Imgproc.resize(img, img, new Size(), scaling[0], scaling[1], Imgproc.INTER_CUBIC);
 //        Imgproc.resize(img, img, new Size(500,500), 0, 0, Imgproc.INTER_CUBIC);
 
         Mat firstMask = new Mat();

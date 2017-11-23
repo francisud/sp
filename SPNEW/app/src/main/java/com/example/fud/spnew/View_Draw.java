@@ -104,15 +104,15 @@ public class View_Draw extends View {
         //top left
         xPercent = left / imageWidth;
         yPercent = top / imageHeight;
-        xCoord = xPercent * origWidth;
-        yCoord = yPercent * origHeight;
+        xCoord = xPercent * (origWidth*scaleX);
+        yCoord = yPercent * (origHeight*scaleY);
         coordinates.add(new Point(Math.round(xCoord), Math.round(yCoord)));
 
         //bottom right
         xPercent = right / imageWidth;
         yPercent = bottom / imageHeight;
-        xCoord = xPercent * origWidth;
-        yCoord = yPercent * origHeight;
+        xCoord = xPercent * (origWidth*scaleX);
+        yCoord = yPercent * (origHeight*scaleY);
         coordinates.add(new Point(Math.round(xCoord), Math.round(yCoord)));
 
         coordinates.add(new Point(Math.round(left), Math.round(top)));
