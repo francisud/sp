@@ -101,19 +101,19 @@ public class View_Draw extends View {
         right = right - startingX;
         bottom = bottom - startingY;
 
-//        //top left
-//        xPercent = left / imageWidth;
-//        yPercent = top / imageHeight;
-//        xCoord = xPercent * origWidth;
-//        yCoord = yPercent * origHeight;
-//        coordinates.add(new Point(Math.round(xCoord), Math.round(yCoord)));
-//
-//        //bottom right
-//        xPercent = right / imageWidth;
-//        yPercent = bottom / imageHeight;
-//        xCoord = xPercent * origWidth;
-//        yCoord = yPercent * origHeight;
-//        coordinates.add(new Point(Math.round(xCoord), Math.round(yCoord)));
+        //top left
+        xPercent = left / imageWidth;
+        yPercent = top / imageHeight;
+        xCoord = xPercent * origWidth;
+        yCoord = yPercent * origHeight;
+        coordinates.add(new Point(Math.round(xCoord), Math.round(yCoord)));
+
+        //bottom right
+        xPercent = right / imageWidth;
+        yPercent = bottom / imageHeight;
+        xCoord = xPercent * origWidth;
+        yCoord = yPercent * origHeight;
+        coordinates.add(new Point(Math.round(xCoord), Math.round(yCoord)));
 
         coordinates.add(new Point(Math.round(left), Math.round(top)));
         coordinates.add(new Point(Math.round(right), Math.round(bottom)));
@@ -203,6 +203,23 @@ public class View_Draw extends View {
 
         int X = (int) event.getX();
         int Y = (int) event.getY();
+
+
+        if(X > startingX + imageWidth){
+            return false;
+        }
+
+        else if(X < startingX){
+            return false;
+        }
+
+        else if(Y > startingY + imageHeight){
+            return false;
+        }
+
+        else if(Y < startingY){
+            return false;
+        }
 
         switch (eventaction) {
 

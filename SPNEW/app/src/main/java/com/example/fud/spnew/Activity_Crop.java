@@ -20,6 +20,8 @@ import android.view.Window;
 import android.widget.ImageView;
 import android.widget.Toast;
 
+import java.io.FileNotFoundException;
+import java.io.InputStream;
 import java.util.ArrayList;
 
 public class Activity_Crop extends AppCompatActivity {
@@ -41,27 +43,47 @@ public class Activity_Crop extends AppCompatActivity {
         Display display = getWindowManager().getDefaultDisplay();
         display.getSize(size);
 
-//        iv.setImageBitmap(decodeSampledBitmapFromResource(photoPath, size.x, size.y));
+        iv.setImageBitmap(decodeSampledBitmapFromResource(photoPath, size.x, size.y));
 
-        try{
-            iv.setImageBitmap(MediaStore.Images.Media.getBitmap(this.getContentResolver(), photoPath));
-        }catch(Exception e){}
+//        View_Draw view = (View_Draw) findViewById(R.id.view);
+//        view.getLayoutParams().width = iv.getWidth();
+//        view.getLayoutParams().height = iv.getHeight();
+//        view.requestLayout();
+
+
+//        try{
+//            iv.setImageBitmap(MediaStore.Images.Media.getBitmap(this.getContentResolver(), photoPath));
+//        }catch(Exception e){}
 
     }
 
     //BASED ON - https://developer.android.com/topic/performance/graphics/load-bitmap.html
-    public static Bitmap decodeSampledBitmapFromResource(String photoPath, int reqWidth, int reqHeight) {
+    public Bitmap decodeSampledBitmapFromResource(Uri photoPath, int reqWidth, int reqHeight) {
+        InputStream stream = null;
+
         final BitmapFactory.Options options = new BitmapFactory.Options();
         options.inJustDecodeBounds = true;
-        BitmapFactory.decodeFile(photoPath, options);
+
+        try {
+            stream = getContentResolver().openInputStream(photoPath);
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        }
+        BitmapFactory.decodeStream(stream, null, options);
 
         options.inSampleSize = calculateInSampleSize(options, reqWidth, reqHeight);
 
         options.inJustDecodeBounds = false;
-        return BitmapFactory.decodeFile(photoPath, options);
+
+        try {
+            stream = getContentResolver().openInputStream(photoPath);
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        }
+        return BitmapFactory.decodeStream(stream, null, options);
     }
 
-    public static int calculateInSampleSize(BitmapFactory.Options options, int reqWidth, int reqHeight) {
+    public int calculateInSampleSize(BitmapFactory.Options options, int reqWidth, int reqHeight) {
         final int height = options.outHeight;
         final int width = options.outWidth;
         int inSampleSize = 1;

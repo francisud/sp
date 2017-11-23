@@ -13,16 +13,15 @@
 
     <ImageView
         android:id="@+id/imageView3"
-        android:layout_width="500px"
-        android:layout_height="500px"
-        android:layout_centerInParent="true"
-        app:srcCompat="@drawable/my_mushrooms" />
+        android:layout_width="500dp"
+        android:layout_height="500dp"
+        android:layout_centerInParent="true" />
 
     <view
         class="com.example.fud.spnew.View_Draw"
         android:id="@+id/view"
-        android:layout_width="500px"
-        android:layout_height="500px"
+        android:layout_width="500dp"
+        android:layout_height="500dp"
         android:layout_centerInParent="true" />
 
     <Button
