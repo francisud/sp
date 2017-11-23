@@ -1,5 +1,6 @@
 package com.example.fud.spnew;
 
+import android.content.Intent;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.graphics.Bitmap;
@@ -18,7 +19,8 @@ import android.widget.ListView;
 import java.util.ArrayList;
 
 public class Fragment_MyMushrooms extends Fragment {
-    private Cursor cursor;
+    private Cursor topCursor;
+    private Cursor undersideCursor;
 
     private OnFragmentInteractionListener mListener;
 
@@ -26,16 +28,22 @@ public class Fragment_MyMushrooms extends Fragment {
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
-        cursor = null;
+        topCursor = null;
+        undersideCursor = null;
         super.onCreate(savedInstanceState);
 
         Helper_Database helperDatabase = new Helper_Database(getContext());
         SQLiteDatabase db = helperDatabase.getWritableDatabase();
 
-        Cursor getter = db.rawQuery("SELECT * FROM identified ORDER BY datetime(date) DESC", null);
-        if(getter.getCount() > 0){
-            cursor = getter;
-            cursor.moveToFirst();
+        Cursor topGetter = db.rawQuery("SELECT id, date, top_picture FROM identified ORDER BY datetime(date) DESC", null);
+        Cursor undersideGetter = db.rawQuery("SELECT id, date, underside_picture FROM identified ORDER BY datetime(date) DESC", null);
+
+        if(topGetter != null && topGetter.getCount() > 0){
+            topCursor = topGetter;
+            topCursor.moveToFirst();
+
+            undersideCursor = undersideGetter;
+            undersideCursor.moveToFirst();
         }
     }
 
@@ -52,26 +60,27 @@ public class Fragment_MyMushrooms extends Fragment {
         byte[] picture;
         String date;
         int id;
-        if(cursor != null){
+
+        if(topCursor != null && topCursor.getCount() > 0){
             do {
-                picture = cursor.getBlob(cursor.getColumnIndex("top_picture"));
+                picture = topCursor.getBlob(topCursor.getColumnIndex("top_picture"));
                 if(picture != null){
                     bm = BitmapFactory.decodeByteArray(picture, 0 ,picture.length);
-                    date = cursor.getString(cursor.getColumnIndex("date"));
-                    id = cursor.getInt(cursor.getColumnIndex("id"));
+                    date = topCursor.getString(topCursor.getColumnIndex("date"));
+                    id = topCursor.getInt(topCursor.getColumnIndex("id"));
                     item = new Class_MyMushroomGridItem(bm,date,id);
                     holder.add(item);
                 }
                 else{
-                    picture = cursor.getBlob(cursor.getColumnIndex("underside_picture"));
+                    picture = undersideCursor.getBlob(undersideCursor.getColumnIndex("underside_picture"));
                     bm = BitmapFactory.decodeByteArray(picture, 0 ,picture.length);
-                    date = cursor.getString(cursor.getColumnIndex("date"));
-                    id = cursor.getInt(cursor.getColumnIndex("id"));
+                    date = undersideCursor.getString(undersideCursor.getColumnIndex("date"));
+                    id = undersideCursor.getInt(undersideCursor.getColumnIndex("id"));
                     item = new Class_MyMushroomGridItem(bm,date,id);
                     holder.add(item);
                 }
 
-            }while(cursor.moveToNext());
+            }while(topCursor.moveToNext() && undersideCursor.moveToNext());
 
             Adapter_MyMushrooms adapter = new Adapter_MyMushrooms(holder, getContext());
             listView.setAdapter(adapter);
@@ -81,14 +90,13 @@ public class Fragment_MyMushrooms extends Fragment {
                 public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                     Log.d("debug", Integer.toString(position));
 
-                    cursor.moveToFirst();
-                    for(int i = 0; i < position; i++)
-                        cursor.moveToNext();
-
+                    Intent intent = new Intent(getActivity(), Activity_MyMushroomDetails.class);
+                    getActivity().startActivity(intent);
 
                 }
             });
         }
+
 
         Log.d("debug","inside oncreateview-mm");
 

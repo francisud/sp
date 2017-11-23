@@ -54,7 +54,6 @@
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value="com.example.fud.spnew.Activity_Identify" />
         </activity>
-
         <activity
             android:name=".Activity_Crop"
             android:label="@string/title_activity_crop"
@@ -63,6 +62,15 @@
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value="com.example.fud.spnew.Activity_Identify" />
+        </activity>
+        <activity
+            android:name=".Activity_MyMushroomDetails"
+            android:label="@string/title_activity__my_mushroom_details"
+            android:parentActivityName=".Activity_Main"
+            android:theme="@style/AppTheme.NoActionBar">
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value="com.example.fud.spnew.Activity_Main" />
         </activity>
     </application>
 
