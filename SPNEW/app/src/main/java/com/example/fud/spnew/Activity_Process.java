@@ -17,6 +17,7 @@ import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
 import android.text.TextUtils;
 import android.util.Log;
+import android.util.TypedValue;
 import android.view.Gravity;
 import android.view.View;
 import android.widget.AdapterView;
@@ -24,6 +25,7 @@ import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.ListView;
+import android.widget.TextView;
 
 import org.opencv.android.BaseLoaderCallback;
 import org.opencv.android.LoaderCallbackInterface;
@@ -38,6 +40,7 @@ import org.opencv.core.Scalar;
 import org.opencv.core.Size;
 import org.opencv.imgproc.Imgproc;
 import org.opencv.imgproc.Moments;
+import org.w3c.dom.Text;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
@@ -136,6 +139,18 @@ public class Activity_Process extends AppCompatActivity {
         }
         @Override
         protected void onPostExecute(Void result) {
+            LinearLayout layout = (LinearLayout) findViewById(R.id.layout);
+
+            String[] substrates = getResources().getStringArray(R.array.substrate_array);
+
+            TextView textView = new TextView(Activity_Process.this);
+            textView.setLayoutParams(new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT));
+            textView.setText("Substrate: " + substrates[Integer.parseInt(substrate)-1]);
+            textView.setTextSize(TypedValue.COMPLEX_UNIT_SP, 18);
+            textView.setGravity(Gravity.CENTER);
+            textView.setPadding(0,15,0,0);
+            layout.addView(textView);
+
             if(topPicture != null)
                 displayResults(topPhotoPath, topPercentage, 0);
 
@@ -143,7 +158,7 @@ public class Activity_Process extends AppCompatActivity {
                 displayResults(bottomPhotoPath, bottomPercentage, 1);
 
             //add button
-            LinearLayout layout = (LinearLayout) findViewById(R.id.layout);
+
             Button button = new Button(Activity_Process.this);
             button.setLayoutParams(new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT));
             button.setText("Done");
@@ -325,6 +340,8 @@ public class Activity_Process extends AppCompatActivity {
             underside_percentage = TextUtils.join(",", bottomSavingPercentage);
             underside_data = TextUtils.join("", bottomSavingData);
         }
+
+        values.put("substrate", substrate);
 
         values.put("top_picture",top_picture);
         values.put("top_picture_scaled",top_picture_scaled);

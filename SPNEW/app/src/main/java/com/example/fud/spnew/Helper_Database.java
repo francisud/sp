@@ -30,6 +30,7 @@ public class Helper_Database extends SQLiteOpenHelper {
             db.execSQL(
                     "create table identified " +
                             "(id integer primary key autoincrement, date DATETIME DEFAULT CURRENT_TIMESTAMP, " +
+                            "substrate text, " +
                             "top_picture blob, top_picture_scaled blob, " +
                             "top_species text, top_percentage text,  top_data text, " +
                             "underside_picture blob, underside_picture_scaled blob, " +

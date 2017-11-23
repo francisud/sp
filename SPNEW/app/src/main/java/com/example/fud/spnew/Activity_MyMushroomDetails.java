@@ -1,5 +1,7 @@
 package com.example.fud.spnew;
 
+import android.database.Cursor;
+import android.database.sqlite.SQLiteDatabase;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
@@ -25,6 +27,23 @@ public class Activity_MyMushroomDetails extends AppCompatActivity {
             }
         });
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
-    }
 
+        Bundle extras = getIntent().getExtras();
+        int position = extras.getInt("position");
+
+        Helper_Database helperDatabase = new Helper_Database(this);
+        SQLiteDatabase db = helperDatabase.getWritableDatabase();
+
+        Cursor topGetter = db.rawQuery("SELECT top_picture_scaled FROM identified ORDER BY datetime(date) DESC", null);
+        Cursor undersideGetter = db.rawQuery("SELECT underside_picture_scaled FROM identified ORDER BY datetime(date) DESC", null);
+
+        topGetter.moveToFirst();
+        undersideGetter.moveToFirst();
+
+        for(int i = 0; i < position; i++){
+            topGetter.moveToNext();
+            undersideGetter.moveToNext();
+        }
+
+    }
 }

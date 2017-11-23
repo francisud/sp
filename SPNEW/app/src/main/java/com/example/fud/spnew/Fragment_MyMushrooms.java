@@ -91,8 +91,10 @@ public class Fragment_MyMushrooms extends Fragment {
                     Log.d("debug", Integer.toString(position));
 
                     Intent intent = new Intent(getActivity(), Activity_MyMushroomDetails.class);
+                    intent.putExtra("position", Integer.toString(
+                            position
+                    ));
                     getActivity().startActivity(intent);
-
                 }
             });
         }
