@@ -243,7 +243,7 @@ public class Activity_Process extends AppCompatActivity {
         //read image
         Mat picture = readPicture(photoPath);
         Imgproc.cvtColor(picture, picture, Imgproc.COLOR_BGR2RGB);
-        Bitmap bm = Bitmap.createBitmap(picture.cols(), picture.rows(), Bitmap.Config.RGB_565);
+        Bitmap bm = Bitmap.createBitmap(picture.cols(), picture.rows(), Bitmap.Config.ARGB_8888);
         Utils.matToBitmap(picture, bm);
 
         //display image
@@ -370,7 +370,7 @@ public class Activity_Process extends AppCompatActivity {
         }
 
         BitmapFactory.Options bmpFactoryOptions = new BitmapFactory.Options();
-        bmpFactoryOptions.inPreferredConfig = Bitmap.Config.RGB_565;
+        bmpFactoryOptions.inPreferredConfig = Bitmap.Config.ARGB_8888;
 
         Bitmap bmp = BitmapFactory.decodeStream(stream, null, bmpFactoryOptions);
         ByteArrayOutputStream bos = new ByteArrayOutputStream();
@@ -413,7 +413,7 @@ public class Activity_Process extends AppCompatActivity {
     }
 
     public static int calculateInSampleSize(
-        BitmapFactory.Options options, int reqWidth, int reqHeight) {
+            BitmapFactory.Options options, int reqWidth, int reqHeight) {
         // Raw height and width of image
         final int height = options.outHeight;
         final int width = options.outWidth;
@@ -443,7 +443,7 @@ public class Activity_Process extends AppCompatActivity {
         }
 
         BitmapFactory.Options bmpFactoryOptions = new BitmapFactory.Options();
-        bmpFactoryOptions.inPreferredConfig = Bitmap.Config.RGB_565;
+        bmpFactoryOptions.inPreferredConfig = Bitmap.Config.ARGB_8888;
 
         Bitmap bmp = BitmapFactory.decodeStream(stream, null, bmpFactoryOptions);
         Mat ImageMat = new Mat(bmp.getWidth(), bmp.getHeight(), CV_8UC3);
@@ -471,8 +471,10 @@ public class Activity_Process extends AppCompatActivity {
         org.opencv.core.Size fgSize = new org.opencv.core.Size(width,height);
 
         //based on - https://github.com/schenkerx/GrabCutDemo/blob/master/app/src/main/java/cvworkout2/graphcutdemo/MainActivity.java
-        Imgproc.resize(img, img, new Size(), scaling[0], scaling[1], Imgproc.INTER_CUBIC);
-//        Imgproc.resize(img, img, new Size(), scaling[0], scaling[1], Imgproc.INTER_LINEAR);
+        Log.d("debug-scaling", Float.toString(scaling[0]));
+        Log.d("debug-scaling", Float.toString(scaling[1]));
+//        Imgproc.resize(img, img, new Size(), scaling[0], scaling[1], Imgproc.INTER_CUBIC);
+        Imgproc.resize(img, img, new Size(), scaling[0], scaling[1], Imgproc.INTER_LINEAR);
 //        Imgproc.resize(img, img, new Size(500,500), 0, 0, Imgproc.INTER_CUBIC);
 
         Mat firstMask = new Mat();
