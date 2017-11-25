@@ -4,6 +4,7 @@ import android.app.Activity;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.graphics.Canvas;
 import android.graphics.Matrix;
 import android.graphics.Point;
 import android.graphics.drawable.Drawable;
@@ -18,6 +19,8 @@ import android.view.MotionEvent;
 import android.view.View;
 import android.view.Window;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
+import android.widget.RelativeLayout;
 import android.widget.Toast;
 
 import java.io.FileNotFoundException;
@@ -25,6 +28,7 @@ import java.io.InputStream;
 import java.util.ArrayList;
 
 public class Activity_Crop extends AppCompatActivity {
+    Uri photoPath;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -36,7 +40,7 @@ public class Activity_Crop extends AppCompatActivity {
 
         //get photopath
         Bundle extras = getIntent().getExtras();
-        Uri photoPath = Uri.parse(extras.getString("photoPath"));
+        photoPath = Uri.parse(extras.getString("photoPath"));
 
         ImageView iv = (ImageView) findViewById(R.id.imageView3);
         Point size = new Point();
@@ -44,6 +48,11 @@ public class Activity_Crop extends AppCompatActivity {
         display.getSize(size);
 
         iv.setImageBitmap(decodeSampledBitmapFromResource(photoPath, size.x, size.y));
+
+        ImageView holder = (ImageView) findViewById(R.id.holder);
+        try{
+            holder.setImageBitmap(MediaStore.Images.Media.getBitmap(this.getContentResolver(), photoPath));
+        }catch(Exception e){}
 
 //        View_Draw view = (View_Draw) findViewById(R.id.view);
 //        view.getLayoutParams().width = iv.getWidth();
@@ -123,17 +132,25 @@ public class Activity_Crop extends AppCompatActivity {
             final int actualWidth = Math.round(origWidth * scaleX);
             final int actualHeight = Math.round(origHeight * scaleY);
 
-//            final int actualWidth = 500;
-//            final int actualHeight = 500;
-
             int imgViewW = iv.getMeasuredWidth();
             int imgViewH = iv.getMeasuredHeight();
 
             int startingX = Math.round((imgViewW - actualWidth)/2);
             int startingY = Math.round((imgViewH - actualHeight)/2);
 
+            //getting 500px scaling
+            RelativeLayout layout = (RelativeLayout) findViewById(R.id.container);
+
+            ImageView holder = (ImageView) findViewById(R.id.holder);
+            float[] holderMatrix = new float[9];
+            holder.getImageMatrix().getValues(holderMatrix);
+            final float scaleX500 = holderMatrix[Matrix.MSCALE_X];
+            final float scaleY500 = holderMatrix[Matrix.MSCALE_Y];
+
+            layout.removeView(holder);
+
             View_Draw dv = (View_Draw) findViewById(R.id.view);
-            dv.getDimensions(actualWidth,actualHeight,startingX,startingY,origWidth,origHeight, scaleX, scaleY);
+            dv.getDimensions(actualWidth,actualHeight,startingX,startingY,origWidth,origHeight, scaleX, scaleY, scaleX500, scaleY500);
         }
     }
 

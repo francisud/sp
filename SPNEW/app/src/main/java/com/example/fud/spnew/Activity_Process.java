@@ -472,6 +472,7 @@ public class Activity_Process extends AppCompatActivity {
 
         //based on - https://github.com/schenkerx/GrabCutDemo/blob/master/app/src/main/java/cvworkout2/graphcutdemo/MainActivity.java
         Imgproc.resize(img, img, new Size(), scaling[0], scaling[1], Imgproc.INTER_CUBIC);
+//        Imgproc.resize(img, img, new Size(), scaling[0], scaling[1], Imgproc.INTER_LINEAR);
 //        Imgproc.resize(img, img, new Size(500,500), 0, 0, Imgproc.INTER_CUBIC);
 
         Mat firstMask = new Mat();
@@ -826,6 +827,8 @@ public class Activity_Process extends AppCompatActivity {
             stream.write(stringToWrite.getBytes());
 
             holderStrings.add(stringToWrite);
+
+            Log.d("debug-data", holderStrings.toString());
 
             stream.close();
         }

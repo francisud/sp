@@ -88,17 +88,12 @@ public class Fragment_MyMushrooms extends Fragment {
             listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
                 @Override
                 public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                    Log.d("debug", Integer.toString(position));
-
                     Intent intent = new Intent(getActivity(), Activity_MyMushroomDetails.class);
                     intent.putExtra("position", position);
                     getActivity().startActivity(intent);
                 }
             });
         }
-
-
-        Log.d("debug","inside oncreateview-mm");
 
         return view;
     }

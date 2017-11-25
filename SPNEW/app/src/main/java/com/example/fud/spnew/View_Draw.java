@@ -26,6 +26,7 @@ public class View_Draw extends View {
 
     int imageWidth, imageHeight, startingX, startingY, origWidth, origHeight;
     float scaleX, scaleY;
+    float scaleX500, scaleY500;
 
     Point[] points = new Point[4];
     /**
@@ -104,15 +105,15 @@ public class View_Draw extends View {
         //top left
         xPercent = left / imageWidth;
         yPercent = top / imageHeight;
-        xCoord = xPercent * (origWidth*scaleX);
-        yCoord = yPercent * (origHeight*scaleY);
+        xCoord = xPercent * (origWidth*scaleX500);
+        yCoord = yPercent * (origHeight*scaleY500);
         coordinates.add(new Point(Math.round(xCoord), Math.round(yCoord)));
 
         //bottom right
         xPercent = right / imageWidth;
         yPercent = bottom / imageHeight;
-        xCoord = xPercent * (origWidth*scaleX);
-        yCoord = yPercent * (origHeight*scaleY);
+        xCoord = xPercent * (origWidth*scaleX500);
+        yCoord = yPercent * (origHeight*scaleY500);
         coordinates.add(new Point(Math.round(xCoord), Math.round(yCoord)));
 
         coordinates.add(new Point(Math.round(left), Math.round(top)));
@@ -122,11 +123,11 @@ public class View_Draw extends View {
     }
 
     public float[] getScaling(){
-        float[] holder = {scaleX,scaleY};
+        float[] holder = {scaleX500,scaleY500};
         return holder;
     }
 
-    public void getDimensions(int imageWidth, int imageHeight, int startingX, int startingY, int origWidth, int origHeight, float scaleX, float scaleY){
+    public void getDimensions(int imageWidth, int imageHeight, int startingX, int startingY, int origWidth, int origHeight, float scaleX, float scaleY, float scaleX500, float scaleY500){
         this.imageWidth  = imageWidth;
         this.imageHeight = imageHeight;
         this.startingX   = startingX;
@@ -135,6 +136,8 @@ public class View_Draw extends View {
         this.origHeight  = origHeight;
         this.scaleX = scaleX;
         this.scaleY = scaleY;
+        this.scaleX500 = scaleX500;
+        this.scaleY500 = scaleY500;
     }
 
     // the method that draws the balls
