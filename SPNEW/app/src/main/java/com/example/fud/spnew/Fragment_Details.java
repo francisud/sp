@@ -57,6 +57,11 @@ public class Fragment_Details extends DialogFragment{
         textureTV.setText(cursor.getString(cursor.getColumnIndex("texture")));
         substrateTV.setText(cursor.getString(cursor.getColumnIndex("substrate")));
 
+        speciesTV.setTextSize(16);
+        colorsTV.setTextSize(16);
+        textureTV.setTextSize(16);
+        substrateTV.setTextSize(16);
+
         AssetManager am = getActivity().getAssets();
         InputStream in;
         ArrayList<Bitmap> images = new ArrayList<>();

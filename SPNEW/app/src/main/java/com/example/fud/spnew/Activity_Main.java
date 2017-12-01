@@ -17,6 +17,7 @@ public class Activity_Main extends FragmentActivity {
     Fragment_MyMushrooms fragment_myMushrooms;
     Fragment_Identify fragment_identify;
     Fragment_HowTo fragment_howTo;
+    Fragment_Families fragment_families;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -25,11 +26,13 @@ public class Activity_Main extends FragmentActivity {
         fragment_myMushrooms = new Fragment_MyMushrooms();
         fragment_identify = new Fragment_Identify();
         fragment_howTo = new Fragment_HowTo();
+        fragment_families = new Fragment_Families();
 
-        fragments = new Fragment[3];
+        fragments = new Fragment[4];
         fragments[0] = fragment_myMushrooms;
         fragments[1] = fragment_identify;
         fragments[2] = fragment_howTo;
+        fragments[3] = fragment_families;
 
         //database
         Helper_Database helperDatabase = new Helper_Database(this);
@@ -51,9 +54,11 @@ public class Activity_Main extends FragmentActivity {
             transaction.add(R.id.fragment_container, fragment_myMushrooms, "0");
             transaction.add(R.id.fragment_container, fragment_identify, "1");
             transaction.add(R.id.fragment_container, fragment_howTo, "2");
+            transaction.add(R.id.fragment_container, fragment_families, "3");
 
             transaction.hide(fragment_myMushrooms);
             transaction.hide(fragment_howTo);
+            transaction.hide(fragment_families);
 
             transaction.commit();
 
@@ -74,6 +79,9 @@ public class Activity_Main extends FragmentActivity {
                         case R.id.how_to:
                             changeFragment(2);
                             break;
+                        case R.id.families:
+                            changeFragment(3);
+                            break;
                     }
                     return true;
                 }
@@ -86,7 +94,7 @@ public class Activity_Main extends FragmentActivity {
         FragmentManager manager = getSupportFragmentManager();
         FragmentTransaction transaction = manager.beginTransaction();
 
-        for(int i = 0; i < 3; i++){
+        for(int i = 0; i < 4; i++){
             if(i == id){
                 newFragment = fragments[i];
                 transaction.show(newFragment);

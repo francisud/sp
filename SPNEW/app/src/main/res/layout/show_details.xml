@@ -12,12 +12,15 @@
         android:text="@string/species"
         android:textStyle="bold"
         android:layout_width="wrap_content"
-        android:layout_height="wrap_content" />
+        android:layout_height="wrap_content"
+        android:textSize="17sp"
+        android:paddingTop="10dp"/>
 
     <TextView
         android:id="@+id/species"
         android:layout_width="wrap_content"
-        android:layout_height="wrap_content" />
+        android:layout_height="wrap_content"
+        android:paddingBottom="10dp"/>
 
     <View
         android:layout_width="fill_parent"
@@ -29,12 +32,15 @@
         android:text="@string/colors"
         android:textStyle="bold"
         android:layout_width="wrap_content"
-        android:layout_height="wrap_content" />
+        android:layout_height="wrap_content"
+        android:textSize="17sp"
+        android:paddingTop="10dp"/>
 
     <TextView
         android:id="@+id/colors"
         android:layout_width="wrap_content"
-        android:layout_height="wrap_content" />
+        android:layout_height="wrap_content"
+        android:paddingBottom="10dp"/>
 
     <View
         android:layout_width="fill_parent"
@@ -46,13 +52,16 @@
         android:text="@string/textures"
         android:textStyle="bold"
         android:layout_width="wrap_content"
-        android:layout_height="wrap_content" />
+        android:layout_height="wrap_content"
+        android:textSize="17sp"
+        android:paddingTop="10dp"/>
 
 
     <TextView
         android:id="@+id/texture"
         android:layout_width="wrap_content"
-        android:layout_height="wrap_content" />
+        android:layout_height="wrap_content"
+        android:paddingBottom="10dp"/>
 
     <View
         android:layout_width="fill_parent"
@@ -64,12 +73,15 @@
         android:text="@string/substrates"
         android:textStyle="bold"
         android:layout_width="wrap_content"
-        android:layout_height="wrap_content" />
+        android:layout_height="wrap_content"
+        android:textSize="17sp"
+        android:paddingTop="10dp"/>
 
     <TextView
         android:id="@+id/substrate"
         android:layout_width="wrap_content"
-        android:layout_height="wrap_content" />
+        android:layout_height="wrap_content"
+        android:paddingBottom="10dp"/>
 
     <View
         android:layout_width="fill_parent"

@@ -11,4 +11,8 @@
     <item android:id="@+id/how_to"
         android:title="@string/how_to"
         android:icon="@drawable/ball" />
+
+    <item android:id="@+id/families"
+        android:title="Families"
+        android:icon="@drawable/ball" />
 </menu>
