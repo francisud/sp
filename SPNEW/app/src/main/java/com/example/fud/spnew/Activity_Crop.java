@@ -48,22 +48,6 @@ public class Activity_Crop extends AppCompatActivity {
         display.getSize(size);
 
         iv.setImageBitmap(decodeSampledBitmapFromResource(photoPath, size.x, size.y));
-
-        ImageView holder = (ImageView) findViewById(R.id.holder);
-        try{
-            holder.setImageBitmap(MediaStore.Images.Media.getBitmap(this.getContentResolver(), photoPath));
-        }catch(Exception e){}
-
-//        View_Draw view = (View_Draw) findViewById(R.id.view);
-//        view.getLayoutParams().width = iv.getWidth();
-//        view.getLayoutParams().height = iv.getHeight();
-//        view.requestLayout();
-
-
-//        try{
-//            iv.setImageBitmap(MediaStore.Images.Media.getBitmap(this.getContentResolver(), photoPath));
-//        }catch(Exception e){}
-
     }
 
     //BASED ON - https://developer.android.com/topic/performance/graphics/load-bitmap.html
@@ -139,18 +123,12 @@ public class Activity_Crop extends AppCompatActivity {
             int startingY = Math.round((imgViewH - actualHeight)/2);
 
             //getting 500px scaling
-            RelativeLayout layout = (RelativeLayout) findViewById(R.id.container);
-
-            ImageView holder = (ImageView) findViewById(R.id.holder);
-            float[] holderMatrix = new float[9];
-            holder.getImageMatrix().getValues(holderMatrix);
-            final float scaleX500 = holderMatrix[Matrix.MSCALE_X];
-            final float scaleY500 = holderMatrix[Matrix.MSCALE_Y];
-
-            layout.removeView(holder);
+            float xScale =  ((float) 500) / origWidth;
+            float yScale =  ((float) 500) / origHeight;
+            float scale = (xScale <= yScale) ? xScale : yScale;
 
             View_Draw dv = (View_Draw) findViewById(R.id.view);
-            dv.getDimensions(actualWidth,actualHeight,startingX,startingY,origWidth,origHeight, scaleX, scaleY, scaleX500, scaleY500);
+            dv.getDimensions(actualWidth,actualHeight,startingX,startingY,origWidth,origHeight, scaleX, scaleY, scale, scale);
         }
     }
 

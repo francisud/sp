@@ -636,6 +636,9 @@ public class Activity_Process extends AppCompatActivity {
         ///find contours
         Imgproc.findContours(threshold_output, contours, new Mat(), Imgproc.RETR_EXTERNAL, Imgproc.CHAIN_APPROX_SIMPLE);
 
+        Bitmap tester = Bitmap.createBitmap(threshold_output.cols(), threshold_output.rows(), Bitmap.Config.ARGB_8888);
+        Utils.matToBitmap(threshold_output,tester);
+
         //find largest contour
         double largest_area = 0;
         int index = 0;
