@@ -1,5 +1,6 @@
 package com.example.fud.spnew;
 
+import android.app.Activity;
 import android.support.v4.app.DialogFragment;
 import android.content.Intent;
 import android.graphics.Point;
@@ -9,6 +10,7 @@ import android.provider.MediaStore;
 import android.support.v4.content.FileProvider;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
+import android.view.Gravity;
 import android.view.View;
 import android.net.Uri;
 import android.widget.ArrayAdapter;
@@ -228,18 +230,27 @@ public class Activity_Identify extends AppCompatActivity implements Fragment_Pic
             bottomCoords = (ArrayList<Point>) data.getSerializableExtra("coordinates");
             bottomScaling = (float[]) data.getSerializableExtra("scaling");
         }
+
+
+        if(data != null && requestCode == 6 && resultCode == RESULT_CANCELED && data.getBooleanExtra("errorEncountered",false)){
+            Toast toast = Toast.makeText(Activity_Identify.this, "Cannot Process Image", Toast.LENGTH_LONG);
+            toast.setGravity(Gravity.CENTER, 0, 0);
+            toast.show();
+        }
     }
 
     public void startProcessActivity(View view){
         if(topPhotoPath == null && bottomPhotoPath == null){
-            Toast.makeText(Activity_Identify.this, "Both Top Photo and Underside Photo can't be empty",
-                    Toast.LENGTH_LONG).show();
+            Toast toast = Toast.makeText(Activity_Identify.this, "Both Top Photo and Underside Photo can't be empty", Toast.LENGTH_LONG);
+            toast.setGravity(Gravity.CENTER, 0, 0);
+            toast.show();
             return;
         }
 
         if(substrate == null){
-            Toast.makeText(Activity_Identify.this, "Please pick substrate",
-                    Toast.LENGTH_LONG).show();
+            Toast toast = Toast.makeText(Activity_Identify.this, "Please pick substrate", Toast.LENGTH_LONG);
+            toast.setGravity(Gravity.CENTER, 0, 0);
+            toast.show();
             return;
         }
 
@@ -259,7 +270,7 @@ public class Activity_Identify extends AppCompatActivity implements Fragment_Pic
         }
 
         intent.putExtra("substrate", substrate);
-        startActivity(intent);
+        startActivityForResult(intent, 6);
     }
 
 }

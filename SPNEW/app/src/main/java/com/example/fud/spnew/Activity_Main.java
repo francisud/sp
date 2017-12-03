@@ -14,25 +14,26 @@ public class Activity_Main extends FragmentActivity {
 
     Fragment[] fragments;
 
-    Fragment_MyMushrooms fragment_myMushrooms;
     Fragment_Identify fragment_identify;
-    Fragment_HowTo fragment_howTo;
+    Fragment_MyMushrooms fragment_myMushrooms;
     Fragment_Families fragment_families;
+    Fragment_HowTo fragment_howTo;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        fragment_myMushrooms = new Fragment_MyMushrooms();
         fragment_identify = new Fragment_Identify();
-        fragment_howTo = new Fragment_HowTo();
+        fragment_myMushrooms = new Fragment_MyMushrooms();
         fragment_families = new Fragment_Families();
+        fragment_howTo = new Fragment_HowTo();
 
         fragments = new Fragment[4];
-        fragments[0] = fragment_myMushrooms;
-        fragments[1] = fragment_identify;
-        fragments[2] = fragment_howTo;
-        fragments[3] = fragment_families;
+        fragments[0] = fragment_identify;
+        fragments[1] = fragment_myMushrooms;
+        fragments[2] = fragment_families;
+        fragments[3] = fragment_howTo;
+
 
         //database
         Helper_Database helperDatabase = new Helper_Database(this);
@@ -51,14 +52,14 @@ public class Activity_Main extends FragmentActivity {
 
             FragmentManager manager = getSupportFragmentManager();
             FragmentTransaction transaction = manager.beginTransaction();
-            transaction.add(R.id.fragment_container, fragment_myMushrooms, "0");
-            transaction.add(R.id.fragment_container, fragment_identify, "1");
-            transaction.add(R.id.fragment_container, fragment_howTo, "2");
-            transaction.add(R.id.fragment_container, fragment_families, "3");
+            transaction.add(R.id.fragment_container, fragment_identify, "0");
+            transaction.add(R.id.fragment_container, fragment_myMushrooms, "1");
+            transaction.add(R.id.fragment_container, fragment_families, "2");
+            transaction.add(R.id.fragment_container, fragment_howTo, "3");
 
             transaction.hide(fragment_myMushrooms);
-            transaction.hide(fragment_howTo);
             transaction.hide(fragment_families);
+            transaction.hide(fragment_howTo);
 
             transaction.commit();
 
@@ -70,16 +71,16 @@ public class Activity_Main extends FragmentActivity {
                 @Override
                 public boolean onNavigationItemSelected(MenuItem item) {
                     switch (item.getItemId()) {
-                        case R.id.my_mushrooms:
+                        case R.id.identify:
                             changeFragment(0);
                             break;
-                        case R.id.identify:
+                        case R.id.my_mushrooms:
                             changeFragment(1);
                             break;
-                        case R.id.how_to:
+                        case R.id.families:
                             changeFragment(2);
                             break;
-                        case R.id.families:
+                        case R.id.how_to:
                             changeFragment(3);
                             break;
                     }

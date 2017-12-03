@@ -27,6 +27,9 @@ import org.json.JSONObject;
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
 import java.io.BufferedReader;
+import java.io.ByteArrayOutputStream;
+import java.io.FileInputStream;
+import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
@@ -62,7 +65,7 @@ public class Adapter_MyMushrooms extends ArrayAdapter<Class_MyMushroomGridItem> 
     @Override
     public View getView(final int position, View convertView, ViewGroup parent) {
         Class_MyMushroomGridItem dataModel = getItem(position);
-        Adapter_MyMushrooms.ViewHolder viewHolder;
+        final Adapter_MyMushrooms.ViewHolder viewHolder;
 
         if (convertView == null) {
             viewHolder = new Adapter_MyMushrooms.ViewHolder();
@@ -81,16 +84,21 @@ public class Adapter_MyMushrooms extends ArrayAdapter<Class_MyMushroomGridItem> 
         viewHolder.imageView.setImageBitmap(dataModel.getImage());
         viewHolder.textView.setText(dataModel.getDate());
 
+        if(dataModel.getIs_uploaded() == 1){
+            viewHolder.buttonUpload.setClickable(false);
+            viewHolder.buttonUpload.setEnabled(false);
+        }
+
+
         viewHolder.buttonUpload.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
                 AlertDialog.Builder builder = new AlertDialog.Builder(mContext);
                 builder.setMessage("Upload data?");
                 builder.setPositiveButton("Yes", new DialogInterface.OnClickListener() {
                     public void onClick(DialogInterface dialog, int id) {
-//                        upload(data.get(position).getId());
-                        new Adapter_MyMushrooms.AsyncClassifyTask().execute(data.get(position).getId());
-                        dialog.dismiss();
+                        new Adapter_MyMushrooms.AsyncClassifyTask(viewHolder.buttonUpload).execute(data.get(position).getId());
 
+                        dialog.dismiss();
                     }
                 });
                 builder.setNegativeButton("No", new DialogInterface.OnClickListener() {
@@ -158,9 +166,9 @@ public class Adapter_MyMushrooms extends ArrayAdapter<Class_MyMushroomGridItem> 
                 SQLiteDatabase db = helperDatabase.getWritableDatabase();
 
                 //cursor cant handle too much data, need to split to 2
-                Cursor topGetter = db.rawQuery("SELECT date, substrate, top_picture, top_species, top_percentage, top_data FROM identified where id = ?", new String[]{Integer.toString(id)});
+                Cursor topGetter = db.rawQuery("SELECT date, substrate, top_picture_scaled, top_species, top_percentage, top_data FROM identified where id = ?", new String[]{Integer.toString(id)});
 
-                Cursor undersideGetter = db.rawQuery("SELECT underside_picture, underside_species, underside_percentage,  underside_data FROM identified where id = ?", new String[]{Integer.toString(id)});
+                Cursor undersideGetter = db.rawQuery("SELECT underside_picture_scaled, underside_species, underside_percentage,  underside_data FROM identified where id = ?", new String[]{Integer.toString(id)});
 
 
                 if(topGetter != null && topGetter.moveToFirst() && undersideGetter.moveToFirst()){
@@ -169,16 +177,46 @@ public class Adapter_MyMushrooms extends ArrayAdapter<Class_MyMushroomGridItem> 
                     data.put("date", topGetter.getString(topGetter.getColumnIndex("date")));
                     data.put("substrate", topGetter.getString(topGetter.getColumnIndex("substrate")));
 
-                    if(topGetter.getBlob(topGetter.getColumnIndex("top_picture")) != null){
-                        String top_picture = new String(Base64.encode(topGetter.getBlob(topGetter.getColumnIndex("top_picture")), Base64.DEFAULT));
+                    if(topGetter.getString(topGetter.getColumnIndex("top_picture_scaled")) != null){
+                        InputStream inputStream = new FileInputStream(topGetter.getString(topGetter.getColumnIndex("top_picture_scaled")));
+                        byte[] bytes;
+                        byte[] buffer = new byte[8192];
+                        int bytesRead;
+                        ByteArrayOutputStream output = new ByteArrayOutputStream();
+                        try {
+                            while ((bytesRead = inputStream.read(buffer)) != -1) {
+                                output.write(buffer, 0, bytesRead);
+                            }
+                        } catch (IOException e) {
+                            e.printStackTrace();
+                        }
+                        bytes = output.toByteArray();
+                        inputStream.close();
+                        String top_picture = Base64.encodeToString(bytes, Base64.DEFAULT);
+
                         data.put("top_picture", top_picture);
                         data.put("top_species", topGetter.getString(topGetter.getColumnIndex("top_species")));
                         data.put("top_percentage", topGetter.getString(topGetter.getColumnIndex("top_percentage")));
                         data.put("top_data", topGetter.getString(topGetter.getColumnIndex("top_data")));
                     }
 
-                    if(undersideGetter.getBlob(undersideGetter.getColumnIndex("underside_picture")) != null){
-                        String underside_picture = new String(Base64.encode(undersideGetter.getBlob(undersideGetter.getColumnIndex("underside_picture")), Base64.DEFAULT));
+                    if(undersideGetter.getString(undersideGetter.getColumnIndex("underside_picture_scaled")) != null){
+                        InputStream inputStream = new FileInputStream(undersideGetter.getString(undersideGetter.getColumnIndex("underside_picture_scaled")));
+                        byte[] bytes;
+                        byte[] buffer = new byte[8192];
+                        int bytesRead;
+                        ByteArrayOutputStream output = new ByteArrayOutputStream();
+                        try {
+                            while ((bytesRead = inputStream.read(buffer)) != -1) {
+                                output.write(buffer, 0, bytesRead);
+                            }
+                        } catch (IOException e) {
+                            e.printStackTrace();
+                        }
+                        bytes = output.toByteArray();
+                        inputStream.close();
+                        String underside_picture = Base64.encodeToString(bytes, Base64.DEFAULT);
+
                         data.put("underside_picture", underside_picture);
                         data.put("underside_species", undersideGetter.getString(undersideGetter.getColumnIndex("underside_species")));
                         data.put("underside_percentage", undersideGetter.getString(undersideGetter.getColumnIndex("underside_percentage")));
@@ -221,6 +259,12 @@ public class Adapter_MyMushrooms extends ArrayAdapter<Class_MyMushroomGridItem> 
     }
 
     private class AsyncClassifyTask extends AsyncTask<Integer, Void, Void>{
+        int currentId;
+        ImageButton buttonUpload;
+        public AsyncClassifyTask(ImageButton buttonUpload) {
+            this.buttonUpload = buttonUpload;
+        }
+
         @Override
         protected void onPreExecute() {
             super.onPreExecute();
@@ -232,6 +276,7 @@ public class Adapter_MyMushrooms extends ArrayAdapter<Class_MyMushroomGridItem> 
 
         @Override
         protected Void doInBackground(Integer... params) {
+            currentId = params[0];
             upload(params[0]);
             return null;
         }
@@ -247,6 +292,13 @@ public class Adapter_MyMushrooms extends ArrayAdapter<Class_MyMushroomGridItem> 
             }
 
             if(responseCode == 200 && resultCode.equals("1")){
+                Helper_Database helperDatabase = new Helper_Database(getContext());
+                SQLiteDatabase db = helperDatabase.getWritableDatabase();
+                db.execSQL("update identified set is_uploaded = ? where id = ?", new String[]{"1",Integer.toString(currentId)});
+
+                buttonUpload.setClickable(false);
+                buttonUpload.setEnabled(false);
+
                 Toast toast = Toast.makeText(mContext, "Data upload success", Toast.LENGTH_LONG);
                 toast.setGravity(Gravity.CENTER, 0, 0);
                 toast.show();

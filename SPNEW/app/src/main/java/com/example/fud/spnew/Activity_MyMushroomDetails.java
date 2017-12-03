@@ -28,6 +28,7 @@ import org.opencv.imgproc.Imgproc;
 
 import java.util.ArrayList;
 
+import static android.graphics.BitmapFactory.decodeFile;
 import static org.opencv.core.CvType.CV_8UC3;
 
 public class Activity_MyMushroomDetails extends AppCompatActivity {
@@ -68,17 +69,17 @@ public class Activity_MyMushroomDetails extends AppCompatActivity {
         textView.setPadding(0,15,0,0);
         layout.addView(textView);
 
-        byte[] top_blob = topGetter.getBlob(topGetter.getColumnIndex("top_picture_scaled"));
+        String top_blob = topGetter.getString(topGetter.getColumnIndex("top_picture_scaled"));
         if(top_blob != null){
-            Bitmap top_picture = decodeSampledBitmapFromResource(top_blob, 150, 150);
+            Bitmap top_picture = decodeFile(top_blob);
             String top_species = topGetter.getString(topGetter.getColumnIndex("top_species"));
             String top_percentage = topGetter.getString(topGetter.getColumnIndex("top_percentage"));
             displayResults(top_picture, top_species, top_percentage);
         }
 
-        byte[] underside_blob = undersideGetter.getBlob(undersideGetter.getColumnIndex("underside_picture_scaled"));
+        String underside_blob = undersideGetter.getString(undersideGetter.getColumnIndex("underside_picture_scaled"));
         if(underside_blob != null){
-            Bitmap underside_picture = decodeSampledBitmapFromResource(underside_blob, 150, 150);
+            Bitmap underside_picture = decodeFile(underside_blob);
             String underside_species = undersideGetter.getString(undersideGetter.getColumnIndex("underside_species"));
             String underside_percentage = undersideGetter.getString(undersideGetter.getColumnIndex("underside_percentage"));
             displayResults(underside_picture, underside_species, underside_percentage);

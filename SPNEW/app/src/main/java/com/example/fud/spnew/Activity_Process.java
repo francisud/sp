@@ -1,5 +1,6 @@
 package com.example.fud.spnew;
 
+import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.FragmentManager;
 import android.content.ContentValues;
@@ -26,6 +27,7 @@ import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import org.opencv.android.BaseLoaderCallback;
 import org.opencv.android.LoaderCallbackInterface;
@@ -49,10 +51,13 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collections;
+import java.util.Date;
 import java.util.List;
+import java.util.Locale;
 
 import static java.lang.Math.cbrt;
 import static java.lang.Math.sqrt;
@@ -119,26 +124,48 @@ public class Activity_Process extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_process);
+        readyPictureFolder();
         OpenCVLoader.initAsync(OpenCVLoader.OPENCV_VERSION_3_3_0, this, mLoaderCallback);
     }
 
     private class AsyncClassifyTask extends AsyncTask<String, Void, Void>
     {
+        boolean errorEncountered = false;
+        Exception error = null;
+
         @Override
         protected void onPreExecute() {
             super.onPreExecute();
             progressDialog.setMessage("Classifying, please wait...");
             progressDialog.setCancelable(false);
             progressDialog.show();
+
+            errorEncountered = false;
+            error = null;
         }
 
         @Override
         protected Void doInBackground(String... params) {
-            start();
+            try {
+                start();
+            } catch (Exception e) {
+                errorEncountered = true;
+                error = e;
+            }
             return null;
         }
         @Override
         protected void onPostExecute(Void result) {
+            if(errorEncountered){
+                progressDialog.dismiss();
+
+                Intent returnIntent = new Intent();
+                returnIntent.putExtra("errorEncountered",true);
+                setResult(Activity.RESULT_CANCELED,returnIntent);
+                Activity_Process.this.finish();
+                return;
+            }
+
             LinearLayout layout = (LinearLayout) findViewById(R.id.layout);
 
             String[] substrates = getResources().getStringArray(R.array.substrate_array);
@@ -202,7 +229,7 @@ public class Activity_Process extends AppCompatActivity {
         }
     }
 
-    private void start(){
+    private void start() throws Exception {
         readySVMFiles();
 
         Bundle extras = getIntent().getExtras();
@@ -313,21 +340,40 @@ public class Activity_Process extends AppCompatActivity {
         SQLiteDatabase db = helperDatabase.getReadableDatabase();
         ContentValues values = new ContentValues();
 
+        File result;
+
         byte[] top_picture = null;
         byte[] top_picture_scaled = null;
+        String top_picture_path = null;
+        String top_picture_scaled_path = null;
+
         String top_species = null;
         String top_percentage = null;
         String top_data = null;
 
         byte[] underside_picture = null;
         byte[] underside_picture_scaled = null;
+        String underside_picture_path = null;
+        String underside_picture_scaled_path = null;
+
         String underside_species = null;
         String underside_percentage = null;
         String underside_data = null;
 
+        SimpleDateFormat s = new SimpleDateFormat("yyyyMMddHHmmss", Locale.ENGLISH);
+        String filename = s.format(new Date());
+
         if(topPhotoPath != null){
             top_picture = bitmaptoBlob(topPhotoPath);
+            result = createPicture(top_picture,filename + "top_picture");
+            if(result != null)
+                top_picture_path = result.getAbsolutePath();
+
             top_picture_scaled = scaledbitmaptoBlob(topPhotoPath);
+            result = createPicture(top_picture_scaled,filename + "top_picture_scaled");
+            if(result != null)
+                top_picture_scaled_path = result.getAbsolutePath();
+
             top_species = TextUtils.join(",", topSavingSpecies);
             top_percentage = TextUtils.join(",", topSavingPercentage);
             top_data = TextUtils.join("", topSavingData);
@@ -335,7 +381,15 @@ public class Activity_Process extends AppCompatActivity {
 
         if(bottomPhotoPath != null){
             underside_picture = bitmaptoBlob(bottomPhotoPath);
+            result = createPicture(underside_picture,filename + "underside_picture");
+            if(result != null)
+                underside_picture_path = result.getAbsolutePath();
+
             underside_picture_scaled = scaledbitmaptoBlob(bottomPhotoPath);
+            result = createPicture(underside_picture_scaled, filename + underside_picture_scaled_path);
+            if(result != null)
+                underside_picture_scaled_path = result.getAbsolutePath();
+
             underside_species = TextUtils.join(",", bottomSavingSpecies);
             underside_percentage = TextUtils.join(",", bottomSavingPercentage);
             underside_data = TextUtils.join("", bottomSavingData);
@@ -343,14 +397,14 @@ public class Activity_Process extends AppCompatActivity {
 
         values.put("substrate", substrate);
 
-        values.put("top_picture",top_picture);
-        values.put("top_picture_scaled",top_picture_scaled);
+        values.put("top_picture",top_picture_path);
+        values.put("top_picture_scaled",top_picture_scaled_path);
         values.put("top_species",top_species);
         values.put("top_percentage",top_percentage);
         values.put("top_data",top_data);
 
-        values.put("underside_picture",underside_picture);
-        values.put("underside_picture_scaled",underside_picture_scaled);
+        values.put("underside_picture",underside_picture_path);
+        values.put("underside_picture_scaled",underside_picture_scaled_path);
         values.put("underside_species",underside_species);
         values.put("underside_percentage",underside_percentage);
         values.put("underside_data",underside_data);
@@ -453,7 +507,7 @@ public class Activity_Process extends AppCompatActivity {
         return ImageMat;
     }
 
-    private Mat imageSegmentation(ArrayList<android.graphics.Point> coords, Mat img, float[] scaling){
+    private Mat imageSegmentation(ArrayList<android.graphics.Point> coords, Mat img, float[] scaling) throws Exception{
         //bounding rectangle
         int x1, y1, x2, y2;
         x1 = coords.get(0).x;
@@ -471,11 +525,7 @@ public class Activity_Process extends AppCompatActivity {
         org.opencv.core.Size fgSize = new org.opencv.core.Size(width,height);
 
         //based on - https://github.com/schenkerx/GrabCutDemo/blob/master/app/src/main/java/cvworkout2/graphcutdemo/MainActivity.java
-        Log.d("debug-scaling", Float.toString(scaling[0]));
-        Log.d("debug-scaling", Float.toString(scaling[1]));
-//        Imgproc.resize(img, img, new Size(), scaling[0], scaling[1], Imgproc.INTER_CUBIC);
         Imgproc.resize(img, img, new Size(), scaling[0], scaling[1], Imgproc.INTER_LINEAR);
-//        Imgproc.resize(img, img, new Size(500,500), 0, 0, Imgproc.INTER_CUBIC);
 
         Mat firstMask = new Mat();
         Mat bgModel = new Mat();
@@ -487,7 +537,12 @@ public class Activity_Process extends AppCompatActivity {
         Mat finalForeground = new Mat(fgSize, CV_8UC3,new Scalar(255, 255, 255));
 
         //segment image and get foreground
-        Imgproc.grabCut(img, firstMask, rect, bgModel, fgModel,1, Imgproc.GC_INIT_WITH_RECT);
+        try{
+            Imgproc.grabCut(img, firstMask, rect, bgModel, fgModel,1, Imgproc.GC_INIT_WITH_RECT);
+        }catch (Exception e){
+            throw new Exception("Cannot process image.", e);
+        }
+
         Core.compare(firstMask, source, firstMask, Core.CMP_EQ);
         img.copyTo(foreground, firstMask);
 
@@ -623,7 +678,7 @@ public class Activity_Process extends AppCompatActivity {
         return feature;
     }
 
-    private Mat getHuMoments(Mat image){
+    private Mat getHuMoments(Mat image) throws Exception{
         Mat grayScale = new Mat();
         Imgproc.cvtColor(image, grayScale, Imgproc.COLOR_BGR2GRAY);
 
@@ -641,13 +696,17 @@ public class Activity_Process extends AppCompatActivity {
 
         //find largest contour
         double largest_area = 0;
-        int index = 0;
+        int index = -1;
         for( int i = 0; i< contours.size(); i++ ){
             double compare = Imgproc.contourArea( contours.get(i) );
             if( compare > largest_area ){
                 largest_area = compare;
                 index = i;
             }
+        }
+
+        if(index == -1){
+            throw new Exception("Cannot process image.");
         }
 
         //for getting shape descriptor
@@ -833,14 +892,38 @@ public class Activity_Process extends AppCompatActivity {
 
             holderStrings.add(stringToWrite);
 
-            Log.d("debug-data", holderStrings.toString());
-
             stream.close();
         }
 
         catch (IOException e){
 
         }
+    }
+
+    private void readyPictureFolder(){
+        String directoryPath = getFilesDir().getAbsolutePath() + "/pictures/";
+        File directory = new File(directoryPath);
+
+        if(!directory.exists()){
+            directory.mkdir();
+        }
+    }
+
+    private File createPicture(byte[] pictureByte, String filename){
+        String directoryPath = getFilesDir().getAbsolutePath() + "/pictures/";
+        try{
+            File output = new File(directoryPath + "/" + filename);
+
+            FileOutputStream out = new FileOutputStream(output);
+            out.write(pictureByte);
+            out.close();
+
+            return output;
+        }
+        catch (Exception e){
+        }
+
+        return null;
     }
 
     private void readySVMFiles(){

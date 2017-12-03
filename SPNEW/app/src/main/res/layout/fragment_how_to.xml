@@ -30,7 +30,7 @@
                 android:layout_height="wrap_content"
                 android:gravity="center"
                 android:text="Start by clicking the mushroom icon in Identify tab"
-                android:textSize="14sp"/>
+                android:textSize="16sp"/>
 
             <View
                 android:layout_width="fill_parent"
@@ -48,7 +48,7 @@
                 android:layout_height="wrap_content"
                 android:gravity="center"
                 android:text="Take a photo or select a file for the mushroom. Top and Underside photos or files can be selected at the same time."
-                android:textSize="14sp"/>
+                android:textSize="16sp"/>
 
             <View
                 android:layout_width="fill_parent"
@@ -66,7 +66,7 @@
                 android:layout_height="wrap_content"
                 android:gravity="center"
                 android:text="Draw a bounding box to select the mushroom. The smaller the bounding box created, the faster the identification process will be."
-                android:textSize="14sp"/>
+                android:textSize="16sp"/>
 
             <View
                 android:layout_width="fill_parent"
@@ -84,7 +84,7 @@
                 android:layout_height="wrap_content"
                 android:gravity="center"
                 android:text="Pick a substrate for the mushroom. Then proceed to identification"
-                android:textSize="14sp"/>
+                android:textSize="16sp"/>
 
 
             <View
@@ -108,8 +108,8 @@
                 android:layout_width="fill_parent"
                 android:layout_height="wrap_content"
                 android:gravity="center"
-                android:text="The identification page will show the top 5 closest family to the mushroom provided. Clicking the results will also show more details about the family"
-                android:textSize="14sp"/>
+                android:text="The identification page will show the top five closest family to the mushroom provided. Clicking the row will show more details about the family"
+                android:textSize="16sp"/>
 
             <View
                 android:layout_width="fill_parent"
@@ -126,8 +126,8 @@
                 android:layout_width="fill_parent"
                 android:layout_height="wrap_content"
                 android:gravity="center"
-                android:text="You then have the option to save or not results. Saved results can be viewed in My Mushrooms. The results can also be uploaded to a server, or deleted from your saved results"
-                android:textSize="14sp"/>
+                android:text="You then have the option to save or not the results. Saved results can be viewed in My Mushrooms."
+                android:textSize="16sp"/>
 
         </LinearLayout>
 

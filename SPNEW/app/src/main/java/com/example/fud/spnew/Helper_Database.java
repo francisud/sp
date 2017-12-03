@@ -19,7 +19,6 @@ public class Helper_Database extends SQLiteOpenHelper {
 
     @Override
     public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
-        // TODO Auto-generated method stub
         db.execSQL("DROP TABLE IF EXISTS identified");
         onCreate(db);
     }
@@ -31,10 +30,11 @@ public class Helper_Database extends SQLiteOpenHelper {
                     "create table identified " +
                             "(id integer primary key autoincrement, date DATETIME DEFAULT CURRENT_TIMESTAMP, " +
                             "substrate text, " +
-                            "top_picture blob, top_picture_scaled blob, " +
+                            "top_picture text, top_picture_scaled text, " +
                             "top_species text, top_percentage text,  top_data text, " +
-                            "underside_picture blob, underside_picture_scaled blob, " +
-                            "underside_species text, underside_percentage text, underside_data text)"
+                            "underside_picture text, underside_picture_scaled text, " +
+                            "underside_species text, underside_percentage text, underside_data text," +
+                            "is_uploaded integer default 0)"
             );
 
             db.execSQL("create table species " +

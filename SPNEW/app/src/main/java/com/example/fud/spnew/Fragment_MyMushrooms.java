@@ -16,7 +16,11 @@ import android.widget.AdapterView;
 import android.widget.GridView;
 import android.widget.ListView;
 
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
+import java.util.Locale;
+import java.util.TimeZone;
 
 public class Fragment_MyMushrooms extends Fragment {
     private Cursor topCursor;
@@ -35,8 +39,8 @@ public class Fragment_MyMushrooms extends Fragment {
         Helper_Database helperDatabase = new Helper_Database(getContext());
         SQLiteDatabase db = helperDatabase.getWritableDatabase();
 
-        Cursor topGetter = db.rawQuery("SELECT id, date, top_picture_scaled FROM identified ORDER BY datetime(date) DESC", null);
-        Cursor undersideGetter = db.rawQuery("SELECT id, date, underside_picture_scaled FROM identified ORDER BY datetime(date) DESC", null);
+        Cursor topGetter = db.rawQuery("SELECT id, date, top_picture_scaled, is_uploaded FROM identified ORDER BY datetime(date) DESC", null);
+        Cursor undersideGetter = db.rawQuery("SELECT id, date, underside_picture_scaled, is_uploaded FROM identified ORDER BY datetime(date) DESC", null);
 
         if(topGetter != null && topGetter.getCount() > 0){
             topCursor = topGetter;
@@ -57,26 +61,37 @@ public class Fragment_MyMushrooms extends Fragment {
         final ArrayList<Class_MyMushroomGridItem> holder = new ArrayList<>();
         Class_MyMushroomGridItem item;
         Bitmap bm;
-        byte[] picture;
-        String date;
+        String picture;
+        String date = null;
         int id;
+        int is_uploaded;
+
+        SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.ENGLISH);
 
         if(topCursor != null && topCursor.getCount() > 0){
             do {
-                picture = topCursor.getBlob(topCursor.getColumnIndex("top_picture_scaled"));
-                if(picture != null){
-                    bm = BitmapFactory.decodeByteArray(picture, 0 ,picture.length);
+                try{
                     date = topCursor.getString(topCursor.getColumnIndex("date"));
+                    df.setTimeZone(TimeZone.getTimeZone("UTC"));
+                    Date holder1 = df.parse(date);
+                    df.setTimeZone(TimeZone.getDefault());
+                    date = df.format(holder1);
+                }catch (Exception e){Log.d("debug-catch", e.getMessage(), e);}
+
+                picture = topCursor.getString(topCursor.getColumnIndex("top_picture_scaled"));
+                if(picture != null){
+                    bm = BitmapFactory.decodeFile(picture);
                     id = topCursor.getInt(topCursor.getColumnIndex("id"));
-                    item = new Class_MyMushroomGridItem(bm,date,id);
+                    is_uploaded = topCursor.getInt(topCursor.getColumnIndex("is_uploaded"));
+                    item = new Class_MyMushroomGridItem(bm,date,id,is_uploaded);
                     holder.add(item);
                 }
                 else{
-                    picture = undersideCursor.getBlob(undersideCursor.getColumnIndex("underside_picture_scaled"));
-                    bm = BitmapFactory.decodeByteArray(picture, 0 ,picture.length);
-                    date = undersideCursor.getString(undersideCursor.getColumnIndex("date"));
+                    picture = undersideCursor.getString(undersideCursor.getColumnIndex("underside_picture_scaled"));
+                    bm = BitmapFactory.decodeFile(picture);
                     id = undersideCursor.getInt(undersideCursor.getColumnIndex("id"));
-                    item = new Class_MyMushroomGridItem(bm,date,id);
+                    is_uploaded = undersideCursor.getInt(undersideCursor.getColumnIndex("is_uploaded"));
+                    item = new Class_MyMushroomGridItem(bm,date,id,is_uploaded);
                     holder.add(item);
                 }
 
