@@ -11,6 +11,7 @@ import android.net.NetworkInfo;
 import android.os.AsyncTask;
 import android.util.Base64;
 import android.util.Log;
+import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -19,12 +20,15 @@ import android.widget.Button;
 import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import org.json.JSONObject;
 
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
+import java.io.BufferedReader;
 import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.net.HttpURLConnection;
 import java.net.InterfaceAddress;
@@ -35,9 +39,12 @@ import java.util.ArrayList;
 
 public class Adapter_MyMushrooms extends ArrayAdapter<Class_MyMushroomGridItem> {
 
-    ProgressDialog progressDialog;
+    private ProgressDialog progressDialog;
     private ArrayList<Class_MyMushroomGridItem> data;
-    Context mContext;
+    private Context mContext;
+    private int responseCode;
+    private String resultCode;
+
 
     private static class ViewHolder {
         ImageView imageView;
@@ -129,13 +136,16 @@ public class Adapter_MyMushrooms extends ArrayAdapter<Class_MyMushroomGridItem> 
     }
 
 
-    public void upload(int id){
+    private void upload(int id){
+        responseCode = -1;
+        resultCode = "";
+
         if(isConnected()){
             URL url = null;
             HttpURLConnection urlConnection = null;
 
             try {
-                url = new URL("http://testing.com");
+                url = new URL("test.com");
                 urlConnection = (HttpURLConnection) url.openConnection();
 
                 urlConnection.setDoOutput(true);
@@ -146,52 +156,51 @@ public class Adapter_MyMushrooms extends ArrayAdapter<Class_MyMushroomGridItem> 
                 //get data from database
                 Helper_Database helperDatabase = new Helper_Database(getContext());
                 SQLiteDatabase db = helperDatabase.getWritableDatabase();
-                Cursor cursor = db.rawQuery("SELECT * FROM identified where id = ?", new String[]{Integer.toString(id)});
+
+                //cursor cant handle too much data, need to split to 2
+                Cursor topGetter = db.rawQuery("SELECT date, substrate, top_picture, top_species, top_percentage, top_data FROM identified where id = ?", new String[]{Integer.toString(id)});
+
+                Cursor undersideGetter = db.rawQuery("SELECT underside_picture, underside_species, underside_percentage,  underside_data FROM identified where id = ?", new String[]{Integer.toString(id)});
 
 
-                //need to fix getters, cant get too much data at the same time
-                Cursor topGetter = db.rawQuery("SELECT id, date, top_picture_scaled FROM identified ORDER BY datetime(date) DESC", null);
-                Cursor undersideGetter = db.rawQuery("SELECT id, date, underside_picture_scaled FROM identified ORDER BY datetime(date) DESC", null);
-
-                if(cursor != null && cursor.moveToFirst()){
-                    Log.d("debug-cursor",Integer.toString(cursor.getCount()));
-
+                if(topGetter != null && topGetter.moveToFirst() && undersideGetter.moveToFirst()){
                     JSONObject data = new JSONObject();
 
-                    data.put("date", cursor.getString(cursor.getColumnIndex("date")));
-                    data.put("substrate", cursor.getString(cursor.getColumnIndex("substrate")));
+                    data.put("date", topGetter.getString(topGetter.getColumnIndex("date")));
+                    data.put("substrate", topGetter.getString(topGetter.getColumnIndex("substrate")));
 
-                    if(cursor.getBlob(cursor.getColumnIndex("top_picture")) != null){
-                        String top_picture = new String(Base64.encode(cursor.getBlob(cursor.getColumnIndex("top_picture")), Base64.DEFAULT));
+                    if(topGetter.getBlob(topGetter.getColumnIndex("top_picture")) != null){
+                        String top_picture = new String(Base64.encode(topGetter.getBlob(topGetter.getColumnIndex("top_picture")), Base64.DEFAULT));
                         data.put("top_picture", top_picture);
-                        data.put("top_species", cursor.getString(cursor.getColumnIndex("top_species")));
-                        data.put("top_percentage", cursor.getString(cursor.getColumnIndex("top_percentage")));
-                        data.put("top_data", cursor.getString(cursor.getColumnIndex("top_data")));
+                        data.put("top_species", topGetter.getString(topGetter.getColumnIndex("top_species")));
+                        data.put("top_percentage", topGetter.getString(topGetter.getColumnIndex("top_percentage")));
+                        data.put("top_data", topGetter.getString(topGetter.getColumnIndex("top_data")));
                     }
 
-                    if(cursor.getBlob(cursor.getColumnIndex("underside_picture")) != null){
-                        String underside_picture = new String(Base64.encode(cursor.getBlob(cursor.getColumnIndex("underside_picture")), Base64.DEFAULT));
+                    if(undersideGetter.getBlob(undersideGetter.getColumnIndex("underside_picture")) != null){
+                        String underside_picture = new String(Base64.encode(undersideGetter.getBlob(undersideGetter.getColumnIndex("underside_picture")), Base64.DEFAULT));
                         data.put("underside_picture", underside_picture);
-                        data.put("underside_species", cursor.getString(cursor.getColumnIndex("underside_species")));
-                        data.put("underside_percentage", cursor.getString(cursor.getColumnIndex("underside_percentage")));
-                        data.put("underside_data", cursor.getString(cursor.getColumnIndex("underside_data")));
+                        data.put("underside_species", undersideGetter.getString(undersideGetter.getColumnIndex("underside_species")));
+                        data.put("underside_percentage", undersideGetter.getString(undersideGetter.getColumnIndex("underside_percentage")));
+                        data.put("underside_data", undersideGetter.getString(undersideGetter.getColumnIndex("underside_data")));
                     }
 
-                    String jsonEncoded = URLEncoder.encode(data.toString(),"utf-8");
-                    String values = "json=" + jsonEncoded;
                     OutputStream out = new BufferedOutputStream(urlConnection.getOutputStream());
-//                    out.write(values.getBytes());
                     out.write(data.toString().getBytes());
                     out.flush();
                     out.close();
 
-                    int responseCode = urlConnection.getResponseCode();
-                    Log.d("debug-insideadapter", Integer.toString(responseCode));
-
                     InputStream in = new BufferedInputStream(urlConnection.getInputStream());
-                    in.read();
 
-                    Log.d("debug-insideadapter", Integer.toString(in.read()));
+                    BufferedReader bufferedReader = new BufferedReader( new InputStreamReader(in));
+                    StringBuilder result = new StringBuilder();
+                    String line;
+                    while ((line = bufferedReader.readLine()) != null) {
+                        result.append(line + "\n");
+                    }
+
+                    responseCode = urlConnection.getResponseCode();
+                    resultCode = result.toString().trim();
                 }
 
             }catch (Exception e){
@@ -202,7 +211,7 @@ public class Adapter_MyMushrooms extends ArrayAdapter<Class_MyMushroomGridItem> 
         }
     }
 
-    public boolean isConnected(){
+    private boolean isConnected(){
         ConnectivityManager connMgr = (ConnectivityManager) getContext().getSystemService(mContext.CONNECTIVITY_SERVICE);
         NetworkInfo networkInfo = connMgr.getActiveNetworkInfo();
         if (networkInfo != null && networkInfo.isConnected())
@@ -223,7 +232,6 @@ public class Adapter_MyMushrooms extends ArrayAdapter<Class_MyMushroomGridItem> 
 
         @Override
         protected Void doInBackground(Integer... params) {
-            Log.d("debug-doinbackground","params[0]="+Integer.toString(params[0]));
             upload(params[0]);
             return null;
         }
@@ -231,6 +239,18 @@ public class Adapter_MyMushrooms extends ArrayAdapter<Class_MyMushroomGridItem> 
         @Override
         protected void onPostExecute(Void result){
             progressDialog.dismiss();
+
+            if(responseCode != 200 || !resultCode.equals("1")){
+                Toast toast = Toast.makeText(mContext, "Unable to upload data", Toast.LENGTH_LONG);
+                toast.setGravity(Gravity.CENTER, 0, 0);
+                toast.show();
+            }
+
+            if(responseCode == 200 && resultCode.equals("1")){
+                Toast toast = Toast.makeText(mContext, "Data upload success", Toast.LENGTH_LONG);
+                toast.setGravity(Gravity.CENTER, 0, 0);
+                toast.show();
+            }
         }
     }
 
