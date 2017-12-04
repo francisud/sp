@@ -66,9 +66,9 @@ public class Fragment_Details extends DialogFragment{
         InputStream in;
         ArrayList<Bitmap> images = new ArrayList<>();
 
-        for(int i = 0; i < 3; i++){
+        for(int i = 1; i < 10; i++){
             try{
-                in = am.open(cursor.getString(cursor.getColumnIndex("picture"+Integer.toString(i))) + ".JPG" );
+                in = am.open(cursor.getString(cursor.getColumnIndex("picture"+Integer.toString(i))) + ".jpg" );
                 Bitmap bitmap = BitmapFactory.decodeStream(in);
                 images.add(bitmap);
             }catch (IOException e){
