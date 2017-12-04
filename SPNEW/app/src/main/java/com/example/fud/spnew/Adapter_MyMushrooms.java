@@ -87,8 +87,10 @@ public class Adapter_MyMushrooms extends ArrayAdapter<Class_MyMushroomGridItem> 
         if(dataModel.getIs_uploaded() == 1){
             viewHolder.buttonUpload.setClickable(false);
             viewHolder.buttonUpload.setEnabled(false);
+        }else{
+            viewHolder.buttonUpload.setClickable(true);
+            viewHolder.buttonUpload.setEnabled(true);
         }
-
 
         viewHolder.buttonUpload.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {

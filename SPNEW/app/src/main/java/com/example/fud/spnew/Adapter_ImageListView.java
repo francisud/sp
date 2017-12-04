@@ -40,7 +40,8 @@ public class Adapter_ImageListView extends ArrayAdapter<Bitmap> {
             viewHolder = (Adapter_ImageListView.ViewHolder) convertView.getTag();
         }
 
-//        viewHolder.imageView.setImageBitmap(Bitmap.createScaledBitmap(dataModel,200,200,false));
+
+//        viewHolder.imageView.setImageBitmap(Bitmap.createScaledBitmap(dataModel,300,300,false));
         viewHolder.imageView.setImageBitmap(dataModel);
 
         // Return the completed view to render on screen

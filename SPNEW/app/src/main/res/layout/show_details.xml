@@ -90,13 +90,15 @@
 
     <GridView
         android:id="@+id/pictures"
-        android:layout_width="wrap_content"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_weight="1"
-        android:columnWidth="90dp"
-        android:numColumns="2"
+        android:numColumns="auto_fit"
+        android:stretchMode="columnWidth"
+        android:columnWidth="150dp"
         android:verticalSpacing="10dp"
         android:horizontalSpacing="10dp"
-        android:gravity="center" ></GridView>
+        android:gravity="center"
+        android:padding="10dp">
+    </GridView>
 
 </LinearLayout>
