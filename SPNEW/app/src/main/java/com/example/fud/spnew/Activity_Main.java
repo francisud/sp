@@ -7,7 +7,6 @@ import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentActivity;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentTransaction;
-import android.util.Log;
 import android.view.MenuItem;
 
 public class Activity_Main extends FragmentActivity {
@@ -46,9 +45,6 @@ public class Activity_Main extends FragmentActivity {
 
         if (findViewById(R.id.fragment_container) != null) {
             if (savedInstanceState != null) {return;}
-
-//                fragment_identify.setArguments(getIntent().getExtras());
-//                getSupportFragmentManager().beginTransaction().add(R.id.fragment_container, fragment_identify).commit();
 
             FragmentManager manager = getSupportFragmentManager();
             FragmentTransaction transaction = manager.beginTransaction();

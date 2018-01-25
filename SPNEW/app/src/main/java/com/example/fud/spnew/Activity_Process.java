@@ -3,12 +3,12 @@ package com.example.fud.spnew;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.FragmentManager;
+import android.app.ProgressDialog;
 import android.content.ContentValues;
 import android.content.DialogInterface;
 import android.content.Intent;
-import android.database.sqlite.SQLiteDatabase;
-import android.app.ProgressDialog;
 import android.content.res.AssetManager;
+import android.database.sqlite.SQLiteDatabase;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.net.Uri;
@@ -17,7 +17,6 @@ import android.os.Bundle;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
 import android.text.TextUtils;
-import android.util.Log;
 import android.util.TypedValue;
 import android.view.Gravity;
 import android.view.View;
@@ -27,7 +26,6 @@ import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import org.opencv.android.BaseLoaderCallback;
 import org.opencv.android.LoaderCallbackInterface;
@@ -42,7 +40,6 @@ import org.opencv.core.Scalar;
 import org.opencv.core.Size;
 import org.opencv.imgproc.Imgproc;
 import org.opencv.imgproc.Moments;
-import org.w3c.dom.Text;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
@@ -53,18 +50,17 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Calendar;
 import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 
+import umich.cse.yctung.androidlibsvm.LibSVM;
+
 import static java.lang.Math.cbrt;
 import static java.lang.Math.sqrt;
 import static org.opencv.core.CvType.CV_32F;
 import static org.opencv.core.CvType.CV_8UC3;
-
-import umich.cse.yctung.androidlibsvm.LibSVM;
 
 
 public class Activity_Process extends AppCompatActivity {
@@ -522,7 +518,7 @@ public class Activity_Process extends AppCompatActivity {
         //for smaller size matrix
         int width = x2 - x1;
         int height = y2 - y1;
-        org.opencv.core.Size fgSize = new org.opencv.core.Size(width,height);
+        Size fgSize = new Size(width,height);
 
         //based on - https://github.com/schenkerx/GrabCutDemo/blob/master/app/src/main/java/cvworkout2/graphcutdemo/MainActivity.java
         Imgproc.resize(img, img, new Size(), scaling[0], scaling[1], Imgproc.INTER_LINEAR);
@@ -742,8 +738,8 @@ public class Activity_Process extends AppCompatActivity {
 
         //getting real and imaginary part
         for (int i = 0; i<4; i++){
-            kernelReal = Imgproc.getGaborKernel(new org.opencv.core.Size(ksize,ksize), sigma, theta[i], lambda, gamma, 0, CV_32F);
-            kernelImag = Imgproc.getGaborKernel(new org.opencv.core.Size(ksize,ksize), sigma, theta[i], lambda, gamma, 3.14159265359/2, CV_32F);
+            kernelReal = Imgproc.getGaborKernel(new Size(ksize,ksize), sigma, theta[i], lambda, gamma, 0, CV_32F);
+            kernelImag = Imgproc.getGaborKernel(new Size(ksize,ksize), sigma, theta[i], lambda, gamma, 3.14159265359/2, CV_32F);
 
             Imgproc.filter2D(imageFloat, dest, CV_32F, kernelReal);
             destArray.add(dest.clone());

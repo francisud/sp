@@ -1,22 +1,21 @@
 package com.example.fud.spnew;
 
-import android.app.Activity;
-import android.support.v4.app.DialogFragment;
 import android.content.Intent;
+import android.graphics.Bitmap;
 import android.graphics.Point;
+import android.net.Uri;
 import android.os.Bundle;
 import android.os.Environment;
 import android.provider.MediaStore;
+import android.support.v4.app.DialogFragment;
 import android.support.v4.content.FileProvider;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.Gravity;
 import android.view.View;
-import android.net.Uri;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.ImageButton;
-import android.graphics.Bitmap;
 import android.widget.Toast;
 
 import java.io.File;
@@ -156,20 +155,6 @@ public class Activity_Identify extends AppCompatActivity implements Fragment_Pic
             targetW = bottom.getWidth();
             targetH = bottom.getHeight();
         }
-
-//        // Get the dimensions of the bitmap
-//        BitmapFactory.Options bmOptions = new BitmapFactory.Options();
-//        bmOptions.inJustDecodeBounds = true;
-//
-//        int photoW = bmOptions.outWidth;
-//        int photoH = bmOptions.outHeight;
-//
-//        // Determine how much to scale down the image
-//        int scaleFactor = Math.min(photoW/targetW, photoH/targetH);
-//
-//        // Decode the image file into a Bitmap sized to fill the View
-//        bmOptions.inJustDecodeBounds = false;
-//        bmOptions.inSampleSize = scaleFactor;
 
         Bitmap bitmap = null;
         try{
